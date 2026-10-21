@@ -15,12 +15,20 @@
         "data": {
           "token": "API-Token"
         }
+      },
+      "cellar": {
+        "title": "My Cellarion",
+        "description": "Dein Konto hat mehrere Keller. Wähle den, der angezeigt werden soll.",
+        "data": {
+          "cellar_id": "Keller"
+        }
       }
     },
     "error": {
       "cannot_connect": "Cellarion ist nicht erreichbar.",
       "invalid_auth": "Der Token wurde abgelehnt.",
-      "invalid_url": "Die Adresse muss mit http:// oder https:// beginnen."
+      "invalid_url": "Die Adresse muss mit http:// oder https:// beginnen.",
+      "no_cellar": "Das Konto hat keinen Keller."
     },
     "abort": {
       "single_instance_allowed": "My Cellarion ist bereits eingerichtet.",
@@ -32,7 +40,8 @@
       "init": {
         "title": "My Cellarion",
         "data": {
-          "scan_interval": "Aktualisierungsintervall (Sekunden)"
+          "scan_interval": "Aktualisierungsintervall (Sekunden)",
+          "cellar_id": "Keller"
         }
       }
     }

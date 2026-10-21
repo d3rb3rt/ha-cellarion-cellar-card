@@ -11,7 +11,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import CONF_CELLAR_ID, CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .frontend import async_register_frontend
 from .hub import CellarionAuthError, CellarionError, Hub
 from .services import async_setup_services
@@ -33,7 +33,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) 
     """Set up one Cellarion account."""
     await async_register_frontend(hass)
 
-    hub = Hub(hass, entry.entry_id, entry.data[CONF_URL], entry.data[CONF_TOKEN])
+    cellar_id = entry.options.get(CONF_CELLAR_ID) or entry.data.get(CONF_CELLAR_ID)  # none: the first cellar (older entries)
+    hub = Hub(hass, entry.entry_id, entry.data[CONF_URL], entry.data[CONF_TOKEN], cellar_id)
     await hub.async_load()
     entry.runtime_data = hub
 

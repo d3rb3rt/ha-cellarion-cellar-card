@@ -35,11 +35,12 @@ class CellarionError(Exception):
 class Hub:
     """Talks to Cellarion and holds what the card reads."""
 
-    def __init__(self, hass: HomeAssistant, entry_id: str, url: str, token: str) -> None:
+    def __init__(self, hass: HomeAssistant, entry_id: str, url: str, token: str, cellar_id: str | None = None) -> None:
         self.hass = hass
         self.entry_id = entry_id
         self.url = url.rstrip("/")
         self._token = token
+        self._cellar_id = cellar_id
         self._session = async_get_clientsession(hass)
         self._store: Store[JsonDict] = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY}.{entry_id}")
         self._settings: JsonDict = {}
@@ -142,7 +143,7 @@ class Hub:
         """Fetch the inventory from Cellarion (one run at a time)."""
         async with self._lock:
             mcp = await self._mcp_client()
-            self.data = await api.build_inventory(self._get, mcp)
+            self.data = await api.build_inventory(self._get, mcp, self._cellar_id)
             self.updated = time.time()
         placed = sum(1 for b in self.data["bottles"] if b.get("location"))
         return {"total": self.data["total"], "placed": placed, "unplaced": self.data["total"] - placed,

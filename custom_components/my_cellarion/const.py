@@ -5,6 +5,7 @@ DOMAIN = "my_cellarion"
 
 CONF_URL = "url"
 CONF_TOKEN = "token"
+CONF_CELLAR_ID = "cellar_id"
 CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_URL = "https://cellarion.app"
 DEFAULT_SCAN_INTERVAL = 1800  # seconds

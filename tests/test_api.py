@@ -55,3 +55,17 @@ def test_profile_from_get_bottle():
     out = api.profile_from_get_bottle(g)
     assert out["profile"] == {"body": "light", "flavors": ["lime"], "description": "x", "verified": True}
     assert out["rating"] == 90 and "occasion" not in out
+
+
+def test_pick_cellar_by_id_or_first():
+    cellars = [{"_id": "c1", "name": "HK4"}, {"_id": "c2", "name": "Cabin"}]
+    assert api.pick_cellar(cellars, None)["name"] == "HK4"
+    assert api.pick_cellar(cellars, "c2")["name"] == "Cabin"
+
+
+def test_pick_cellar_unknown_id_or_none_at_all():
+    import pytest
+    with pytest.raises(RuntimeError):
+        api.pick_cellar([{"_id": "c1"}], "gone")
+    with pytest.raises(RuntimeError):
+        api.pick_cellar([], None)

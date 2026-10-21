@@ -217,12 +217,23 @@ async def personal_fields(mcp: McpClient) -> tuple[dict[str, dict[str, str]], li
 # ---------- inventory ----------
 
 
-async def build_inventory(get: Getter, mcp: McpClient | None) -> JsonDict:
-    """Compact inventory (cellar name, racks, active bottles with places and personal fields)."""
-    cellars = (await get("/api/cellars")).get("cellars") or []
+def pick_cellar(cellars: list[JsonDict], cellar_id: str | None) -> JsonDict:
+    """The chosen cellar by id, or the first one when no id is configured."""
     if not cellars:
         raise RuntimeError("no cellar found")
-    cid = cellars[0].get("_id") or cellars[0].get("id")
+    if not cellar_id:
+        return cellars[0]
+    for c in cellars:
+        if cellar_id in (c.get("_id"), c.get("id")):
+            return c
+    raise RuntimeError("the configured cellar no longer exists")
+
+
+async def build_inventory(get: Getter, mcp: McpClient | None, cellar_id: str | None = None) -> JsonDict:
+    """Compact inventory (cellar name, racks, active bottles with places and personal fields) of one cellar."""
+    cellars = (await get("/api/cellars")).get("cellars") or []
+    cellar = pick_cellar(cellars, cellar_id)
+    cid = cellar.get("_id") or cellar.get("id")
     racks = (await get(f"/api/racks?cellar={cid}&summary=1")).get("racks") or []
     slot: dict[str, tuple[str, JsonDict]] = {}
     for r in racks:
@@ -254,7 +265,7 @@ async def build_inventory(get: Getter, mcp: McpClient | None) -> JsonDict:
             b["p"] = pers[b["id"]]
     return {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-        "cellar": cellars[0].get("name"),
+        "cellar": cellar.get("name"),
         "total": len(bottles),
         "racks": [r["name"] for r in racks],
         "fields": labels,

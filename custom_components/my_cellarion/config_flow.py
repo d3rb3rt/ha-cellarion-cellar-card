@@ -10,11 +10,15 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import voluptuous as vol
 
-from .const import CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DEFAULT_SCAN_INTERVAL, DEFAULT_URL, DOMAIN, MIN_SCAN_INTERVAL, USER_AGENT
+from homeassistant.helpers.selector import SelectOptionDict, SelectSelector, SelectSelectorConfig, SelectSelectorMode
+
+from .const import (
+    CONF_CELLAR_ID, CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DEFAULT_SCAN_INTERVAL, DEFAULT_URL, DOMAIN, MIN_SCAN_INTERVAL, USER_AGENT,
+)
 
 
-async def _check(hass, url: str, token: str) -> str | None:
-    """None when the token works, else an error key."""
+async def _cellars(hass, url: str, token: str) -> tuple[str | None, list[dict[str, str]]]:
+    """(error key, cellars as [{id, name}]); the error key is None when the token works."""
     try:
         async with async_get_clientsession(hass).get(
             url.rstrip("/") + "/api/cellars",
@@ -22,18 +26,47 @@ async def _check(hass, url: str, token: str) -> str | None:
             timeout=aiohttp.ClientTimeout(total=20),
         ) as resp:
             if resp.status in (401, 403):
-                return "invalid_auth"
+                return "invalid_auth", []
             if resp.status != 200:
-                return "cannot_connect"
-    except (aiohttp.ClientError, TimeoutError):
-        return "cannot_connect"
-    return None
+                return "cannot_connect", []
+            body = await resp.json(content_type=None)
+    except (aiohttp.ClientError, TimeoutError, ValueError):
+        return "cannot_connect", []
+    found = [
+        {"id": c.get("_id") or c.get("id"), "name": c.get("name") or "?"}
+        for c in (body or {}).get("cellars") or [] if isinstance(c, dict) and (c.get("_id") or c.get("id"))
+    ]
+    return (None, found) if found else ("no_cellar", [])
+
+
+async def _check(hass, url: str, token: str) -> str | None:
+    """None when the token works, else an error key."""
+    err, _ = await _cellars(hass, url, token)
+    return None if err in (None, "no_cellar") else err
+
+
+def _cellar_selector(cellars: list[dict[str, str]]) -> SelectSelector:
+    return SelectSelector(SelectSelectorConfig(
+        options=[SelectOptionDict(value=c["id"], label=c["name"]) for c in cellars], mode=SelectSelectorMode.DROPDOWN))
 
 
 class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
     """Set up My Cellarion with a Cellarion API token (scope read; add consume to take bottles out)."""
 
     VERSION = 1
+    _url: str = ""
+    _token: str = ""
+    _cellars: list[dict[str, str]] = []
+
+    def _create(self, cellar_id: str) -> ConfigFlowResult:
+        return self.async_create_entry(title="My Cellarion", data={CONF_URL: self._url, CONF_TOKEN: self._token, CONF_CELLAR_ID: cellar_id})
+
+    async def async_step_cellar(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Several cellars in the account: choose the one to show."""
+        if user_input is not None:
+            return self._create(user_input[CONF_CELLAR_ID])
+        return self.async_show_form(
+            step_id="cellar", data_schema=vol.Schema({vol.Required(CONF_CELLAR_ID): _cellar_selector(self._cellars)}))
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
@@ -42,10 +75,15 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
             token = user_input[CONF_TOKEN].strip()
             if not url.startswith(("http://", "https://")):
                 errors[CONF_URL] = "invalid_url"
-            elif err := await _check(self.hass, url, token):
-                errors["base"] = err
             else:
-                return self.async_create_entry(title="My Cellarion", data={CONF_URL: url, CONF_TOKEN: token})
+                err, cellars = await _cellars(self.hass, url, token)
+                if err:
+                    errors["base"] = err
+                else:
+                    self._url, self._token, self._cellars = url, token, cellars
+                    if len(cellars) == 1:  # nothing to choose
+                        return self._create(cellars[0]["id"])
+                    return await self.async_step_cellar()
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
@@ -76,13 +114,19 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class MyCellarionOptionsFlow(OptionsFlow):
-    """How often the inventory is refreshed in the background."""
+    """Refresh interval and, when the account has several cellars, which one is shown."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(data=user_input)
-        cur = self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema({vol.Required(CONF_SCAN_INTERVAL, default=cur): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL))}),
-        )
+        entry = self.config_entry
+        schema: dict[Any, Any] = {
+            vol.Required(
+                CONF_SCAN_INTERVAL, default=entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+        }
+        _, cellars = await _cellars(self.hass, entry.data[CONF_URL], entry.data[CONF_TOKEN])
+        if len(cellars) > 1:
+            current = entry.options.get(CONF_CELLAR_ID) or entry.data.get(CONF_CELLAR_ID) or cellars[0]["id"]
+            schema[vol.Required(CONF_CELLAR_ID, default=current)] = _cellar_selector(cellars)
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))

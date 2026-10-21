@@ -42,7 +42,17 @@ async def test_flow_creates_entry(hass, aioclient_mock):
     with patch("custom_components.my_cellarion.async_setup_entry", return_value=True):
         r = await hass.config_entries.flow.async_configure(r["flow_id"], {"url": "https://cellarion.example/", "token": " cel_x "})
     assert r["type"] is FlowResultType.CREATE_ENTRY
-    assert r["data"] == {"url": "https://cellarion.example", "token": "cel_x"}
+    assert r["data"] == {"url": "https://cellarion.example", "token": "cel_x", "cellar_id": "c1"}
+
+
+async def test_flow_asks_for_the_cellar_when_there_are_several(hass, aioclient_mock):
+    aioclient_mock.get("https://cellarion.example/api/cellars", json={"cellars": [{"_id": "c1", "name": "HK4"}, {"_id": "c2", "name": "Cabin"}]})
+    r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    r = await hass.config_entries.flow.async_configure(r["flow_id"], {"url": "https://cellarion.example", "token": "cel_x"})
+    assert r["type"] is FlowResultType.FORM and r["step_id"] == "cellar"
+    with patch("custom_components.my_cellarion.async_setup_entry", return_value=True):
+        r = await hass.config_entries.flow.async_configure(r["flow_id"], {"cellar_id": "c2"})
+    assert r["type"] is FlowResultType.CREATE_ENTRY and r["data"]["cellar_id"] == "c2"
 
 
 async def test_flow_rejects_bad_token(hass, aioclient_mock):

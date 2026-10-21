@@ -1,0 +1,27 @@
+name: Release
+
+# Creates a GitHub release (and its tag) whenever the version in manifest.json changes on main.
+on:
+  push:
+    branches: [main]
+    paths: [custom_components/my_cellarion/manifest.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release if the tag is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="v$(jq -r .version custom_components/my_cellarion/manifest.json)"
+          if gh release view "$v" >/dev/null 2>&1; then
+            echo "$v already released"
+          else
+            gh release create "$v" --target "$GITHUB_SHA" --title "$v" --generate-notes
+          fi

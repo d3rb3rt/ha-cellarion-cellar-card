@@ -3,7 +3,9 @@
 A Home Assistant dashboard card and the data integration behind it for [Cellarion](https://cellarion.app):
 a searchable, filterable view of your cellar with bottle details, storage places and taking a bottle out.
 
-> Status: early version, in use on a single setup. Not yet in the HACS default store.
+> Status: early version, in use on a single setup.
+>
+> **Heads-up:** this project was built entirely by vibe coding with Claude (Anthropic). If that is not your thing, please don't install it.
 
 ## What you get
 

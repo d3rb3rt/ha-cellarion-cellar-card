@@ -266,7 +266,7 @@
     .sumline .grow { margin-right: auto; }
     .az { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 2px; padding: 4px 8px; border-bottom: 1px solid var(--cb-line); }
     .az[hidden] { display: none; }
-    .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
+    .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
     .az button:disabled { opacity: .28; }
     .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
     .tdot {

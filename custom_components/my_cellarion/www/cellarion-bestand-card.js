@@ -1,0 +1,1893 @@
+/*
+ * cellarion-bestand-card: Bestandsuebersicht des Cellarion-Weinkellers, mit Detailansicht und Entnahme.
+ * Zeigt alle Flaschen gruppiert nach Wein mit den Jahrgaengen darunter, mit Suche, Filtern
+ * (Typ, Trinkreife, Lagerort, Jahrgang, Winzer, Region, Rebsorte), Sortierung und Flach-Ansicht.
+ *
+ * Daten: kommen aus dem Cache von custom_templates/cellarion/bestand.py. Die Karte liest ihn ueber
+ * die shell_command-Antwort (shell_command.cellarion_bestand_read), der Cellarion-Token liegt nie im Browser.
+ * Aktualisiert wird der Cache von der Automation "My Cellarion aktualisieren" (alle 15 Min.,
+ * beim Start, bei Aenderung der Flaschenzahl). Die Karte liest ihn neu: beim Laden, alle refresh_seconds,
+ * wenn sich der Sensor count_entity aendert und per Taste "Neu laden".
+ *
+ * Konfiguration (YAML):
+ *   type: custom:cellarion-bestand-card
+ *   key: bestand                  # optional, Schluessel fuer Ansicht und Sortierung (pro Browser gemerkt)
+ *   title: My Cellarion           # optional, Titel (Standard: Name des Kellers aus Cellarion)
+ *   view: wine                    # optional, Start-Ansicht: wine (nach Wein) oder flat (flach); gemerkt wird die letzte Wahl
+ *   refresh_seconds: 300          # optional, Cache so oft neu lesen (Standard 300, 0 = nie)
+ *   count_entity: sensor.cellarion_total_bottles   # optional, bei Aenderung wird der Cache neu gelesen
+ *   read_service: shell_command.cellarion_bestand_read       # optional, liefert den Cache als stdout
+ *   refresh_service: shell_command.cellarion_bestand_refresh # optional, holt frisch von Cellarion (Taste "Neu laden")
+ *   height: 600px                 # optional, feste Hoehe der Karte (Standard: fuellt den Rest des Fensters)
+ *   winzer_service: shell_command.cellarion_winzer_sort   # optional, schreibt die Sortierwoerter der Winzer
+ *   sync_service: shell_command.cellarion_bestand_sync   # optional, Abgleich beim Oeffnen: holt nur, wenn der Cache aelter als 5 Min. ist
+ *   refresh_on_open: true         # optional, beim Oeffnen/Sichtbarwerden frisch von Cellarion holen (Standard an, max. 1x je Minute)
+ *   row_h: 44                     # optional, Mindesthoehe einer Zeile in px (Standard 44)
+ *   row_font: 14                  # optional, Schrift der Zeilen in px (Standard 14)
+ *   title_font: 18                # optional, Schrift des Titels in px (Standard 18)
+ *   chip_font: 14                 # optional, Schrift der Filtertasten in px (Standard 14)
+ *   chip_h: 40                    # optional, Hoehe der Filtertasten in px (Standard 40)
+ *   font_scale: 1                 # optional, Start-Schriftgroesse (Faktor); die Wahl in den Einstellungen (Zahnrad) wird pro Browser gemerkt
+ *   settings_service: shell_command.cellarion_einstellungen   # optional, speichert die gemeinsamen Einstellungen (Filterwahl)
+ *   fielddel_service: shell_command.cellarion_feld_loeschen   # optional, loescht ein persoenliches Datenfeld samt Werten in Cellarion
+ *   language: de                  # optional, Sprache der Karte (Standard: Sprache des HA-Nutzers); Dateien in /local/cellarion-i18n/<sprache>.json
+ *   i18n_path: /local/cellarion-i18n/   # optional, Ordner der Sprachdateien
+ *   consume_service: cellarion.consume_bottle   # optional, Dienst fuer "Entnehmen"
+ *   detail: v2                    # optional, neue Detailansicht (Test); sonst je Geraet in den Einstellungen
+ *   bottle_service: shell_command.cellarion_bestand_bottle  # optional, liefert Notiz/Einkauf einer Flasche (id)
+ *   flush: true                   # optional, Karte ohne Rahmen und Rand (fuer den Einbau in eine Kombi-Karte)
+ *
+ * Trinkreife (je Flasche, nach Jahreszahlen): Zu frueh (vor drinkFrom), Frueh (im Fenster, vor dem Peak),
+ * Peak, Spaet (im Fenster, nach dem Peak), Drueber (nach drinkTo). Das entspricht den Sensoren der
+ * Cellarion-Integration (at peak, early window, late window, declining, not ready).
+ *
+ * Farben: nur Theme-Variablen mit Fallback, der keine Festfarbe voraussetzt (card_mod greift hier nicht).
+ * Standard: Farben aus den HA-Themevariablen (primary-color, success/warning/error-color ...). Optional im Theme ueberschreibbar:
+ * cellarion-accent, cellarion-on-text, cellarion-chip-bg, cellarion-seg-bg, cellarion-wine-red/white/rose/sparkling/dessert/fortified,
+ * cellarion-maturity-notready/early/peak/late/over.
+ * Die Auswahl (Ansicht, Sortierung) merkt sich der Browser (localStorage), es ist kein Helfer noetig.
+ *
+ * Bedienung: Tipp auf einen Jahrgang oeffnet die Detailansicht (Daten, Lagerorte, Notiz). "Entnehmen" fragt
+ * Flasche (bei mehreren) und Grund ab und verlangt eine Bestaetigung, erst dann wird die Flasche entnommen.
+ *
+ * Verlauf: v1 (2026-10-19): erste Fassung, nur lesend (Liste, Suche, Filter, Wein mit Jahrgaengen, Flach).
+ *          v2 (2026-10-19): Detailansicht je Jahrgang mit Notiz (bei Bedarf geladen), Entnehmen mit Bestaetigung.
+ *          v43 (2026-10-20): Kein Standardtitel mehr in der Kopfzeile (title: nur bei Bedarf setzen).
+ *          v44 (2026-10-20): Einstellungen (Zahnrad rechts oben): Winzer pflegen, Schriftgroesse pro Browser (Zoom 85-200 %).
+ *          v42 (2026-10-20): Titel, Suche, Sortierung und Neu laden in einer Zeile; keine Stand-Anzeige mehr.
+ *          v41 (2026-10-20): Filter-Pulldowns nur so breit wie ihre Beschriftung (alle Filter in einer Zeile), die Auswahlliste bleibt breit.
+ *          v40 (2026-10-20): Ein Wein mit einem Jahrgang klappt aufgeklappte Weine beim Antippen zu.
+ *          v39 (2026-10-20): Aufgeklappter Wein klappt zu, wenn man einen anderen aufklappt; # steht in der A-Z-Leiste am Anfang.
+ *          v38 (2026-10-20): Detailfenster: Notiz immer komplett, Fenster scrollt (Inhalt schrumpft nicht mehr).
+ *          v37 (2026-10-20): Suchbegriff wird in Weinname, Winzer, Einstufung und Region farbig hervorgehoben.
+ *          v36 (2026-10-20): Filter starten aufgeklappt, auch auf dem Phone.
+ *          v35 (2026-10-20): Filter-Pulldowns zeigen Weine | Jahrgaenge | Flaschen (bei 1 Flasche nur die 1).
+ *          v34 (2026-10-20): Typ und Reife erscheinen ebenfalls als Filter-Pillen mit x.
+ *          v46 (2026-10-20): Typ (ganz vorn) und Reife (nach Winzer) zusaetzlich als Pulldown in der Filterzeile.
+ *          v90 (2026-10-21): Detailseite v2 (Register, Meine Daten, feste Entnahmeleiste); Lagerplatz-Anzeige je Regal einstellbar; Farben aus HA-Theme (--cellarion-* optional); Sprache und Filter pro Geraet oder zentral.
+ *          v62 (2026-10-21): Kopfzeile der Seite zeigt "Titel – Kellername" (header_cellar: false schaltet ab). Typ-Symbole als Weinglaeser, ganz gefuellt, einfarbig (Rot, Weiss/Rose, Flute, Dessert/Likoer); Titel = Kellername; Kartenname My Cellarion.
+ *          v61 (2026-10-21): Mehrsprachig (de, en): Texte in /local/cellarion-i18n/<sprache>.json, Sprache = HA-Nutzersprache, Fallback Englisch.
+ *          v60 (2026-10-21): Kellername (aus Cellarion) steht vor der Summenzeile; Kopfzeile/Seitenleiste heissen neutral "Cellarion".
+ *          v59 (2026-10-21): Einstellungen: Datenfeld-Filter in eckigen Klammern; Datenfelder koennen nach Rueckfrage endgueltig geloescht werden.
+ *          v58 (2026-10-21): Filter von Hand zugeklappt: nach dem Wegscrollen klappen sie oben wieder auf (wie beim automatischen Einklappen).
+ *          v57 (2026-10-21): Pille fuer ausgeblendete Filter nur noch "…" mit Pfeil (auf) bzw. X (zu).
+ *          v56 (2026-10-21): Filter Haendler (Kaufort, standardmaessig ausgeblendet); Pille "... Anzeigen" blendet ausgeblendete Filter ein/aus.
+ *          v55 (2026-10-21): Detailseite: Einstufung (Cellarion) nur noch, wenn Lage und Praedikat nicht gesetzt sind.
+ *          v54 (2026-10-21): Detailseite zeigt die persoenlichen Datenfelder (Lage, Praedikat, Stil, Dosage ...).
+ *          v53 (2026-10-21): Filter "Ort" heisst Lagerort; Cellarion-Feld "Lagen-Stufe" heisst Lagen (filter id p:Lagen).
+ *          v52 (2026-10-21): Pull-to-Refresh erst bei haertarem Zug (ca. 200 px statt 100 px).
+ *          v51 (2026-10-21): Auswahlmenue: Liste scrollt wieder.
+ *          v50 (2026-10-21): Auswahlmenue zentriert, Kopf mit Schliessen fest, nur die Liste scrollt; Pulldowns so breit wie ihr Text.
+ *          v49 (2026-10-21): Pulldowns als eigenes Auswahlmenue statt nativer Android-Liste (einheitliche Optik, Zoom, keine Navileiste).
+ *          v48 (2026-10-21): Filterwahl und -reihenfolge gelten fuer alle Geraete (gespeichert in HA, einstellungen.json).
+ *          v47 (2026-10-21): Typ/Reife-Chipreihen raus; alle Filter als Pulldowns, in den Einstellungen waehl- und sortierbar;
+ *                            persoenliche Datenfelder (VDP-Stufe, Dosage, Stil ...) erscheinen automatisch als Filter;
+ *                            Filter klappen in allen Ansichten beim Scrollen ein und am Listenanfang wieder auf.
+ *          v45 (2026-10-20): Schaum heisst Bubbles; Kringel gold mit schwarzen Blaeschen (Test).
+ *          v33 (2026-10-20): Phone: Beschriftung Typ/Reife wieder da, Schaum-Kringel weiss mit goldenen Blaeschen.
+ *          v32 (2026-10-20): Filter mehrfach waehlbar (kleine Pillen, Auswahl als eigene Pillen mit x), Schaum-Kringel mit Blaeschen,
+ *          A-Z hebt den aktuellen Buchstaben hervor; Phone: eine Kopfzeile (Suche, Sortierung, Filter), Typ/Reife nur als Kringel,
+ *          Neu laden per Runterziehen mit Rueckfrage, A-Z scrollt mit.
+ *          v31 (2026-10-19): Einstufung (VDP.Grosse Lage, Kabinett, GG ...): neuer Filter und in der ersten Zeile vor der Region.
+ *          v30 (2026-10-19): Reset-Taste hervorgehoben, wenn es etwas zurueckzusetzen gibt.
+ *          v29 (2026-10-19): Phone: Filter-Taste hervorgehoben, solange Filter gesetzt sind.
+ *          v28 (2026-10-19): Phone: nach dem automatischen Einklappen klappen die Filter wieder aus, wenn man ganz nach oben scrollt.
+ *          v27 (2026-10-19): Phone: ausgeklappte Filter klappen zu, sobald man in der Liste zu scrollen beginnt.
+ *          v26 (2026-10-19): Phone (<=600px): Filter hinter Taste, A-Z einzeilig scrollbar, Zeile zweizeilig (Titel umbricht, darunter Lagerort/Jahrgang/Flaschen).
+ *          v25 (2026-10-19): Reihenfolge rechts: Lagerort | Jahrgang | Ampel | Flaschen.
+ *          v24 (2026-10-19): Lagerort bei Weinen mit einem Jahrgang rechts vor der Flaschenzahl (Lagerort | n Fl.).
+ *          v23 (2026-10-19): Region als dritter Wert in der ersten Zeile (Wein | Winzer | Region).
+ *          v22 (2026-10-19): Sortierwert (Wein bzw. Winzer) etwas groesser als der zweite Wert.
+ *          v21 (2026-10-19): Mehr Abstand zwischen Typ und Reife, Beschriftung groesser und kontrastreicher.
+ *          v20 (2026-10-19): A-Z linksbuendig, Typ und Reife nebeneinander, Detail: Bild links neben den Daten.
+ *          v19 (2026-10-19): A-Z-Leiste bei Wein A-Z und Winzer A-Z (Tipp springt zum Buchstaben, ohne Eintrag ausgegraut).
+ *          v18 (2026-10-19): Sortierbuchstabe wieder in Textfarbe (nur fett und unterstrichen).
+ *          v17 (2026-10-19): Winzer-Sortierung zeigt Winzer vor dem Weinnamen; Sortierungen Jahrgang neu/alt und neu: Region mit
+ *          Zwischenueberschriften (Jahrgang bzw. Region mit Anzahl Weine/Flaschen).
+ *          v16 (2026-10-19): Sortierbuchstabe zusaetzlich unterstrichen und in Akzentfarbe.
+ *          v15 (2026-10-19): Winzer pflegen mit Speichern/Abbrechen (Aenderungen erst beim Speichern), Aktionsleiste unten fest;
+ *          bei Sortierung Winzer A-Z ist der Sortierbuchstabe gepflegter Winzer fett.
+ *          v14 (2026-10-19): Winzer pflegen (Taste ✎): Sortierwort je Winzer per Tipp auf ein Wort, gespeichert in
+ *          custom_templates/cellarion/sortnamen.json; Winzer-Pulldown und Sortierung "Winzer A–Z" nutzen es.
+ *          v13 (2026-10-19): Winzer neben dem Weinnamen (Name | Winzer), darunter nur noch die Region.
+ *          v12 (2026-10-19): Sortierung "Jahrgang alt" (aeltester Jahrgang zuerst, NV am Ende).
+ *          v11 (2026-10-19): Umschalter Nach Wein/Flach entfernt (immer nach Wein; view: flat in der Konfiguration bleibt moeglich).
+ *          v10 (2026-10-19): runde Taste ↺ (Filter zurücksetzen) vor den Auswahllisten, immer sichtbar (grau, solange nichts gesetzt ist).
+ *          v9 (2026-10-19): Auswahllisten und Zaehler passen sich den uebrigen Filtern und der Suche an (nur Treffer-Optionen).
+ *          v8 (2026-10-19): Auswahllisten in der Reihenfolge Rebsorte, Region, Winzer, Jahrgang, Ort.
+ *          v7 (2026-10-19): Typ nach Menge; Winzer/Region/Rebsorte: Haeufigste zuerst (ab 8 Flaschen, max. 10), Linie, Rest A-Z.
+ *          v6 (2026-10-19): Ort als Auswahlliste; Jahrgang/Winzer/Region/Rebsorte/Ort stehen immer sichtbar in einer Zeile.
+ *          v5 (2026-10-19): Etikettenbild in den Details (das Skript legt es unter www/cellarion-img ab, Cellarion
+ *          erlaubt kein Einbetten von aussen), Weinzeile bricht erst bei Platzmangel um.
+ *          v4 (2026-10-19): Wein mit nur einem Jahrgang: Lagerort und Trinkfenster in der Weinzeile, Tipp oeffnet die Details.
+ *          v3 (2026-10-19): Hoehe passt sich dem Fenster an, Detailfenster im Sichtfeld, Abgleich mit Cellarion beim Oeffnen
+ *          (serverseitig gedrosselt: hoechstens alle 5 Min.; die Taste "Neu laden" holt immer).
+ */
+(function () {
+  // ---------- Sprache (i18n) ----------
+  // Texte stehen in /local/cellarion-i18n/<sprache>.json (flach, Schluessel -> Text; Mehrzahl als {one, other}).
+  // Sprache: Konfiguration "language", sonst die Sprache des HA-Nutzers; fehlt ein Schluessel, gilt Englisch.
+  // Neue Sprache = neue Datei <sprache>.json mit denselben Schluesseln (en.json ist die Referenz).
+  // Cache-Schluessel der Sprachdateien: dieselbe ?v=N wie beim Laden der Karte (Ressource), damit Aenderungen sofort greifen
+  const CARD_V = ((document.currentScript && /[?&]v=([\w.-]+)/.exec(document.currentScript.src)) || [])[1] || String(Date.now());
+  // Ordner, aus dem die Karte geladen wurde: dort liegt auch cellarion-i18n/ (gilt fuer /local/ und fuer die Integration)
+  const SCRIPT_DIR = (((document.currentScript && document.currentScript.src) || '').split('?')[0].replace(/[^/]*$/, '')) || '/local/';
+  const I18N = { lang: 'en', dict: {}, pr: new Intl.PluralRules('en'), files: {} };
+  const t = (key, p) => {
+    let v = I18N.dict[key];
+    if (v === undefined) return key;
+    if (v && typeof v === 'object') v = v[I18N.pr.select(Number(p && p.n))] || v.other || '';
+    return String(v).replace(/\{(\w+)\}/g, (_, k) => (p && p[k] != null ? p[k] : ''));
+  };
+  const loadFile = (base, lang) => {
+    const k = base + lang;
+    if (!I18N.files[k]) {
+      I18N.files[k] = fetch(base + lang + '.json?v=' + CARD_V).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    }
+    return I18N.files[k];
+  };
+  // Typen, Reife, Platzhalter: werden beim Sprachwechsel an Ort und Stelle neu gefuellt
+  const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
+  const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
+  const TYPES = [];
+  const TYPE_LABEL = {};
+  const STATUS = [];
+  const STATUS_LABEL = {};
+  let NO_LOC = 'Ohne Platz';
+  let de = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+  const applyLang = (lang, dict) => {
+    I18N.lang = lang;
+    I18N.dict = dict;
+    I18N.pr = new Intl.PluralRules(lang);
+    de = new Intl.Collator(lang, { sensitivity: 'base', numeric: true });
+    TYPES.length = 0; STATUS.length = 0;
+    TYPE_KEYS.forEach((k) => { TYPES.push([k, t('type.' + k)]); TYPE_LABEL[k] = t('type.' + k); });
+    STATUS_KEYS.forEach((k) => { STATUS.push([k, t('status.' + k)]); STATUS_LABEL[k] = t('status.' + k); });
+    STATUS_LABEL.window = t('status.window');
+    STATUS_LABEL.unknown = t('status.unknown');
+    NO_LOC = t('loc.none');
+  };
+  const STATUS_RANK = { over: 0, late: 1, peak: 2, window: 3, early: 4, notready: 5, unknown: 6 };
+
+  const esc = (s) =>
+    String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (s) =>
+    String(s == null ? '' : s)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '');
+
+  function statusOf(b, year) {
+    const f = b.drinkFrom, t = b.drinkTo, p1 = b.peakFrom, p2 = b.peakUntil;
+    if (f && year < f) return 'notready';
+    if (t && year > t) return 'over';
+    if (p1 && p2) return year < p1 ? 'early' : year > p2 ? 'late' : 'peak';
+    return f || t ? 'window' : 'unknown';
+  }
+
+  const CSS = `
+    :host { display: block; }
+    ha-card { position: relative; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; overflow: hidden; }
+    ha-card.flush { background: none; box-shadow: none; border: 0; border-radius: 0; }
+    .wrap {
+      /* Farben: alle ueberschreibbar per --cellarion-* (z. B. im HA-Theme), sonst aus den Standardvariablen des aktiven Themes abgeleitet */
+      --cb-text: var(--primary-text-color, #e1e1e1);
+      --cb-sub: var(--secondary-text-color, #9b9b9b);
+      --cb-line: var(--divider-color, rgba(127,127,127,.3));
+      --cb-chip: var(--cellarion-chip-bg, color-mix(in srgb, var(--primary-text-color, #888) 14%, transparent));
+      --cb-seg: var(--cellarion-seg-bg, color-mix(in srgb, var(--primary-text-color, #888) 14%, transparent));
+      --cb-on: var(--cellarion-accent, var(--primary-color, #03a9f4));
+      --cb-on-text: var(--cellarion-on-text, var(--text-primary-color, #fff));
+      --cb-ring: color-mix(in srgb, var(--primary-text-color, #888) 45%, transparent);
+      --cb-card: var(--card-background-color, #1c1c1c);
+      --w-red: var(--cellarion-wine-red, #a4243b);
+      --w-white: var(--cellarion-wine-white, #e7da8b);
+      --w-rosé: var(--cellarion-wine-rose, #f08aa4);
+      --w-sparkling: var(--cellarion-wine-sparkling, #c9b24d);
+      --w-dessert: var(--cellarion-wine-dessert, #e39b2d);
+      --w-fortified: var(--cellarion-wine-fortified, #8a5a3c);
+      --s-notready: var(--cellarion-maturity-notready, var(--info-color, #5b8def));
+      --s-early: var(--cellarion-maturity-early, #86c96d);
+      --s-peak: var(--cellarion-maturity-peak, var(--success-color, #2fa84f));
+      --s-late: var(--cellarion-maturity-late, var(--warning-color, #e8a33d));
+      --s-over: var(--cellarion-maturity-over, var(--error-color, #d9534f));
+      --s-window: var(--cellarion-maturity-peak, var(--success-color, #2fa84f));
+      --cb-hl: color-mix(in srgb, var(--warning-color, #ffc107) 38%, transparent);
+      --s-unknown: var(--cb-ring);
+      display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--cb-text);
+      font-size: var(--cb-row-font, 14px);
+    }
+    .head { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--cb-line); }
+    .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .title { font-size: var(--cb-title-font, 18px); font-weight: 600; margin-right: 8px; }
+    .stand { color: var(--cb-sub); font-size: 12px; }
+    [hidden] { display: none !important; }
+    button, select, input { font: inherit; color: inherit; }
+    button { cursor: pointer; border: 0; background: none; padding: 0; text-align: inherit; }
+    .btn, .chip {
+      min-height: var(--cb-chip-h, 40px); box-sizing: border-box; padding: 0 12px; border-radius: 20px;
+      background: var(--cb-chip); display: inline-flex; align-items: center; gap: 6px;
+      font-size: var(--cb-chip-font, 14px); white-space: nowrap; text-align: center; justify-content: center;
+    }
+    .btn.on, .chip.on { background: var(--cb-on); color: var(--cb-on-text); }
+    .chip .n { opacity: .65; font-size: .85em; }
+    .seg { display: inline-flex; background: var(--cb-seg); border-radius: 20px; padding: 2px; }
+    .seg button {
+      min-height: calc(var(--cb-chip-h, 40px) - 4px); padding: 0 12px; border-radius: 18px;
+      font-size: var(--cb-chip-font, 14px); display: inline-flex; align-items: center; justify-content: center;
+    }
+    .seg button.on { background: var(--cb-on); color: var(--cb-on-text); }
+    .search { position: relative; flex: 1 1 220px; min-width: 160px; }
+    .search input {
+      width: 100%; box-sizing: border-box; min-height: var(--cb-chip-h, 40px); border-radius: 20px;
+      border: 1px solid var(--cb-line); background: var(--cb-chip); padding: 0 36px 0 14px;
+      font-size: var(--cb-chip-font, 14px); outline: none;
+    }
+    .search input:focus { border-color: var(--cb-on); }
+    .search .x {
+      position: absolute; right: 2px; top: 0; width: var(--cb-chip-h, 40px); height: var(--cb-chip-h, 40px);
+      display: none; align-items: center; justify-content: center; color: var(--cb-sub); font-size: 18px;
+    }
+    .search.has .x { display: flex; }
+    .sel {
+      min-height: var(--cb-chip-h, 40px); border-radius: 20px; border: 1px solid var(--cb-line);
+      background: var(--cb-chip); padding: 0 10px; font-size: var(--cb-chip-font, 14px); max-width: 100%;
+    }
+    button.sel { width: auto; flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: 6px; text-align: left; color: var(--cb-text); font-family: inherit; cursor: pointer; white-space: nowrap; overflow: hidden; }
+    button.sel::after { content: ''; flex: none; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); opacity: .7; margin-right: 4px; }
+    button.sel.more-pill { opacity: .75; }
+    button.sel.more-pill.open::after { content: '✕'; width: auto; height: auto; border: 0; transform: none; font-size: 12px; margin-right: 2px; }
+    .dsheet.ddsheet { gap: 0; padding: 12px 12px 8px; max-width: 360px; max-height: 70%; overflow: hidden; }
+    .dlg.dd { align-items: center; padding: 0 24px; box-sizing: border-box; }
+    .dlg.dd .dsheet { border-radius: 16px; }
+    .dsheet > .ddlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    .ddsheet .dh { flex: none; }
+    .ddsheet .dh { padding-bottom: 8px; }
+    .ddi { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 0; border-top: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
+    .ddi:active { background: var(--cb-chip); }
+    .ddi.cur { font-weight: 600; color: var(--cb-on); }
+    .ddsep { height: 6px; border-top: 1px solid var(--cb-line); }
+    .filt2 { display: flex; flex-wrap: wrap; gap: 8px 40px; align-items: center; }
+    .row-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .glabel { color: var(--cb-text); font-size: 16px; font-weight: 600; margin-right: 4px; min-width: 40px; }
+    .more { display: none; flex-wrap: wrap; gap: 8px; }
+    .more.open { display: flex; }
+    .sumline { display: flex; align-items: center; gap: 8px; color: var(--cb-sub); font-size: 12px; }
+    .sumline .grow { margin-right: auto; }
+    .az { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 2px; padding: 4px 8px; border-bottom: 1px solid var(--cb-line); }
+    .az[hidden] { display: none; }
+    .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
+    .az button:disabled { opacity: .28; }
+    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    .tdot {
+      display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none;
+      box-shadow: 0 0 0 1.5px var(--cb-ring); background: var(--cb-ring);
+    }
+    .sdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--cb-ring); }
+    .wine { border-bottom: 1px solid var(--cb-line); }
+    .wrow, .frow {
+      width: 100%; display: flex; align-items: center; gap: 10px; box-sizing: border-box;
+      min-height: var(--cb-row-h, 44px); padding: 6px 12px;
+    }
+    .wmain { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .wtitle { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+    .wprod { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+    .wtitle.swap .wprod { font-weight: 600; }
+    .wtitle.swap .wname { font-weight: 500; }
+    .wtitle .wname { font-size: 1.12em; }
+    .wtitle .wprod { font-size: .94em; }
+    .wreg { color: var(--cb-sub); font-size: .94em; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+    .dh .wreg { white-space: normal; }
+    .wtitle.swap .wprod { font-size: 1.12em; }
+    .wtitle.swap .wname { font-size: .94em; }
+    .shead { position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; gap: 10px; padding: 8px 12px 6px; background: var(--cb-card); border-bottom: 1px solid var(--cb-line); font-weight: 700; font-size: 1.05em; }
+    .shead .shn { color: var(--cb-sub); font-weight: 400; font-size: .86em; }
+    .wsl { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+    .wsep { color: var(--cb-sub); flex: none; }
+    .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
+    .dh .wprod { white-space: normal; }
+    .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wsub { color: var(--cb-sub); font-size: .86em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wright { display: contents; }
+    .fbtn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--cb-chip-h, 40px); padding: 0; position: relative; }
+    .fwrap:not(.fopen) { display: none; }
+    .fcnt { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 8px;
+      background: var(--cb-on); color: var(--cb-on-text); font-size: 11px; line-height: 16px; text-align: center; }
+    .fbtn.on .fcnt { background: var(--cb-on-text); color: var(--cb-on); }
+    .sel.fs { min-height: 30px; font-size: 13px; padding: 0 6px 0 10px; border-radius: 15px; flex: none; text-overflow: ellipsis; }
+    .btn.round.sm { width: 30px; min-height: 30px; font-size: 16px; }
+    .fpills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .fpill .x { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; opacity: .65; font-size: 11px; }
+    mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
+    .tsp { flex: none; display: inline-block; vertical-align: middle; width: 22px; height: 22px; }
+    .azanc { display: block; height: 0; }
+    .az button.cur { background: var(--cb-on); color: var(--cb-on-text); }
+    .ptr { height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; color: var(--cb-sub); font-size: 12px; flex: none; }
+    .list { overscroll-behavior-y: contain; }
+    .fbtn.open:not(.on) { box-shadow: 0 0 0 2px var(--cb-on) inset; }
+    .fbtn.open.on { box-shadow: 0 0 0 2px var(--cb-on-text) inset; }
+    .fwrap { display: flex; flex-direction: column; gap: 8px; }
+    .fwrap:not(.fopen) { display: none; }
+    .wvint { color: var(--cb-sub); white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
+    .wloc { color: var(--cb-sub); font-size: .9em; justify-content: flex-end; text-align: right; max-width: 30%; }
+    .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
+    .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
+    .wcount { font-weight: 600; min-width: 2.4em; text-align: right; white-space: nowrap; }
+    .sdots { display: inline-flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
+    .chev { color: var(--cb-sub); width: 14px; text-align: center; flex: none; }
+    .vlist { padding: 0 0 6px 33px; }
+    .vrow {
+      display: flex; align-items: center; gap: 10px; min-height: var(--cb-row-h, 44px); padding: 4px 12px 4px 0;
+      border-top: 1px dashed var(--cb-line);
+    }
+    .vyear { font-weight: 600; min-width: 3.2em; }
+    .vmid { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .locs { display: flex; flex-wrap: wrap; gap: 2px 12px; }
+    .loc b { font-weight: 600; margin-left: 4px; }
+    .loc.none { color: var(--cb-sub); }
+    .vwin { color: var(--cb-sub); font-size: .86em; }
+    .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }
+    .frow { border-bottom: 1px solid var(--cb-line); }
+    .fyear { font-weight: 600; min-width: 3.2em; }
+    .fmid { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .msg { padding: 28px 16px; text-align: center; color: var(--cb-sub); }
+    .msg button { margin-top: 12px; }
+    .winfo { color: var(--cb-sub); font-size: .86em; display: flex; flex-wrap: wrap; gap: 0 12px; }
+    .winfo > span { white-space: nowrap; }
+    .dtop { display: flex; gap: 14px; align-items: flex-start; }
+    .dtop .dfacts { flex: 1; min-width: 0; }
+    .d2hero { display: flex; gap: 14px; align-items: flex-start; }
+    .d2hero .d2main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .d2sub { color: var(--cb-sub); }
+    .d2bar { position: relative; height: 10px; border-radius: 5px; background: var(--cb-chip); margin: 18px 0 4px; }
+    .d2bar i { position: absolute; top: 0; bottom: 0; border-radius: 5px; }
+    .d2bar .w { background: var(--s-early); opacity: .55; }
+    .d2bar .p { background: var(--s-peak); }
+    .d2bar b { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--cb-text); border-radius: 1px; }
+    .d2bar b span { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: .72em; font-weight: 400; color: var(--cb-sub); white-space: nowrap; }
+    .d2yrs { display: flex; justify-content: space-between; color: var(--cb-sub); font-size: .85em; }
+    .d2chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .d2chips span { background: var(--cb-chip); border-radius: 12px; padding: 3px 10px; font-size: .9em; }
+    .d2chips span em { font-style: normal; color: var(--cb-sub); margin-right: 4px; }
+    .d2txt { line-height: 1.4; }
+    .d2mine { border-left: 2px solid var(--cb-line); padding-left: 10px; margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+    .d2h { font-size: .7em; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); }
+    .d2ne { display: inline-block; margin-left: 4px; font-size: .8em; color: var(--cb-sub); border: 1px solid var(--cb-line); border-radius: 8px; padding: 0 4px; vertical-align: middle; }
+    .d2act { align-items: stretch; flex-wrap: nowrap; justify-content: space-between; }
+    .d2act .btn { flex: none; align-self: center; }
+    .d2sel { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; padding: 4px 8px 4px 12px; min-height: 48px; border: 1px solid var(--cb-line); border-radius: 12px; }
+    .d2st .loc, .d2st .d2sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .d2st .bi { display: none; }
+    .d2st { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+    .d2pill { flex: none; font-size: .85em; padding: 3px 10px; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); white-space: nowrap; }
+    .d2pill.hot { background: var(--cb-on); color: var(--cb-on-text); }
+    .d2pop { position: absolute; left: 12px; right: 12px; bottom: 100%; margin-bottom: 6px; max-height: 45vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: var(--cb-card); border: 1px solid var(--cb-line); border-radius: 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.45); z-index: 2; }
+    .d2tog { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; margin-top: 8px; border-top: 1px solid var(--cb-line); text-align: left; }
+    details.d2 > summary { cursor: pointer; color: var(--cb-sub); list-style: none; padding: 4px 0; }
+    details.d2 > summary::before { content: '▸ '; }
+    details.d2[open] > summary::before { content: '▾ '; }
+    .dimg { flex: none; width: 120px; max-height: 180px; object-fit: contain; border-radius: 8px; margin: 0 0 8px; background: var(--cb-chip); }
+    .vrow, .frow { cursor: pointer; }
+    .vrow:active, .frow:active { background: var(--cb-chip); }
+    .dlg { position: fixed; inset: 0; z-index: 5; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.5); }
+    .dsheet {
+      background: var(--cb-card); color: var(--cb-text); width: 100%; max-width: 560px; max-height: 92%;
+      overflow-y: auto; border-radius: 16px 16px 0 0; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column;
+      gap: 12px; box-shadow: 0 -4px 24px rgba(0,0,0,.4);
+      overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    }
+    .dsheet > * { flex: none; }
+    .dh { display: flex; align-items: flex-start; gap: 10px; }
+    .dh .wmain { flex: 1; }
+    .dh .wname { white-space: normal; font-size: 1.2em; }
+    .dh .wsub { white-space: normal; }
+    .dx { width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--cb-sub); }
+    .dfacts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+    .dfacts dt { color: var(--cb-sub); }
+    .dfacts dd { margin: 0; }
+    .dsec { font-size: 12px; color: var(--cb-sub); text-transform: uppercase; letter-spacing: .04em; }
+    .dbot {
+      display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 6px 10px; box-sizing: border-box;
+      border-radius: 12px; border: 1px solid var(--cb-line);
+    }
+    .dbot.on { border-color: var(--cb-on); box-shadow: inset 0 0 0 1px var(--cb-on); }
+    .dbot .rd { width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--cb-ring); flex: none; }
+    .dbot.on .rd { border-color: var(--cb-on); background: radial-gradient(var(--cb-on) 0 45%, transparent 50%); }
+    .dnote { white-space: pre-wrap; line-height: 1.4; position: relative; }
+    .dpur { color: var(--cb-sub); font-size: .9em; }
+    .dact {
+      display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; position: sticky; bottom: -16px; z-index: 1;
+      margin: auto -16px -16px; padding: 10px 16px 16px; background: var(--cb-card); border-top: 1px solid var(--cb-line);
+    }
+    .dact .btn { padding: 0 18px; }
+    .btn.danger { background: var(--s-over); color: var(--text-primary-color, #fff); }
+    .btn[disabled] { opacity: .55; }
+    .wzrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 0; border-top: 1px solid var(--cb-line); }
+    .wzwords { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 220px; }
+    .wzw { min-height: 40px; padding: 0 12px; border-radius: 20px; background: var(--cb-chip); display: inline-flex; align-items: center; }
+    .wzw.on { background: var(--cb-on); color: var(--cb-on-text); font-weight: 700; }
+    .wzname { padding: 8px 0; }
+    .wznote { color: var(--cb-sub); font-size: .86em; }
+    .wzn { color: var(--cb-sub); min-width: 3.4em; text-align: right; }
+    .gear { margin-left: auto; color: var(--cb-sub); }
+    .scalechips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .frow { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--cb-line); }
+    .frow .wmain { flex: 1; }
+    .frow .btn.round { width: 36px; min-height: 36px; font-size: 16px; }
+    .frow.off .wname { opacity: .5; }
+    .setrow { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--cb-line); text-align: left; width: 100%; }
+    .setrow .wmain { flex: 1; }
+    .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
+    .derr { color: var(--s-over); }
+    .dask { font-size: 1.1em; font-weight: 600; }
+    @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
+    @media (max-width: 600px) {
+      .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
+      .vlist { padding-left: 12px; }
+      .top .title, .top .rl { display: none; }
+      .top { flex-wrap: nowrap; }
+      .fbtn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--cb-chip-h, 40px); padding: 0; }
+      .top .search { flex: 1 1 0; min-width: 0; }
+      .top .sel { flex: none; width: auto; }
+      .filt2 { flex-wrap: wrap; gap: 4px 8px; }
+      .filt2 .row-chips { gap: 3px; flex-wrap: nowrap; align-items: center; }
+      .filt2 .row-chips + .row-chips { padding-left: 6px; border-left: 1px solid var(--cb-line); }
+      .glabel { font-size: 11px; min-width: 0; margin-right: 2px; font-weight: 600; }
+      .chip { width: 31px; min-height: 31px; padding: 0; border-radius: 50%; }
+      .chip .lbl, .chip .n { display: none; }
+      .chip.on { background: var(--cb-chip); color: inherit; box-shadow: 0 0 0 2px var(--cb-on) inset; }
+      .dlg .chip { width: auto; min-height: var(--cb-chip-h, 40px); padding: 0 12px; border-radius: 20px; }
+      .dlg .chip .lbl, .dlg .chip .n { display: inline; }
+      .dlg .chip.on { background: var(--cb-on); color: var(--cb-on-text); box-shadow: none; }
+      .fwrap:not(.fopen) { display: none; }
+      .fwrap { display: flex; flex-direction: column; gap: 8px; }
+      .more { gap: 6px; }
+      .az { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; padding: 2px 4px; }
+      .az::-webkit-scrollbar { display: none; }
+      .az button { flex: none; min-width: 28px; height: 36px; }
+      .wrow { flex-wrap: wrap; align-items: flex-start; row-gap: 2px; padding: 8px 12px; }
+      .wrow .tdot, .wrow .tsp { margin-top: 5px; }
+      .wrow .wmain { flex: 1 1 0; min-width: 0; }
+      .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
+      .wrow .wsep { display: none; }
+      .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
+      .wrow .winfo { display: block; }
+      .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }
+      .wright .wsep { display: none; }
+      .wright .wloc { flex: 1 1 auto; justify-content: flex-start; text-align: left; max-width: none; min-width: 0; }
+      .wright .wvint { flex: 0 0 auto; max-width: none; }
+      .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
+      .wright .chev { margin-left: 0; }
+      .dtop { gap: 10px; }
+      .dimg { width: 84px; max-height: 150px; }
+    }
+  `;
+
+  class CellarionBestandCard extends HTMLElement {
+    setConfig(config) {
+      this._cfg = Object.assign({}, config || {});
+      this._key = 'cellarion-bestand:' + (this._cfg.key || 'bestand');
+      const st = this._loadState();
+      this._view = this._cfg.view === 'flat' ? 'flat' : 'wine';
+      this._sort = st.sort || 'name';
+      this._scale = this._clampScale(st.scale != null ? st.scale : this._cfg.font_scale);
+      this._f = { q: '' };
+      this._local = st.local && typeof st.local === 'object' ? st.local : {};
+      this._shared = {};
+      this._applyEff();
+      this._open = new Set();
+      this._det = null;
+      this._wz = null;
+      this._sortMap = {};
+      this._info = {};
+      this._gone = new Set();
+      this._more = true; // Filter beim Start aufgeklappt (Phone klappt sie beim Scrollen zu)
+      this._data = null;
+      this._error = null;
+      this._busy = false;
+      this._built = false;
+      if (this._hass) this._start();
+    }
+
+    set hass(hass) {
+      const first = !this._hass;
+      this._hass = hass;
+      if (!this._cfg) return;
+      if (first) this._start();
+      const ent = this._cfg.count_entity || (this._integ() ? 'sensor.my_cellarion_total_bottles' : 'sensor.cellarion_total_bottles');
+      const st = hass.states && hass.states[ent];
+      const val = st ? st.state : undefined;
+      if (this._countSeen !== undefined && val !== undefined && val !== this._countSeen) {
+        // Die Automation holt den Cache gerade neu; kurz warten, dann lesen.
+        clearTimeout(this._cntTimer);
+        this._cntTimer = setTimeout(() => this._load(), 9000);
+      }
+      if (val !== undefined) this._countSeen = val;
+    }
+
+    getCardSize() { return 12; }
+    getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
+    static getStubConfig() { return {}; }
+
+    connectedCallback() {
+      this._onVis = this._onVis || (() => { if (!document.hidden && this._hass && this._cfg && this._built) this._openSync(); });
+      this._onResize = this._onResize || (() => this._fit());
+      document.addEventListener('visibilitychange', this._onVis);
+      window.addEventListener('resize', this._onResize);
+      if (this._hass && this._cfg) {
+        this._startTimer();
+        if (this._built) { this._fit(); this._openSync(); }
+      }
+    }
+    disconnectedCallback() {
+      clearInterval(this._timer); clearTimeout(this._cntTimer); clearTimeout(this._afterTimer); this._timer = null;
+      document.removeEventListener('visibilitychange', this._onVis);
+      window.removeEventListener('resize', this._onResize);
+    }
+
+    // Beim Oeffnen der Seite (und wenn der Tab wieder sichtbar wird) frisch von Cellarion holen, hoechstens einmal je Minute.
+    _openSync() {
+      if (this._cfg.refresh_on_open === false || this._busy) return;
+      if (this._lastRefresh && Date.now() - this._lastRefresh < 60000) return;
+      this._refreshNow('sync');
+    }
+    // Ohne feste Hoehe fuellt die Karte den Rest des Fensters, damit die Liste in der Karte scrollt und nicht die Seite.
+    _fit() {
+      if (!this._built || this._cfg.height) return;
+      const card = this.shadowRoot.querySelector('ha-card');
+      if (!card) return;
+      const top = this.getBoundingClientRect().top;
+      card.style.height = Math.max(420, window.innerHeight - top - 8) + 'px';
+    }
+
+    // ---------- Zustand ----------
+    _clampScale(v) {
+      v = Number(v);
+      return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
+    }
+    _applyScale() {
+      const w = this.shadowRoot && this.shadowRoot.querySelector('.wrap');
+      if (w) w.style.zoom = this._scale === 1 ? '' : String(this._scale);
+    }
+    _loadState() {
+      try { return JSON.parse(localStorage.getItem(this._key) || '{}') || {}; } catch (e) { return {}; }
+    }
+    // Einstellungen mit Wahl "alle Geraete" (zentral auf HA, this._shared) oder "nur dieses Geraet" (Browser, this._local):
+    // language und filters (Reihenfolge + Sichtbarkeit). Wirksam ist der Browserwert, wenn vorhanden, sonst der zentrale.
+    _applyEff() {
+      const L = this._local || {}, S = this._shared || {};
+      this._langSel = L.language !== undefined ? L.language : (typeof S.language === 'string' ? S.language : '');
+      const F = L.filters || S;
+      this._fo = Array.isArray(F.filterOrder) ? F.filterOrder.slice() : [];
+      this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
+    }
+    _setLang(v) {
+      if (this._local.language !== undefined) { this._local.language = v; this._saveState(); }
+      else { if (v) this._shared.language = v; else delete this._shared.language; this._saveSettings(); }
+      this._applyEff();
+    }
+    _setFilters(order, hidden) {
+      if (this._local.filters) { this._local.filters = { filterOrder: order, filterHidden: hidden }; this._saveState(); }
+      else { this._shared.filterOrder = order; this._shared.filterHidden = hidden; this._saveSettings(); }
+      this._applyEff();
+    }
+    // Umschalter "alle Geraete" (Globus) / "nur dieses Geraet" (Handy): zwei runde Symbole, eines aktiv
+    _scopeSw(k) {
+      const dev = this._local[k] !== undefined;
+      const ico = {
+        all: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+        device: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>',
+      };
+      const b = (v, label, on) => `<button class="btn round${on ? ' on' : ''}" data-act="scope" data-k="${k}" data-v="${v}" aria-pressed="${on}" title="${esc(label)}" aria-label="${esc(label)}">${ico[v]}</button>`;
+      return `<span style="display:flex;gap:6px;flex:none">${b('all', t('set.scopeAll'), !dev)}${b('device', t('set.scopeDevice'), dev)}</span>`;
+    }
+    _saveState() {
+      try { localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._sort, scale: this._scale, local: this._local })); } catch (e) { /* ohne Speicher weiter */ }
+    }
+
+    // ---------- Daten ----------
+    async _initLang() {
+      const hl = this._hass && ((this._hass.locale && this._hass.locale.language) || this._hass.language);
+      this._langUsed = this._langSel || '';
+      const want = String(this._langSel || this._cfg.language || hl || 'en').replace('_', '-');
+      const base = this._cfg.i18n_path || window.CELLARION_I18N_BASE || SCRIPT_DIR + 'cellarion-i18n/';
+      const en = (await loadFile(base, 'en')) || {};
+      let dict = en, lang = 'en';
+      if (want.toLowerCase() !== 'en') {
+        const cand = [want, want.split('-')[0]].filter((x, i, a) => a.indexOf(x) === i);
+        for (const c of cand) {
+          const d = await loadFile(base, c);
+          if (d) { dict = Object.assign({}, en, d); lang = c; break; }
+        }
+      }
+      applyLang(lang, dict);
+      const ix = await loadFile(base, 'index');
+      this._langs = ix && typeof ix === 'object' ? ix : { en: 'English' };
+    }
+    async _start() {
+      await this._initLang();
+      if (this._built) return;
+      this._build();
+      this._startTimer();
+      this._load().then(() => this._openSync());
+    }
+    _startTimer() {
+      clearInterval(this._timer);
+      const s = this._cfg.refresh_seconds === undefined ? 300 : Number(this._cfg.refresh_seconds);
+      if (s > 0) this._timer = setInterval(() => this._load(), s * 1000);
+    }
+    _svc(name) {
+      const [domain, service] = String(name).split('.');
+      return { domain, service };
+    }
+    // Datenquelle: ist die Integration my_cellarion installiert, nutzt die Karte deren Dienste (Antwort direkt als Objekt);
+    // sonst die shell_command-Anbindung (Antwort als JSON-Text in stdout). Namen der shell_commands per Kartenoption aenderbar.
+    _integ() { return !!(this._hass && this._hass.services && this._hass.services.my_cellarion); }
+    // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = Daten fuer shell_command, int = Daten fuer den Dienst.
+    async _call(kind, sh, int) {
+      const c = this._cfg || {};
+      let res;
+      if (this._integ()) {
+        const name = { read: 'read', sync: 'sync', refresh: 'refresh', settings: 'settings', fielddel: 'delete_field', winzer: 'winzer_sort', bottle: 'bottle' }[kind];
+        res = await this._hass.callWS({ type: 'call_service', domain: 'my_cellarion', service: name, service_data: int || {}, return_response: true });
+        const out = (res && res.response) || {};
+        if (out.error) throw new Error(out.error);
+        return out;
+      }
+      const dflt = { read: 'shell_command.cellarion_bestand_read', sync: 'shell_command.cellarion_bestand_sync', refresh: 'shell_command.cellarion_bestand_refresh',
+        settings: 'shell_command.cellarion_einstellungen', fielddel: 'shell_command.cellarion_feld_loeschen', winzer: 'shell_command.cellarion_winzer_sort', bottle: 'shell_command.cellarion_bestand_bottle' }[kind];
+      const opt = { read: c.read_service, sync: c.sync_service, refresh: c.refresh_service, settings: c.settings_service, fielddel: c.fielddel_service, winzer: c.winzer_service, bottle: c.bottle_service }[kind];
+      const { domain, service } = this._svc(opt || dflt);
+      res = await this._hass.callWS(Object.assign({ type: 'call_service', domain, service }, sh ? { service_data: sh } : {}, kind === 'sync' || kind === 'refresh' ? {} : { return_response: true }));
+      if (kind === 'sync' || kind === 'refresh') return {};
+      const out = (res && res.response) || res || {};
+      if (out.returncode && out.returncode !== 0) throw new Error(out.stderr || t('err.script', { code: out.returncode }));
+      let data = {};
+      try { data = out.stdout ? JSON.parse(out.stdout) : {}; } catch (e) { if (kind === 'read' || kind === 'bottle' || kind === 'winzer') throw e; }
+      if (data.error) throw new Error(data.error);
+      return data;
+    }
+    async _load() {
+      if (!this._hass) return;
+      try {
+        const data = await this._call('read');
+        this._raw = data;
+        this._sortMap = data.sortnamen || {};
+        const es = data.einstellungen || {};
+        this._shared = es;
+        this._applyEff();
+        if ((this._langSel || '') !== this._langUsed) await this._initLang();
+        this._ingest(data);
+        this._error = null;
+      } catch (e) {
+        this._error = (e && e.message) || String(e);
+      }
+      this._busy = false;
+      this._renderAll();
+    }
+    async _refreshNow(svcName) {
+      if (this._busy || !this._hass) return;
+      this._busy = true;
+      this._lastRefresh = Date.now();
+      this._renderHead();
+      try {
+        await this._call(svcName === 'sync' ? 'sync' : 'refresh');
+      } catch (e) {
+        this._error = (e && e.message) || String(e);
+      }
+      await this._load();
+    }
+    // Lagerplatz-Anzeige je Regal (Einstellung, zentral gespeichert): Zaehlrichtung der Boeden und Lage im Boden
+    _rs(name) {
+      const r = (this._shared && this._shared.rackSettings && this._shared.rackSettings[name]) || {};
+      return { order: r.order === 'bottom' ? 'bottom' : 'top', side: r.side === 'thirds' || r.side === 'slot' ? r.side : 'none' };
+    }
+    _placeText(b) {
+      const w = b.where;
+      if (!w || w.fach == null || !w.fachen) return '';
+      const rs = this._rs(w.rack);
+      const parts = [w.rack, t('loc.shelf', { n: rs.order === 'bottom' ? w.fach : w.fachen - w.fach + 1 })];
+      if (rs.side === 'thirds' && w.platz) parts.push(t(['loc.left', 'loc.mid', 'loc.right'][Math.min(2, Math.floor((w.platz - 1) / ((w.cols || 6) / 3)))]));
+      else if (rs.side === 'slot' && w.platz) parts.push(t('loc.slot', { n: w.platz }));
+      return parts.join(' · ');
+    }
+    _setRack(name, key, val) {
+      this._shared = this._shared || {};
+      const all = Object.assign({}, this._shared.rackSettings || {});
+      all[name] = Object.assign({}, this._rs(name), { [key]: val });
+      this._shared.rackSettings = all;
+      if (this._raw) this._ingest(this._raw);
+      this._renderAll(); this._renderSet(); this._saveSettings();
+    }
+    _ingest(data) {
+      const year = new Date().getFullYear();
+      const have = new Set((data.bottles || []).map((b) => b.id));
+      this._gone.forEach((id) => { if (!have.has(id)) this._gone.delete(id); });
+      const bottles = (data.bottles || []).filter((b) => !this._gone.has(b.id)).map((b) => {
+        const o = Object.assign({}, b);
+        o._status = statusOf(o, year);
+        o._loc = this._placeText(o) || o.location || NO_LOC;
+        o._rack = o.where && o.where.rack ? o.where.rack : NO_LOC;
+        o._type = o.type || '';
+        o._cls = String(o.classification || '').split(',').map((x) => x.trim()).filter(Boolean);
+        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
+          (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type]].join(' '));
+        return o;
+      });
+      const count = (get) => {
+        const m = new Map();
+        bottles.forEach((b) => { const v = get(b); if (v) m.set(v, (m.get(v) || 0) + 1); });
+        return m;
+      };
+      const grapes = new Map();
+      bottles.forEach((b) => (b.grapes || []).forEach((g) => grapes.set(g, (grapes.get(g) || 0) + 1)));
+      this._data = {
+        generated: data.generated,
+        cellar: data.cellar || '',
+        fields: Array.isArray(data.fields) ? data.fields : [],
+        bottles,
+        racks: data.racks || [],
+        facet: {
+          type: count((b) => b._type),
+          status: count((b) => b._status),
+          rack: count((b) => b._rack),
+          vintage: count((b) => String(b.vintage || 'NV')),
+          producer: count((b) => b.producer),
+          region: count((b) => b.region),
+          grape: grapes,
+        },
+      };
+      this._setHeader();
+    }
+    // Kopfzeile der HA-Seite (Toolbar) um den Kellernamen ergaenzen: "My Cellarion - HK4" (Option header_cellar: false schaltet das ab)
+    _setHeader() {
+      try {
+        if (this._cfg.header_cellar === false || !this._data || !this._data.cellar) return;
+        let n = this;
+        while (n && n.localName !== 'hui-root') n = n.parentNode || n.host;
+        const el = n && n.shadowRoot && n.shadowRoot.querySelector('.main-title');
+        if (!el) return;
+        const cur = el.textContent.trim();
+        const suffix = ' – ' + this._data.cellar;
+        if (!cur || cur.endsWith(suffix)) return;
+        el.textContent = cur.split(' – ')[0] + suffix;
+      } catch (e) { /* Kopfzeile ist optional */ }
+    }
+
+    // ---------- Filter, Gruppen, Sortierung ----------
+    // skip: Filtergruppe auslassen (fuer die Zaehlung in den Auswahllisten: nur die uebrigen Filter wirken)
+    _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
+    // Alle moeglichen Filter: feste (Typ ... Ort) plus je persoenlichem Datenfeld einer (automatisch aus dem Cache)
+    _allDefs() {
+      const byProd = (a, b) => de.compare(this._pkey(a[0]), this._pkey(b[0]));
+      const std = [
+        { id: 'types', label: t('filter.types'), defs: TYPES, dot: '--w-', get: (b) => b._type },
+        { id: 'grape', label: t('filter.grape'), get: (b) => b.grapes || [] },
+        { id: 'region', label: t('filter.region'), get: (b) => b.region },
+        { id: 'producer', label: t('filter.producer'), get: (b) => b.producer, sort: byProd },
+        { id: 'status', label: t('filter.status'), defs: STATUS, dot: '--s-', get: (b) => (b._status === 'window' ? 'peak' : b._status) },
+        { id: 'cls', label: t('filter.cls'), get: (b) => b._cls || [] },
+        { id: 'vintage', label: t('filter.vintage'), get: (b) => String(b.vintage || 'NV'), sort: (a, b) => this._vint(b[0]) - this._vint(a[0]) },
+        { id: 'racks', label: t('filter.racks'), get: (b) => b._rack, sort: (a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]) },
+        { id: 'shop', label: t('filter.shop'), get: (b) => b.shop || null },
+      ];
+      const pers = ((this._data && this._data.fields) || []).map((l) => ({ id: 'p:' + l, label: l, personal: true, get: (b) => (b.p && b.p[l]) || null }));
+      const all = std.concat(pers);
+      const pos = (d) => { const k = this._fo.indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
+      return all.slice().sort((a, b) => pos(a) - pos(b));
+    }
+    _orderedDefs() { return this._allDefs().filter((d) => !this._fh.has(d.id)); }
+    _filtered(skip) {
+      const f = this._f;
+      const toks = norm(f.q).split(/\s+/).filter(Boolean);
+      const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
+      return this._data.bottles.filter((b) => {
+        for (const d of act) if (![].concat(d.get(b)).some((v) => f[d.id].has(v))) return false;
+        for (const t of toks) if (!b._hay.includes(t)) return false;
+        return true;
+      });
+    }
+    _entries(bottles) {
+      // Eintrag = Wein + Jahrgang
+      const m = new Map();
+      bottles.forEach((b) => {
+        const k = (b.wine || b.name) + '|' + (b.vintage || 'NV');
+        let e = m.get(k);
+        if (!e) { e = { wine: b.wine || b.name, vintage: String(b.vintage || 'NV'), b, bottles: [] }; m.set(k, e); }
+        e.bottles.push(b);
+      });
+      m.forEach((e) => {
+        e.status = e.bottles.reduce((a, x) => (STATUS_RANK[x._status] < STATUS_RANK[a] ? x._status : a), e.bottles[0]._status);
+        const ends = e.bottles.map((x) => x.drinkTo).filter(Boolean);
+        e.drinkTo = ends.length ? Math.min.apply(null, ends) : 9999;
+      });
+      return Array.from(m.values());
+    }
+    _old(v) { const n = this._vint(v); return n > 0 ? n : 99999; } // fuer "alt zuerst": NV ans Ende
+    _vint(v) { return v === 'NV' ? -1 : Number(v) || -1; }
+    _cmpEntries(a, b) {
+      switch (this._sort) {
+        case 'producer': return de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '') || this._vint(b.vintage) - this._vint(a.vintage);
+        case 'drinkTo': return a.drinkTo - b.drinkTo || de.compare(a.b.name || '', b.b.name || '');
+        case 'vintage': return this._vint(b.vintage) - this._vint(a.vintage) || de.compare(a.b.name || '', b.b.name || '');
+        case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(a.b.name || '', b.b.name || '');
+        case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
+        default: return de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || '') || this._vint(b.vintage) - this._vint(a.vintage);
+      }
+    }
+    _groups(entries) {
+      const m = new Map();
+      entries.forEach((e) => {
+        let g = m.get(e.wine);
+        if (!g) { g = { id: e.wine, b: e.b, entries: [], count: 0 }; m.set(e.wine, g); }
+        g.entries.push(e);
+        g.count += e.bottles.length;
+      });
+      const groups = Array.from(m.values());
+      groups.forEach((g) => {
+        g.entries.sort((x, y) => this._vint(y.vintage) - this._vint(x.vintage));
+        g.drinkTo = Math.min.apply(null, g.entries.map((x) => x.drinkTo));
+        g.maxVint = Math.max.apply(null, g.entries.map((x) => this._vint(x.vintage)));
+        g.minVint = Math.min.apply(null, g.entries.map((x) => this._old(x.vintage)));
+      });
+      const rt = new Map();
+      groups.forEach((g) => rt.set(g.b.region || '', (rt.get(g.b.region || '') || 0) + g.count));
+      const cmp = {
+        producer: (a, b) => de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
+        drinkTo: (a, b) => a.drinkTo - b.drinkTo || de.compare(a.b.name || '', b.b.name || ''),
+        vintage: (a, b) => b.maxVint - a.maxVint || de.compare(a.b.name || '', b.b.name || ''),
+        region: (a, b) => (rt.get(b.b.region || '') || 0) - (rt.get(a.b.region || '') || 0) || (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(a.b.name || '', b.b.name || ''),
+        vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
+      }[this._sort] || ((a, b) => de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || ''));
+      return groups.sort(cmp);
+    }
+
+    // ---------- Aufbau ----------
+    _build() {
+      if (this._built) return;
+      this._built = true;
+      if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
+      const c = this._cfg;
+      const px = (v, d) => (Number(v) > 0 ? Number(v) : d) + 'px';
+      const vars = `--cb-row-h:${px(c.row_h, 44)};--cb-row-font:${px(c.row_font, 14)};--cb-title-font:${px(c.title_font, 18)};` +
+        `--cb-chip-font:${px(c.chip_font, 14)};--cb-chip-h:${px(c.chip_h, 40)};`;
+      this.shadowRoot.innerHTML = `
+        <style>${CSS}</style>
+        <ha-card class="${c.flush ? 'flush' : ''}" style="${c.height ? 'height:' + esc(c.height) + ';' : ''}">
+          <div class="wrap" style="${vars}${this._scale !== 1 ? 'zoom:' + this._scale + ';' : ''}">
+            <div class="head"></div>
+            <div class="az" hidden></div>
+            <div class="ptr"></div>
+            <div class="list"></div>
+            <div class="dlg" hidden></div>
+          </div>
+        </ha-card>`;
+      this._head = this.shadowRoot.querySelector('.head');
+      this._listEl = this.shadowRoot.querySelector('.list');
+      this._azEl = this.shadowRoot.querySelector('.az');
+      this._ptr = this.shadowRoot.querySelector('.ptr');
+      this._dlg = this.shadowRoot.querySelector('.dlg');
+      // Offene Filter einklappen, wenn der Nutzer die Liste scrollt (nur echte Touch/Rad-Eingabe, nicht Layout-Scroll)
+      const fold = () => {
+        if (this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
+      };
+      this._listEl.addEventListener('scroll', () => {
+        if (!this._azRaf) this._azRaf = requestAnimationFrame(() => { this._azRaf = 0; this._azUpdate(); });
+        // von Hand zugeklappt: sobald die Liste verlassen wurde, gilt wieder die Regel "oben angekommen -> aufklappen"
+        if (this._manual && !this._more && this._listEl.scrollTop > 40) { this._manual = false; this._autoFolded = true; }
+        if (this._autoFolded && this._listEl.scrollTop <= 2) { this._autoFolded = false; this._more = true; this._renderHead(); }
+      }, { passive: true });
+      this._listEl.addEventListener('touchmove', fold, { passive: true });
+      this._listEl.addEventListener('wheel', fold, { passive: true });
+      // Phone: Runterziehen am Listenanfang = Neu laden (mit Rueckfrage)
+      const mob = () => window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+      let y0 = null, pull = 0;
+      const ptr = this._ptr;
+      const setPtr = (h, txt) => { ptr.style.height = h + 'px'; ptr.textContent = txt || ''; };
+      this._listEl.addEventListener('touchstart', (e) => { y0 = mob() && this._listEl.scrollTop <= 0 && !this._busy ? e.touches[0].clientY : null; pull = 0; }, { passive: true });
+      this._listEl.addEventListener('touchmove', (e) => {
+        if (y0 === null) return;
+        const dy = e.touches[0].clientY - y0;
+        if (dy > 0 && this._listEl.scrollTop <= 0) { pull = Math.min(dy * 0.3, 72); setPtr(Math.round(pull), pull >= 60 ? t('rl.release') : t('rl.pull')); }
+        else if (pull) { pull = 0; setPtr(0); }
+      }, { passive: true });
+      const endPull = () => { const go = pull >= 60; y0 = null; pull = 0; setPtr(0); if (go) { this._cfm = true; this._renderDlg(); } };
+      this._listEl.addEventListener('touchend', endPull, { passive: true });
+      this._listEl.addEventListener('touchcancel', () => { y0 = null; pull = 0; setPtr(0); }, { passive: true });
+      this.shadowRoot.addEventListener('click', (e) => this._onClick(e));
+      this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
+      this.shadowRoot.addEventListener('input', (e) => this._onInput(e));
+      this.shadowRoot.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this._dd) { this._dd = null; this._renderDlg(); return; }
+        if (e.key === 'Escape' && this._wz) { if (this._wz.busy) return; this._wz = null; this._renderDlg(); return; }
+        if (e.key === 'Escape' && this._set) { this._set = null; this._renderDlg(); return; }
+        if (e.key === 'Escape' && this._det && !this._det.busy) { this._det = null; this._renderDlg(); return; }
+        if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('input[type=search]')) e.target.blur();
+      });
+      this._renderAll();
+      this._fit();
+      setTimeout(() => this._fit(), 300);
+      setTimeout(() => this._fit(), 1200);
+    }
+
+    _renderAll() {
+      if (!this._built) return;
+      this._renderHead();
+      this._renderList();
+    }
+
+    _nAct() {
+      const f = this._f;
+      return Object.keys(f).reduce((n, k) => n + (k === 'q' ? 0 : f[k].size), 0);
+    }
+    // Weinglas je Typ (Farbe = Weinfarbe): Rot/Weiss/Rose Kelch, Schaumwein Flute, Suess/Likoer kleines Glas
+    _glass(type, title) {
+      const col = `var(--w-${type}, var(--cb-ring))`;
+      const G = {
+        red: ['M4.2 1.2h7.6c.3 3.6-.5 7-3.8 7.4-3.3-.4-4.1-3.8-3.8-7.4z', 'M4.3 4.4h7.4c-.1 2.4-1 4-3.7 4.2-2.7-.2-3.6-1.8-3.7-4.2z', 8.6, ''],
+        white: ['M4.8 1.2h6.4c.2 3.4-.4 6.4-3.2 6.8-2.8-.4-3.4-3.4-3.2-6.8z', 'M4.9 3.8h6.2c-.1 2.4-.9 3.9-3.1 4.2-2.2-.3-3-1.8-3.1-4.2z', 8, ''],
+        sparkling: ['M5.6.8h4.8l-.4 8c-.1 1.2-.8 1.9-2 1.9s-1.9-.7-2-1.9z', 'M5.7 2.2h4.6l-.3 6.6c-.1 1-.7 1.6-2 1.6s-1.9-.6-2-1.6z', 10.7,
+          '<circle cx="7" cy="8.2" r=".6" fill="#fff" opacity=".9"/><circle cx="9" cy="6.4" r=".5" fill="#fff" opacity=".9"/><circle cx="7.6" cy="4.6" r=".5" fill="#fff" opacity=".9"/><circle cx="8.8" cy="3.2" r=".4" fill="#fff" opacity=".9"/>'],
+        dessert: ['M5 4h6c.1 2.8-.7 4.8-3 5.1-2.3-.3-3.1-2.3-3-5.1z', 'M5.1 5.4h5.8c0 2-.8 3.5-2.9 3.7-2.1-.2-2.9-1.7-2.9-3.7z', 9.1, ''],
+      };
+      G['rosé'] = G.white; G.fortified = G.dessert;
+      const g = G[type] || G.white;
+      return `<svg class="tsp" viewBox="0 0 16 16" width="16" height="16"${title ? ` role="img" aria-label="${esc(title)}"` : ' aria-hidden="true"'}>` +
+        `<path d="${g[0]}" fill="${col}" stroke="${col}" stroke-width="1" stroke-linejoin="round"/>${g[3]}` +
+        `<path d="M8 ${g[2]}V14.2M5.2 14.8h5.6" stroke="${col}" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>`;
+    }
+    _dotIc(dot, title) {
+      return dot.startsWith('--w-') ? this._glass(dot.slice(4), title) : `<span class="tdot" style="background:var(${dot})"></span>`;
+    }
+    _chip(group, value, label, on, n, dot) {
+      const ic = dot ? this._dotIc(dot) : '';
+      return `<button class="chip${on ? ' on' : ''}" data-act="chip" data-g="${group}" data-v="${esc(value)}" aria-pressed="${on}" title="${esc(label)}" aria-label="${esc(label)}">` +
+        ic + `<span class="lbl">${esc(label)}</span>` +
+        (n != null ? `<span class="n">${n}</span>` : '') + `</button>`;
+    }
+
+    // Auswahlliste: zuerst die Haeufigsten (ab TOP_MIN Flaschen, hoechstens TOP_MAX, mindestens 3), dann eine Linie, dann der Rest A-Z.
+    // Pulldown fuer feste Werte (Typ, Reife): Reihenfolge wie in defs, Wert = Schluessel, Text = Bezeichnung
+    _optsK(defs, map, selected) {
+      return defs.filter(([k]) => (map.get(k) && map.get(k).f) && !selected.has(k)).map(([k, l]) => {
+        const o = map.get(k);
+        return { v: k, t: `${l} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` };
+      });
+    }
+    _opts(map, selected, sortFn) {
+      const TOP_MIN = 8, TOP_MAX = 10;
+      const all = Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0]));
+      const byCount = all.slice().sort((a, b) => b[1].f - a[1].f || de.compare(a[0], b[0]));
+      let k = byCount.filter((x) => x[1].f >= TOP_MIN).length;
+      k = Math.min(TOP_MAX, Math.max(k, Math.min(3, all.length)));
+      if (k >= all.length) k = 0;
+      const top = byCount.slice(0, k), top0 = new Set(top.map((x) => x[0]));
+      const rest = all.filter((x) => !top0.has(x[0])).sort(sortFn);
+      const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
+      return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
+    }
+    // Eigenes Auswahlmenue statt nativer Android-Liste (die war mal schwarz, mal durchsichtig, verrutschte beim Zoom und holte die Navileiste)
+    _renderDd() {
+      const el = this._dlg, d = this._ddItems[this._dd];
+      if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="dsheet ddsheet" role="listbox" aria-label="${esc(d.label)}"><div class="dh"><span class="wmain"><span class="wname">${esc(d.label)}</span></span>` +
+        `<button class="dx" data-act="ddclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
+        `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`;
+      el.hidden = false;
+    }
+
+    _renderHead() {
+      if (!this._head) return;
+      const d = this._data, f = this._f, c = this._cfg;
+      this._ddItems = {};
+      const nAct = this._nAct();
+      const active = f.q || nAct;
+      const gear = `<button class="btn round gear" data-act="setopen" title="${esc(t('head.settings'))}" aria-label="${esc(t('head.settings'))}">` +
+        `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7m7.4-2.5c.04-.33.1-.66.1-1s-.06-.67-.1-1l2.1-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42L9.12 5.07a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11c-.04.33-.1.66-.1 1s.06.67.1 1l-2.1 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.22.39.3.6.22l2.5-1c.52.4 1.08.73 1.7 1l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.62-.27 1.18-.6 1.7-1l2.5 1c.23.09.47 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></button>`;
+      const rlTxt = String(t('head.reload')).replace(/^\s*↻\s*/, '');
+      const reload = `<button class="btn round rl" data-act="reload" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '↻'}</button>`;
+      const ttl = c.title || (this._data && this._data.cellar) || '';
+      let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}`;
+      if (!d) html += reload + gear + `</div>`;
+      if (d) {
+        // Zaehlung je Gruppe ueber die Flaschen, die alle uebrigen Filter (und die Suche) erfuellen
+        const cnt = (group, get) => {
+          const m = new Map();
+          this._filtered(group).forEach((b) => [].concat(get(b)).forEach((v) => { if (v) m.set(v, (m.get(v) || 0) + 1); }));
+          return m;
+        };
+        // Zaehlung fuer die Pulldowns: Weine | Jahrgaenge | Flaschen je Wert
+        const cnt3 = (group, get) => {
+          const m = new Map();
+          this._filtered(group).forEach((b) => [].concat(get(b)).forEach((v) => {
+            if (!v) return;
+            let o = m.get(v);
+            if (!o) { o = { ws: new Set(), js: new Set(), f: 0 }; m.set(v, o); }
+            o.ws.add(b.wine); o.js.add(b.wine + '|' + b.vintage); o.f++;
+          }));
+          m.forEach((o, k) => m.set(k, { w: o.ws.size, j: o.js.size, f: o.f }));
+          return m;
+        };
+        html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
+          `placeholder="${window.matchMedia && window.matchMedia('(max-width: 600px)').matches ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
+          (() => {
+            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region'].map((v) => ({ v, t: t('sort.' + v) }));
+            const cur = (so.find((o) => o.v === this._sort) || so[0]);
+            this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
+            return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
+          })() +
+          `<button class="btn fbtn${nAct ? ' on' : ''}${this._more ? ' open' : ''}" data-act="more" aria-label="${esc(t('head.filter'))}" aria-expanded="${this._more ? 'true' : 'false'}">` +
+          `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.5V20l-4-2v-4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${nAct ? `<span class="fcnt">${nAct}</span>` : ''}</button>` + reload + gear + `</div>`;
+        const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id));
+        const defs = this._showHid ? vis.concat(hid) : vis.concat(hid.filter((d) => this._fs(d.id).size));
+        const t3 = {};
+        defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
+        const by = (x, y) => de.compare(x[0], y[0]);
+        html += `<div class="fwrap${this._more ? ' fopen' : ''}"><div class="more open">` +
+          `<button class="btn round sm${active ? ' on' : ''}" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' disabled'}>↺</button>` +
+          defs.map((d) => {
+            const m = t3[d.id], set = this._fs(d.id);
+            if (!m.size && !set.size) return '';
+            const items = d.defs ? this._optsK(d.defs, m, set) : this._opts(m, set, d.sort || by);
+            this._ddItems[d.id] = { label: d.label, items, cur: '' };
+            return `<button type="button" class="sel fs" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
+          }).join('') + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') + `</div></div>`;
+        const ic = (dot) => this._dotIc(dot);
+        const pills = defs.map((d) => Array.from(this._fs(d.id)).map((v) => {
+          const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
+          return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
+            `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
+        }).join('')).join('');
+        if (pills) html += `<div class="fpills">${pills}</div>`;
+        html += `<div class="sumline"><span class="grow" data-sum></span></div>`;
+      }
+      if (this._ptr && !this._pulling) { this._ptr.style.height = this._busy ? '24px' : '0px'; this._ptr.textContent = this._busy ? t('head.loading') : ''; }
+      // Fokus und Cursor im Suchfeld behalten, wenn der Kopf neu aufgebaut wird
+      const input = this._head.querySelector('input[type=search]');
+      const hadFocus = input && this.shadowRoot.activeElement === input;
+      const pos = hadFocus ? input.selectionStart : 0;
+      this._head.innerHTML = html;
+      if (hadFocus) {
+        const ni = this._head.querySelector('input[type=search]');
+        if (ni) { ni.focus(); try { ni.setSelectionRange(pos, pos); } catch (e) { /* egal */ } }
+      }
+    }
+
+    _locsHtml(bottles, brief) {
+      const m = new Map();
+      bottles.forEach((b) => m.set(b._loc, (m.get(b._loc) || 0) + 1));
+      const inRow = brief === true;
+      if (brief && m.size === 1) brief = 'one'; else brief = '';
+      if (inRow && m.size > 1) {
+        // Mehrere Orte in der Weinzeile: je Regal zusammenfassen (Regal ×Anzahl), Details stehen in der Detailseite
+        const r = new Map();
+        m.forEach((n, l) => { const k = l === NO_LOC ? NO_LOC : l.split(' · ')[0]; r.set(k, (r.get(k) || 0) + n); });
+        return Array.from(r.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
+          .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}<b>×${n}</b></span>`).join('');
+      }
+      return Array.from(m.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
+        .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}${!brief && (bottles.length > 1 || n > 1) ? `<b>×${n}</b>` : ''}</span>`).join('');
+    }
+    _winText(e) {
+      const b = e.b;
+      const ws = e.bottles.map((x) => [x.drinkFrom, x.drinkTo]).filter((w) => w[0] || w[1]);
+      const p = e.bottles.find((x) => x.peakFrom && x.peakUntil);
+      const win = ws.length ? `${ws[0][0] || '?'}–${ws[0][1] || '?'}` : '';
+      return [win, p ? t('win.peak', { from: p.peakFrom, to: p.peakUntil }) : ''].filter(Boolean).join(' · ');
+    }
+    _sdot(s, title) { return `<span class="sdot" style="background:var(--s-${s})" title="${esc(title || STATUS_LABEL[s])}"></span>`; }
+
+    _renderList() {
+      if (!this._listEl) return;
+      const el = this._listEl;
+      const top = el.scrollTop;
+      if (this._error && !this._data) {
+        el.innerHTML = `<div class="msg">${esc(t('list.error'))}<br>${esc(this._error)}<br>` +
+          `<button class="btn" data-act="reload">${esc(t('list.reload'))}</button></div>`;
+        return;
+      }
+      if (!this._data) { el.innerHTML = `<div class="msg">${esc(t('list.loading'))}</div>`; return; }
+      this._az = new Set();
+      const bottles = this._filtered();
+      const entries = this._entries(bottles);
+      let html = '';
+      let nWine;
+      if (this._view === 'flat') {
+        nWine = new Set(entries.map((e) => e.wine)).size;
+        html = entries.sort((a, b) => this._cmpEntries(a, b)).map((e) => this._azAnchor(e.b) + this._flatRow(e)).join('');
+      } else {
+        const groups = this._groups(entries);
+        nWine = groups.length;
+        const hk = { vintage: (g) => (g.maxVint > 0 ? String(g.maxVint) : 'NV'), vintageAsc: (g) => (g.minVint < 99999 ? String(g.minVint) : 'NV'),
+          region: (g) => g.b.region || t('list.noRegion') }[this._sort];
+        if (hk) {
+          const tot = new Map();
+          groups.forEach((g) => { const k = hk(g); const o = tot.get(k) || { w: 0, n: 0 }; o.w++; o.n += g.count; tot.set(k, o); });
+          let last = null;
+          html = groups.map((g) => {
+            const k = hk(g);
+            let head = '';
+            if (k !== last) {
+              last = k;
+              const tt = tot.get(k);
+              head = `<div class="shead"><span>${esc(k)}</span><span class="shn">${esc(t('count.groupHead', { wines: t('count.wines', { n: tt.w }), bottles: t('count.bottlesShort', { n: tt.n }) }))}</span></div>`;
+            }
+            return head + this._groupRow(g);
+          }).join('');
+        } else html = groups.map((g) => this._azAnchor(g.b) + this._groupRow(g)).join('');
+      }
+      if (!bottles.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
+      el.innerHTML = html;
+      el.scrollTop = top;
+      this._renderAz();
+      const f = this._f;
+      const rst = this._head && this._head.querySelector('[data-reset]');
+      if (rst) {
+        rst.disabled = !(f.q || this._nAct());
+        rst.classList.toggle('on', !rst.disabled);
+      }
+      const sum = this._head && this._head.querySelector('[data-sum]');
+      if (sum) {
+        const all = this._data.bottles.length;
+        sum.textContent = `${this._data.cellar ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: nWine })} · ${t('count.vintages', { n: entries.length })} · ${t('count.bottles', { n: bottles.length })}` + (bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
+          (this._error ? ' · ' + t('count.loadError') : '');
+      }
+    }
+
+    // A-Z-Leiste: nur bei Wein A-Z / Winzer A-Z. Buchstabe = Anfang des Weinnamens bzw. des Winzer-Sortierworts.
+    _azKey(b) {
+      const k = norm(this._sort === 'producer' ? this._pkey(b.producer) : b.name).replace(/[^a-z0-9]/g, '').charAt(0);
+      return k >= 'a' && k <= 'z' ? k.toUpperCase() : '#';
+    }
+    _azAnchor(b) {
+      if (this._sort !== 'name' && this._sort !== 'producer') return '';
+      const k = this._azKey(b);
+      if (this._az.has(k)) return '';
+      this._az.add(k);
+      return `<span class="azanc" data-az="${k}"></span>`;
+    }
+    _azUpdate() {
+      const bar = this._azEl, list = this._listEl;
+      if (!bar || bar.hidden || !list) return;
+      const anchors = list.querySelectorAll('.azanc');
+      if (!anchors.length) return;
+      const top = list.getBoundingClientRect().top;
+      let cur = anchors[0].dataset.az;
+      for (const a of anchors) { if (a.getBoundingClientRect().top - top <= 4) cur = a.dataset.az; else break; }
+      if (cur === this._azCur) return;
+      this._azCur = cur;
+      let hit = null;
+      bar.querySelectorAll('button').forEach((b) => { const on = b.dataset.k === cur; b.classList.toggle('cur', on); if (on) hit = b; });
+      if (hit && bar.scrollWidth > bar.clientWidth + 2) {
+        bar.scrollTo({ left: Math.max(0, hit.offsetLeft - (bar.clientWidth - hit.offsetWidth) / 2), behavior: 'smooth' });
+      }
+    }
+    _renderAz() {
+      const bar = this._azEl;
+      if (!bar) return;
+      const on = (this._sort === 'name' || this._sort === 'producer') && this._data && this._az.size > 0;
+      bar.hidden = !on;
+      if (!on) { bar.innerHTML = ''; return; }
+      const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      if (this._az.has('#')) L.unshift('#');
+      bar.innerHTML = L.map((k) => `<button data-act="az" data-k="${k}"${this._az.has(k) ? '' : ' disabled'}>${k}</button>`).join('');
+      this._azCur = null;
+      this._azUpdate();
+    }
+
+    // Suchbegriffe im Text hervorheben (ohne Gross/Klein und Akzente, wie die Suche selbst)
+    _hl(text) {
+      text = String(text == null ? '' : text);
+      const toks = norm(this._f.q).split(/\s+/).filter(Boolean);
+      if (!toks.length) return esc(text);
+      let n = '';
+      const map = [];
+      Array.from(text).forEach((ch, i) => { const x = norm(ch); for (let k = 0; k < x.length; k++) { n += x[k]; map.push(i); } });
+      const chars = Array.from(text);
+      const on = new Array(chars.length).fill(false);
+      toks.forEach((t) => {
+        let at = n.indexOf(t);
+        while (at >= 0) { for (let k = at; k < at + t.length; k++) on[map[k]] = true; at = n.indexOf(t, at + 1); }
+      });
+      let out = '', open = false;
+      chars.forEach((ch, i) => {
+        if (on[i] !== open) { out += open ? '</mark>' : '<mark class="hl">'; open = on[i]; }
+        out += esc(ch);
+      });
+      return out + (open ? '</mark>' : '');
+    }
+    _typeDot(b) {
+      return this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
+    }
+    _sub(b) { return b.region || ''; }
+    // Bei der Sortierung "Winzer A-Z" und gepflegtem Sortierwort: dessen Anfangsbuchstabe fett (H bei "Fritz Haag")
+    _prodHtml(name) {
+      const i = this._sortMap && this._sortMap[name];
+      const w = this._words(name);
+      if (this._sort !== 'producer' || i === undefined || !(i >= 0 && i < w.length)) return this._hl(name);
+      return w.map((x, k) => (k === i ? `<b class="wsl">${esc(x.charAt(0))}</b>${esc(x.slice(1))}` : esc(x))).join(' ');
+    }
+    // Weinname | Winzer in einer Zeile
+    _title(b) {
+      const reg = (b._cls && b._cls.length ? `<span class="wsep">|</span><span class="wreg">${this._hl(b._cls.join(', '))}</span>` : '') +
+        (b.region ? `<span class="wsep">|</span><span class="wreg">${this._hl(b.region)}</span>` : '');
+      if (this._sort === 'producer' && b.producer) {
+        return `<span class="wtitle swap"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">|</span><span class="wname">${this._hl(b.name)}</span>${reg}</span>`;
+      }
+      return `<span class="wtitle"><span class="wname">${this._hl(b.name)}</span>` +
+        (b.producer ? `<span class="wsep">|</span><span class="wprod">${this._prodHtml(b.producer)}</span>` : '') + reg + `</span>`;
+    }
+
+    _groupRow(g) {
+      const open = this._open.has(g.id);
+      const asc = g.entries.slice().reverse();
+      const vints = asc.map((e) => e.vintage).join(' · ');
+      if (g.entries.length === 1) {
+        // Nur ein Jahrgang: Angaben stehen gleich in der Weinzeile, Tipp oeffnet die Details.
+        const e = g.entries[0];
+        const win = this._winText(e);
+        return `<div class="wine"><button class="wrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
+          this._typeDot(g.b) +
+          `<span class="wmain">${this._title(g.b)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
+          `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">|</span>` +
+          `<span class="wvint">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
+          `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
+      }
+      let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
+        this._typeDot(g.b) +
+        `<span class="wmain">${this._title(g.b)}</span>` +
+        `<span class="wright"><span class="wvint multi">${esc(vints)}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
+        `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
+      if (open) {
+        html += `<div class="vlist">` + g.entries.map((e) =>
+          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear">${esc(e.vintage)}</span><span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
+          `<span class="vwin">${esc(this._winText(e))}</span></span>` +
+          `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`).join('') + `</div>`;
+      }
+      return html + `</div>`;
+    }
+
+    _flatRow(e) {
+      return `<div class="frow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(e.b)}<span class="fyear">${esc(e.vintage)}</span>` +
+        `<span class="fmid">${this._title(e.b)}` +
+        `<span class="locs">${this._locsHtml(e.bottles)}</span></span>` +
+        `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`;
+    }
+
+    // ---------- Winzer pflegen (Sortierwort je Winzer) ----------
+    _words(name) { return String(name || '').trim().split(/\s+/).filter(Boolean); }
+    // Sortierschluessel: gepflegtes Wort zuerst, die uebrigen Woerter in alter Reihenfolge; sonst die Schreibweise
+    _pkey(name, map) {
+      name = name || '';
+      const i = (map || this._sortMap || {})[name];
+      const w = this._words(name);
+      if (i === undefined || i === null || !(i >= 0 && i < w.length)) return name;
+      return [w[i]].concat(w.filter((_, k) => k !== i)).join(' ');
+    }
+    _hash(name) {
+      let h = 0x811c9dc5;
+      new TextEncoder().encode(name).forEach((x) => { h ^= x; h = Math.imul(h, 0x01000193) >>> 0; });
+      return h.toString(16).padStart(8, '0');
+    }
+    _wzOpen() {
+      this._det = null;
+      this._wz = { q: '', all: false, err: '', busy: false, draft: Object.assign({}, this._sortMap) };
+      this._renderWz();
+    }
+    // Aenderungen im Entwurf gegenueber dem Gespeicherten: [Name, Wortnummer oder -1]
+    _wzChanges() {
+      const d = this._wz.draft, m = this._sortMap, out = [];
+      Object.keys(d).forEach((n) => { if (d[n] !== m[n]) out.push([n, d[n]]); });
+      Object.keys(m).forEach((n) => { if (!(n in d)) out.push([n, -1]); });
+      return out;
+    }
+    _wzBar() {
+      const z = this._wz, n = this._wzChanges().length;
+      return `<button class="btn" data-act="wzclose" ${z.busy ? 'disabled' : ''}>${esc(n ? t('wz.cancel') : t('wz.close'))}</button>` +
+        `<button class="btn on" data-act="wzsave" ${n && !z.busy ? '' : 'disabled'}>${esc(z.busy ? t('wz.saving') : n ? t('wz.saveN', { n }) : t('wz.save'))}</button>`;
+    }
+    _renderSet() {
+      const el = this._dlg;
+      if (!el) return;
+      const sc = Math.round(this._scale * 100);
+      const steps = [85, 100, 115, 130, 150, 175, 200];
+      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
+        `<div class="dh"><span class="wmain"><span class="wname">${esc(t('head.settings'))}</span></span>` +
+        `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
+        `<div class="dsec">${esc(t('set.general'))}</div>` +
+        `<div style="display:flex;align-items:center;gap:10px"><div class="wmain"><span class="wname">${esc(t('set.language'))}</span><span class="wsub">${esc(t('set.languageSub'))}</span></div>${this._scopeSw('language')}</div>` +
+        `<div class="scalechips" style="margin-bottom:10px">` + [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {})).map(([c, n]) => `<button class="chip${c === (this._langSel || '') ? ' on' : ''}" data-act="lang" data-v="${esc(c)}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px;white-space:nowrap">${esc(n)}</button>`).join('') + `</div>` +
+        `<button class="setrow" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span>` +
+        `<span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button>` +
+        (((this._data && this._data.racks) || []).length ? `<div class="wmain" style="margin-top:6px"><span class="wname">${esc(t('set.racks'))}</span><span class="wsub">${esc(t('set.racksSub'))}</span></div>` +
+          this._data.racks.map((n) => {
+            const rs = this._rs(n);
+            const grp = (key, label, opts) => `<div class="wsub" style="margin-top:4px">${esc(label)}</div><div class="scalechips">` + opts.map(([v, l]) => `<button class="chip${rs[key] === v ? ' on' : ''}" data-act="rack" data-n="${esc(n)}" data-k="${key}" data-v="${v}" style="width:auto;padding:0 14px;border-radius:20px;white-space:nowrap">${esc(l)}</button>`).join('') + `</div>`;
+            return `<div style="margin:6px 0 10px"><b>${esc(n)}</b>` + grp('order', t('set.rackOrder'), [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]]) +
+              grp('side', t('set.rackSide'), [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]]) + `</div>`;
+          }).join('') : '') +
+        `<div class="dsec">${esc(t('set.device'))}</div>` +
+        `<div class="wmain"><span class="wname">${esc(t('set.fontSize'))}</span><span class="wsub">${esc(t('set.fontSizeSub', { pct: sc }))}</span></div>` +
+        `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div>` +
+        `<div class="wmain" style="margin-top:6px"><span class="wname">${esc(t('set.detailV2'))}</span><span class="wsub">${esc(t('set.detailV2Sub'))}</span></div>` +
+        `<div class="scalechips" style="margin-bottom:6px">` + [['on', t('set.on')], ['off', t('set.off')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._detV2() ? ' on' : ''}" data-act="detv2" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div>` +
+        `<div style="display:flex;align-items:center;gap:10px;margin-top:6px"><div class="wmain"><span class="wname">${esc(t('set.filters'))}</span><span class="wsub">${esc(t('set.filtersSub'))}</span></div>${this._scopeSw('filters')}</div>` + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
+        this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
+          `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
+          `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
+          (d.personal && !this._integ() ? `<button class="btn round" data-act="fdelask" data-id="${esc(d.id)}" aria-label="${esc(t('set.deleteForever', { label: d.label }))}" title="${esc(t('set.deleteTitle'))}">🗑</button>` : '') +
+          `<button class="btn round" data-act="fup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
+          `<button class="btn round" data-act="fdn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
+        `<div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
+      el.hidden = false;
+    }
+    // Filterwahl gilt fuer alle Geraete: im Home Assistant speichern (shell_command), Fehler nur still melden
+    async _saveSettings() {
+      const S = this._shared || {};
+      const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x)).join(',') : '-');
+      try {
+        await this._call('settings',
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))) },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {} });
+        this._setErr = '';
+      } catch (e) {
+        this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
+      }
+      if (this._set) this._renderSet();
+    }
+    async _delField() {
+      const f = this._fdel;
+      if (!f || f.busy) return;
+      f.busy = true; f.err = ''; this._renderDlg();
+      try {
+        await this._call('fielddel', { l: encodeURIComponent(f.label) }, { label: f.label });
+        this._fdel = null;
+        this._setNote = t('fd.note', { label: f.label });
+        [40000, 90000].forEach((ms) => setTimeout(() => { this._load().then(() => { if (!(this._data.fields || []).includes(f.label)) this._setNote = ''; if (this._set) this._renderSet(); }); }, ms));
+        this._renderDlg();
+      } catch (e) {
+        f.busy = false; f.err = t('fd.failed', { err: (e && e.message) || String(e) });
+        this._renderDlg();
+      }
+    }
+    _fmove(id, dir) {
+      const ids = this._allDefs().map((d) => d.id);
+      const i = ids.indexOf(id), j = i + dir;
+      if (i < 0 || j < 0 || j >= ids.length) return;
+      ids.splice(j, 0, ids.splice(i, 1)[0]);
+      this._setFilters(ids, Array.from(this._fh));
+      this._renderHead(); this._renderSet();
+    }
+    _renderWz() {
+      const el = this._dlg, z = this._wz;
+      if (!el) return;
+      if (!z) { el.hidden = true; el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
+        `<div class="dh"><span class="wmain"><span class="wname">${esc(t('wz.title'))}</span>` +
+        `<span class="wsub">${esc(t('wz.hint'))}</span></span>` +
+        `<button class="dx" data-act="wzclose" aria-label="${esc(t('wz.close'))}" ${z.busy ? 'disabled' : ''}>✕</button></div>` +
+        `<div class="row-chips"><div class="search has" style="flex:1 1 180px"><input type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}"></div>` +
+        `<button class="chip${z.all ? '' : ' on'}" data-act="wzall" aria-pressed="${!z.all}">${esc(t('wz.multi'))}</button></div>` +
+        `<div class="derr" data-wzerr ${z.err ? '' : 'hidden'}>${esc(z.err)}</div>` +
+        `<div class="wzlist"></div>` +
+        `<div class="dact" data-wzbar>${this._wzBar()}</div></div>`;
+      el.hidden = false;
+      this._renderWzList();
+    }
+    _renderWzList() {
+      const box = this._dlg && this._dlg.querySelector('.wzlist');
+      const z = this._wz;
+      if (!box || !z) return;
+      const draft = z.draft;
+      const counts = this._data ? this._data.facet.producer : new Map();
+      const toks = norm(z.q).split(/\s+/).filter(Boolean);
+      const names = Array.from(counts.keys());
+      const orphans = Object.keys(draft).filter((n) => !counts.has(n));
+      const show = names.filter((n) => {
+        if (!z.all && this._words(n).length < 2 && !(n in draft)) return false;
+        const h = norm(n);
+        return toks.every((t) => h.includes(t));
+      }).sort((a, b) => de.compare(this._pkey(a, draft), this._pkey(b, draft)));
+      const row = (n, orphan) => {
+        const w = this._words(n), cur = draft[n];
+        const words = orphan ? `<span class="wzname">${esc(n)}</span>` : w.map((x, i) =>
+          `<button class="wzw${cur === i ? ' on' : ''}" data-act="wzw" data-h="${this._hash(n)}" data-i="${i}" aria-pressed="${cur === i}">${esc(x)}</button>`).join('');
+        const note = orphan ? `<button class="btn" data-act="wzdel" data-h="${this._hash(n)}">${esc(t('wz.delete'))}</button>`
+          : (cur !== undefined ? `<span class="dpur">${esc(t('wz.sortedAs', { key: this._pkey(n, draft) }))}</span>` : '');
+        return `<div class="wzrow"><span class="wzwords">${words}</span><span class="wznote">${note}</span>` +
+          `<span class="wzn">${esc(t('count.bottlesShort', { n: counts.get(n) || 0 })).replace(/ /g, '&nbsp;')}</span></div>`;
+      };
+      let html = show.map((n) => row(n, false)).join('') || `<div class="msg">${esc(t('wz.empty'))}</div>`;
+      if (orphans.length) html += `<div class="dsec" style="margin-top:8px">${esc(t('wz.orphans'))}</div>` + orphans.map((n) => row(n, true)).join('');
+      box.innerHTML = html;
+      const bar = this._dlg.querySelector('[data-wzbar]');
+      if (bar) bar.innerHTML = this._wzBar();
+    }
+    // Tipp im Dialog: nur der Entwurf aendert sich, gespeichert wird erst mit "Speichern"
+    _wzTap(h, i) {
+      const z = this._wz;
+      if (!z || z.busy) return;
+      const name = Array.from(this._data.facet.producer.keys()).concat(Object.keys(z.draft)).find((n) => this._hash(n) === h);
+      if (!name) return;
+      if (i < 0 || z.draft[name] === i) delete z.draft[name]; else z.draft[name] = i;
+      this._renderWzList();
+    }
+    async _wzSave() {
+      const z = this._wz;
+      if (!z || z.busy) return;
+      const changes = this._wzChanges();
+      if (!changes.length) return;
+      z.busy = true; z.err = '';
+      this._renderWz();
+      try {
+        for (const [name, i] of changes) {
+          const data = await this._call('winzer', { h: this._hash(name), i }, { name, index: i });
+          this._sortMap = data.map || this._sortMap;
+        }
+      } catch (e) {
+        z.busy = false;
+        z.err = t('set.saveFailed', { err: (e && e.message) || String(e) });
+        this._renderWz();
+        this._renderHead(); this._renderList();
+        return;
+      }
+      this._wz = null;
+      this._renderDlg();
+      this._renderHead();
+      this._renderList();
+    }
+
+    // ---------- Detailansicht und Entnahme ----------
+    _detBottles() {
+      const d = this._det;
+      const list = this._data.bottles.filter((b) => (b.wine || b.name) === d.wine && String(b.vintage || 'NV') === d.vintage);
+      return list.sort((a, b) => (a._loc === NO_LOC) - (b._loc === NO_LOC) || de.compare(a._loc, b._loc));
+    }
+    _fmtDate(v) {
+      const x = new Date(v);
+      return isNaN(x) ? '' : x.toLocaleDateString(I18N.lang);
+    }
+    // Weitere Flaschen des Jahrgangs nacheinander laden (erst die gewaehlte, damit Notiz und Profil sofort da sind)
+    async _queueInfo(first, ids) {
+      this._iq = this._iq || [];
+      ids.forEach((i) => { if (i !== first && !this._info[i] && !this._iq.includes(i)) this._iq.push(i); });
+      if (this._ipump) return;
+      this._ipump = true;
+      try {
+        while (this._iq.length && this._det && this._det.step !== 'done') {
+          const f = this._info[first];
+          if (!f || f.loading) { await new Promise((r) => setTimeout(r, 300)); continue; }
+          const id = this._iq.shift();
+          if (!this._info[id]) await this._fetchInfo(id);
+        }
+      } finally { this._ipump = false; if (!this._det) this._iq = []; }
+    }
+    async _fetchInfo(id) {
+      if (this._info[id]) return;
+      this._info[id] = { loading: true };
+      try {
+        const data = await this._call('bottle', { id }, { id });
+        this._info[id] = data;
+      } catch (e) {
+        this._info[id] = { error: (e && e.message) || String(e) };
+        setTimeout(() => { if (this._info[id] && this._info[id].error) delete this._info[id]; }, 30000);
+      }
+      if (this._det && (this._det.sel === id || this._detV2())) this._renderDlg();
+    }
+    _detV2() { return this._local.detailV2 !== undefined ? !!this._local.detailV2 : this._cfg.detail === 'v2'; }
+    // Wert eines eigenen Datenfelds nach Aussehen formatieren (Datum, Ja/Nein, Zahl)
+    _fmtVal(v) {
+      const x = String(v);
+      if (/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(x)) return this._fmtDate(x) || x;
+      if (/^(true|false)$/i.test(x)) return /^true$/i.test(x) ? '✓' : '–';
+      return x;
+    }
+    _fmtMoney(v, cur) {
+      try { return cur ? new Intl.NumberFormat(I18N.lang, { style: 'currency', currency: cur }).format(v) : String(v); } catch (e) { return v + ' ' + (cur || ''); }
+    }
+    // Neue Detailansicht (nur "view"): ordnet die Angaben nach Cellarion (Wein, Reife, Profil, Mein Eintrag, Eigene Felder, Flaschen)
+    _viewV2(sel, bottles, info) {
+      const yr = new Date().getFullYear();
+      const d = this._det;
+      // Region und Einstufung stehen schon in der Titelzeile: hier nur Land und (abweichende) Appellation
+      const origin = Array.from(new Set([sel.country, sel.appellation !== sel.region ? sel.appellation : ''].filter(Boolean))).join(' · ');
+      const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
+      let bar = '';
+      if (df && dt) {
+        const lo = Math.min(df, yr), hi = Math.max(dt, yr), span = Math.max(1, hi - lo);
+        const pc = (y) => (((y - lo) / span) * 100).toFixed(1);
+        bar = `<div class="d2bar" role="img" aria-label="${esc(t('det.drinkWindow'))}"><i class="w" style="left:${pc(df)}%;width:${(((dt - df) / span) * 100).toFixed(1)}%"></i>` +
+          (pf && pu ? `<i class="p" style="left:${pc(pf)}%;width:${(((pu - pf) / span) * 100).toFixed(1)}%"></i>` : '') +
+          `<b style="left:${pc(yr)}%"><span${Number(pc(yr)) < 8 ? ' style="left:0;transform:none"' : ''}>${esc(t('det.today'))}</span></b></div>` +
+          `<div class="d2yrs"><span>${df}</span>${pf && pu ? `<span>${esc(t('win.peak', { from: pf, to: pu }))}</span>` : ''}<span>${dt}</span></div>`;
+      }
+      const st = sel._status;
+      const maturity = `<div class="dsec">${esc(t('det.drinkWindow'))}</div><div>${this._sdot(st)} ${esc(STATUS_LABEL[st])}</div>${bar}`;
+      const pr = info && info.profile;
+      const lab = (v) => { const key = 'prof.' + v; const x = t(key); return x === key ? String(v) : x; };
+      let about = '';
+      if (pr) {
+        const chips = ['body', 'acidity', 'sweetness', 'tannin'].filter((k) => pr[k]).map((k) => `<span><em>${esc(t('prof.' + k))}</em>${esc(lab(pr[k]))}</span>`).join('');
+        const fl = (pr.flavors || []).map((x) => `<span>${esc(x)}</span>`).join('');
+        const fp = (pr.foodPairings || []).map((x) => `<span>${esc(x)}</span>`).join('');
+        about = `<div class="dsec">${esc(t(pr.verified ? 'det.registryVerified' : 'det.registry'))}</div>` +
+          (chips ? `<div class="d2chips">${chips}</div>` : '') +
+          (fl ? `<div class="dsec">${esc(t('det.flavors'))}</div><div class="d2chips">${fl}</div>` : '') +
+          (fp ? `<div class="dsec">${esc(t('det.food'))}</div><div class="d2chips">${fp}</div>` : '') +
+          (pr.description ? `<div class="d2txt" style="margin-top:8px">${esc(pr.description)}</div>` : '');
+      }
+      // Meine Daten auf Jahrgangsebene: gleich bei allen Flaschen -> Wert, sonst Spanne und Hinweis
+      const infos = bottles.map((b) => this._info[b.id]).filter((i) => i && !i.loading && !i.error);
+      const ne = `<span class="d2ne" title="${esc(t('det.differs'))}" aria-label="${esc(t('det.differs'))}">≠</span>`;
+      const lot = (key, fmt, rng) => {
+        const vals = infos.map((i) => i[key]).filter((v) => v != null && v !== '');
+        if (!vals.length) return '';
+        const uniq = Array.from(new Set(vals.map((v) => JSON.stringify(v)))).map((v) => JSON.parse(v));
+        if (uniq.length === 1) return esc(fmt(uniq[0]));
+        const sorted = uniq.slice().sort((x, y) => (x > y ? 1 : -1));
+        return esc(rng ? fmt(sorted[0]) + ' – ' + fmt(sorted[sorted.length - 1]) : sorted.map(fmt).join(', ')) + ne;
+      };
+      const money = (v) => this._fmtMoney(v, (infos.find((i) => i.price != null) || {}).currency);
+      const priceTxt = info && !info.loading && !info.error ? lot('price', money, true) : '';
+      const dateTxt = lot('purchaseDate', (v) => this._fmtDate(v), true);
+      const shopTxt = lot('purchaseLocation', (v) => v, false);
+      const ratingTxt = lot('rating', (v) => String(v) + ((infos.find((i) => i.ratingScale) || {}).ratingScale ? ' / ' + infos.find((i) => i.ratingScale).ratingScale : ''), true);
+      const nOrder = bottles.filter((b) => this._info[b.id] && this._info[b.id].onOrder).length;
+      const rows = [
+        [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
+        [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
+        [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
+        [t('det.reserved'), bottles.some((b) => b.reserved) ? (bottles.every((b) => b.reserved) ? '✓' : `${bottles.filter((b) => b.reserved).length}/${bottles.length}` + ne) : ''],
+      ].concat(((this._data && this._data.fields) || []).map((l) => {
+        const vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
+        return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
+      }));
+      const loadingInfo = !info || info.loading;
+      const mineRows = rows.filter((r) => r[1]);
+      // Werte aus lot()/Feldern sind schon maskiert, die Marke ne ebenfalls; Beschriftungen werden hier maskiert
+      const mine = `<div class="d2mine"><div class="d2h">${esc(t('det.mine'))}</div>` +
+        (mineRows.length ? `<dl class="dfacts" style="margin:0">${mineRows.map((r) => `<dt>${esc(r[0])}</dt><dd>${r[1]}</dd>`).join('')}</dl>` : '') +
+        (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
+      // Erste Notizabsatz mit dem Haendler (z. B. "Gekauft bei ...") weglassen: steht schon bei Meine Daten
+      const stripShop = (n, shop) => {
+        const parts = String(n).split(/\n\s*\n/);
+        if (shop && parts.length > 1 && parts[0].toLowerCase().includes(String(shop).toLowerCase()) && parts[0].length < 140) parts.shift();
+        return parts.join('\n\n');
+      };
+      const notes = Array.from(new Set(infos.map((i) => (i.notes ? stripShop(i.notes, i.purchaseLocation) : '')).filter(Boolean)));
+      const noteHtml = notes.length ? `<div class="dsec">${esc(t('det.myNote'))}${notes.length > 1 ? ne : ''}</div><div class="dnote">${esc(notes[0])}</div>` : '';
+      // Flaschen: nach Lagerort gruppiert waehlbar (Entnahme "von diesem Platz"), je Gruppe aufklappbar bis zur einzelnen Flasche
+      const nm = (l) => (l === NO_LOC ? t('loc.noneShort') : l);
+      const groups = new Map();
+      bottles.forEach((b) => { if (!groups.has(b._loc)) groups.set(b._loc, []); groups.get(b._loc).push(b); });
+      const multi = groups.size > 1;
+      const sectionOpen = !!(d && d.botsOpen);
+      const gOpen = (d && d.grpOpen) || new Set();
+      const botRow = (b) => {
+        const i = this._info[b.id] || {};
+        const sub = [i.price != null ? this._fmtMoney(i.price, i.currency) : (b.price != null ? this._fmtMoney(b.price, b.currency) : ''),
+          i.purchaseDate ? this._fmtDate(i.purchaseDate) : '', i.purchaseLocation || b.shop || '', i.rating != null ? '★ ' + i.rating : '',
+          b.reserved ? t('det.reserved') : ''].filter(Boolean).join(' · ');
+        return `<button class="dbot${b.id === sel.id ? ' on' : ''}" data-act="dsel" data-id="${esc(b.id)}" style="margin-left:18px;width:calc(100% - 18px)"><span class="rd"></span>` +
+          `<span class="wmain"><span class="loc${b._loc === NO_LOC ? ' none' : ''}">${esc(nm(b._loc))}</span>${sub ? `<span class="dpur">${esc(sub)}</span>` : ''}</span></button>`;
+      };
+      const gRows = (list) => list.map(([l, arr], gi) => {
+        const on = arr.some((b) => b.id === sel.id);
+        const op = gOpen.has(l);
+        return `<div style="display:flex;align-items:stretch;gap:6px"><button class="dbot${on ? ' on' : ''}" data-act="dsel" data-id="${esc((arr.find((b) => b.id === sel.id) || arr[0]).id)}" style="flex:1"><span class="rd"></span>` +
+          `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(nm(l))}${arr.length > 1 ? ' ×' + arr.length : ''}${arr.some((b) => b.reserved) ? ' · ' + esc(t('det.reserved')) : ''}</span></button>` +
+          `<button class="btn round" data-act="dgrp" data-l="${esc(l)}" aria-expanded="${op}" aria-label="${esc(t('det.bottlesN', { n: arr.length }))}">${op ? '▾' : '▸'}</button></div>` +
+          (op ? arr.map(botRow).join('') : '');
+      }).join('');
+      // Feste Leiste unten: gewaehlter Platz (Tipp = Auswahl als Blatt nach oben) + Entnehmen
+      const selGrp = groups.get(sel._loc) || [sel];
+      const _split = (l) => { const n = nm(l), i = n.indexOf(' · '); return i < 0 ? [n, ''] : [n.slice(0, i), n.slice(i + 3)]; };
+      const _rk = _split(sel._loc)[0];
+      const _inRack = Array.from(groups.entries()).filter(([l]) => _split(l)[0] === _rk).sort(([l]) => (l === sel._loc ? -1 : 0));
+      const _nRack = _inRack.reduce((n, [, arr]) => n + arr.length, 0);
+      const _places = _inRack.map(([l, arr]) => _split(l)[1] ? _split(l)[1] + (arr.length > 1 && _inRack.length > 1 ? ' ×' + arr.length : '') : '').filter(Boolean).join(', ');
+      const _cnt = t('det.bottlesN', { n: _nRack });
+      const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
+      const botsSec = '';
+      const actBar = `<div class="dact d2act">${popup}` +
+        `<button class="d2sel" data-act="dbots" aria-expanded="${sectionOpen}" aria-haspopup="listbox"><span class="d2st"><span class="d2sub" style="color:var(--cb-text);font-weight:600">${esc(_rk)} · <span class="bw">${esc(_cnt)}</span><span class="bi" title="${esc(_cnt)}" aria-label="${esc(_cnt)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 2h4v2.5c0 1 .6 1.6 1.2 2.6C16 8.3 16.5 9.5 16.5 11V21a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V11c0-1.5.5-2.7 1.3-3.9C9.4 6.1 10 5.5 10 4.5z"/></svg>${_nRack}</span></span>${_places ? `<span class="loc">${esc(_places)}</span>` : ''}</span>` +
+        `<span class="d2pill${multi ? ' hot' : ''}"${multi ? ` title="${esc(t('det.morePlaces', { n: groups.size - 1 }))}" aria-label="${esc(t('det.morePlaces', { n: groups.size - 1 }))}"` : ''}>${multi ? '+' + (groups.size - 1) + ' ' : ''}${sectionOpen ? '▾' : '▴'}</span></button>` +
+        `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button></div>`;
+      const img = info && info.image ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(info.image)}" onerror="this.remove()">` : '';
+      const grapes = (sel.grapes || []).join(', ');
+      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
+      return `<div class="d2hero">${img}${main}</div>${maturity}${about}${noteHtml}${botsSec}${actBar}`;
+    }
+    _renderDlg() {
+      const el = this._dlg;
+      if (!el) return;
+      el.classList.toggle('dd', !!this._dd);
+      if (this._fdel) {
+        const f = this._fdel;
+        el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('fd.title', { label: f.label }))}</span>` +
+          `<span class="wsub">${esc(t('fd.text', { n: f.n }))}</span></span></div>` +
+          (f.err ? `<div class="derr">${esc(f.err)}</div>` : '') +
+          `<div class="dact"><button class="btn" data-act="fdelno" ${f.busy ? 'disabled' : ''}>${esc(t('fd.cancel'))}</button><button class="btn danger" data-act="fdelyes" ${f.busy ? 'disabled' : ''}>${esc(f.busy ? t('fd.starting') : t('fd.confirm'))}</button></div></div>`;
+        el.hidden = false;
+        return;
+      }
+      if (this._cfm) {
+        el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('rl.title'))}</span>` +
+          `<span class="wsub">${esc(t('rl.text'))}</span></span></div>` +
+          `<div class="dact"><button class="btn" data-act="pno">${esc(t('rl.cancel'))}</button><button class="btn on" data-act="pyes">${esc(t('rl.confirm'))}</button></div></div>`;
+        el.hidden = false;
+        return;
+      }
+      if (this._dd) { this._renderDd(); return; }
+      if (this._wz) { this._renderWz(); return; }
+      if (this._set) { this._renderSet(); return; }
+      const d = this._det;
+      if (!d || !this._data) { el.hidden = true; el.innerHTML = ''; return; }
+      const bottles = this._detBottles();
+      if (!bottles.length && d.step !== 'done') { this._det = null; el.hidden = true; el.innerHTML = ''; return; }
+      const b0 = bottles[0] || d.snap;
+      if (bottles.length && !bottles.some((b) => b.id === d.sel)) d.sel = bottles[0].id;
+      const sel = bottles.find((b) => b.id === d.sel);
+      if (sel && d.step !== 'done') {
+        this._fetchInfo(sel.id);
+        if (this._detV2()) this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
+      }
+      const info = sel ? this._info[sel.id] : null;
+      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>` +
+        `<button class="dx" data-act="dclose" aria-label="${esc(t('head.close'))}" ${d.busy ? 'disabled' : ''}>✕</button></div>`;
+      let body = '';
+      if (d.step === 'done') {
+        body = `<div class="dask">${esc(t('det.taken'))}</div><div>${esc(d.snap.name)} ${esc(d.snap.vintage || '')}${d.snap._loc !== NO_LOC ? ' · ' + esc(d.snap._loc) : ''}<br>` +
+          `<span class="dpur">${esc(t('det.takenInfo', { reason: d.reasonLabel }))}</span></div>` +
+          `<div class="dact">${bottles.length ? `<button class="btn" data-act="dagain">${esc(t('det.again', { n: bottles.length }))}</button>` : ''}` +
+          `<button class="btn on" data-act="dclose">${esc(t('det.done'))}</button></div>`;
+      } else if (d.step === 'confirm') {
+        const reasons = ['drank', 'gifted', 'sold', 'other'].map((v) => [v, t('reason.' + v)]);
+        body = `<div class="dask">${esc(t('det.confirmTitle'))}</div>` +
+          `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc)}${sel.reserved ? ' · ' + esc(t('det.reserved')) : ''}</span></div>` +
+          `<div class="dsec">${esc(t('det.reason'))}</div><div class="row-chips">` +
+          reasons.map(([v, l]) => `<button class="chip${d.reason === v ? ' on' : ''}" data-act="dreason" data-v="${v}">${l}</button>`).join('') + `</div>` +
+          (d.err ? `<div class="derr">${esc(d.err)}</div>` : '') +
+          `<div class="dact"><button class="btn" data-act="dback" ${d.busy ? 'disabled' : ''}>${esc(t('det.cancel'))}</button>` +
+          `<button class="btn danger" data-act="dgo" ${d.busy ? 'disabled' : ''}>${esc(d.busy ? t('det.taking') : t('det.takeYes'))}</button></div>`;
+      } else if (this._detV2()) {
+        body = this._viewV2(sel, bottles, info);
+      } else {
+        const st = sel._status;
+        const win = this._winText({ b: sel, bottles: [sel] });
+        const facts = [
+          [t('det.vintage'), esc(sel.vintage || 'NV')],
+          [t('det.maturity'), `${this._sdot(st)} ${esc(STATUS_LABEL[st])}${win ? ' · ' + esc(win) : ''}`],
+          [t('det.origin'), esc(Array.from(new Set([sel.country, sel.region, sel.appellation].filter(Boolean))).join(' · '))],
+          [t('det.grapes'), esc((sel.grapes || []).join(', '))],
+          [t('det.classification'), (() => { const pv = Object.values(sel.p || {}).map((v) => String(v).toLowerCase()); const parts = String(sel.classification || '').split(/[,;]/).map((x) => x.trim()).filter(Boolean); return parts.length && parts.every((x) => pv.some((v) => v.includes(x.toLowerCase()))) ? '' : esc(sel.classification || ''); })()],
+        ].concat(((this._data && this._data.fields) || []).map((l) => [l, esc((sel.p && sel.p[l]) || '')])).filter((r) => r[1]);
+        let bots = '';
+        const locs = new Map();
+        bottles.forEach((b) => { if (!locs.has(b._loc)) locs.set(b._loc, []); locs.get(b._loc).push(b); });
+        const tag = (b) => (b.reserved ? ' · ' + t('det.reserved') : '');
+        if (locs.size > 1) {
+          bots = `<div class="dsec">${esc(t('det.pickBottle', { n: bottles.length }))}</div>` + Array.from(locs.entries()).map(([l, arr]) =>
+            `<button class="dbot${l === sel._loc ? ' on' : ''}" data-act="dsel" data-id="${esc(arr[0].id)}"><span class="rd"></span>` +
+            `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}${arr.length > 1 ? ' ×' + arr.length : ''}${arr.some((b) => b.reserved) ? ' · ' + esc(t('det.reserved')) : ''}</span></button>`).join('');
+        } else {
+          facts.push([bottles.length > 1 ? t('det.bottles') : t('det.location'), esc((sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc) + (bottles.length > 1 ? ' ×' + bottles.length : '') + tag(sel))]);
+        }
+        let note = '';
+        if (!info || info.loading) note = `<div class="dpur">${esc(t('det.noteLoading'))}</div>`;
+        else if (info.error) note = `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>`;
+        else {
+          const pur = [info.purchaseLocation ? t('det.boughtAt', { shop: info.purchaseLocation }) : '', info.purchaseDate ? this._fmtDate(info.purchaseDate) : '',
+            info.price != null ? info.price + ' ' + (info.currency || '') : '', info.bottleSize || ''].filter(Boolean).join(' · ');
+          note = (pur ? `<div class="dpur">${esc(pur)}</div>` : '') +
+            (info.notes ? `<div class="dnote">${esc(info.notes)}</div>` : '');
+        }
+        const img = info && info.image ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(info.image)}" onerror="this.remove()">` : '';
+        body = `<div class="dtop">${img}<dl class="dfacts">${facts.map((r) => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl></div>` + bots +
+          (note ? `<div class="dsec">${esc(t('det.note'))}</div>${note}` : '') +
+          `<div class="dact"><button class="btn" data-act="dclose">${esc(t('det.close'))}</button>` +
+          `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button></div>`;
+      }
+      const top = el.firstElementChild ? el.firstElementChild.scrollTop : 0;
+      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">${head}${body}</div>`;
+      if (el.firstElementChild) el.firstElementChild.scrollTop = top;
+      el.hidden = false;
+    }
+    async _onDlg(act, el) {
+      const d = this._det;
+      if (!d) return;
+      if (act === 'dclose') { if (!d.busy) { this._det = null; this._renderDlg(); } return; }
+      if (act === 'dsel') { d.sel = el.dataset.id; d.more = false; d.botsOpen = false; }
+      else if (act === 'dmore') d.more = !d.more;
+      else if (act === 'dbots') d.botsOpen = !d.botsOpen;
+      else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }
+      else if (act === 'dask') { d.step = 'confirm'; d.err = ''; }
+      else if (act === 'dback') { if (!d.busy) d.step = 'view'; }
+      else if (act === 'dagain') { d.step = 'view'; d.more = false; }
+      else if (act === 'dreason') d.reason = el.dataset.v;
+      else if (act === 'dgo') { await this._consume(); return; }
+      this._renderDlg();
+    }
+    async _consume() {
+      const d = this._det;
+      if (!d || d.busy) return;
+      const sel = this._detBottles().find((b) => b.id === d.sel);
+      if (!sel) return;
+      d.busy = true; d.err = '';
+      this._renderDlg();
+      try {
+        const { domain, service } = this._svc(this._cfg.consume_service || (this._integ() ? 'my_cellarion.consume_bottle' : 'cellarion.consume_bottle'));
+        await this._hass.callService(domain, service, { bottle_id: sel.id, reason: d.reason });
+      } catch (e) {
+        d.busy = false;
+        d.err = t('det.takeFailed', { err: (e && e.message) || String(e) });
+        this._renderDlg();
+        return;
+      }
+      d.snap = sel; d.reasonLabel = t('reason.' + d.reason);
+      d.busy = false; d.step = 'done';
+      this._gone.add(sel.id);
+      if (this._raw) this._ingest(this._raw);
+      this._renderAll();
+      this._renderDlg();
+      clearTimeout(this._afterTimer);
+      this._afterTimer = setTimeout(() => this._load(), 12000);
+    }
+
+    // ---------- Bedienung ----------
+    _onClick(e) {
+      if (e.target.classList && e.target.classList.contains('dlg') && this._dd) { this._dd = null; this._renderDlg(); return; }
+      if (e.target.classList && e.target.classList.contains('dlg') && this._fdel) { if (!this._fdel.busy) { this._fdel = null; this._renderDlg(); } return; }
+      if (e.target.classList && e.target.classList.contains('dlg') && this._cfm) { this._cfm = false; this._renderDlg(); return; }
+      if (e.target.classList && e.target.classList.contains('dlg') && this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); return; }
+      if (e.target.classList && e.target.classList.contains('dlg')) {
+        if (this._det && !this._det.busy) { this._det = null; this._renderDlg(); }
+        return;
+      }
+      const t = e.target.closest && e.target.closest('[data-act]');
+      if (!t) return;
+      const act = t.dataset.act;
+      const f = this._f;
+      if (act === 'showhid') { this._showHid = !this._showHid; this._renderHead(); return; }
+      if (act === 'dd') { this._dd = t.dataset.id; this._renderDlg(); return; }
+      if (act === 'ddclose') { this._dd = null; this._renderDlg(); return; }
+      if (act === 'ddpick') {
+        const id = this._dd, v = t.dataset.v;
+        this._dd = null;
+        if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fs(id).add(v); }
+        this._renderDlg(); this._renderAll();
+        return;
+      }
+      if (act === 'detail') {
+        if (t.classList.contains('wrow') && this._open.size) { this._open = new Set(); this._renderList(); }
+        this._det = { wine: t.dataset.w, vintage: t.dataset.v, step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
+        this._renderDlg();
+      } else if (act === 'setopen') {
+        this._det = null; this._set = true; this._renderDlg();
+      } else if (act === 'setclose') {
+        this._set = null; this._renderDlg();
+      } else if (act === 'fvis') {
+        const id = t.dataset.id;
+        const hid = new Set(this._fh);
+        if (hid.has(id)) hid.delete(id); else { hid.add(id); delete this._f[id]; }
+        this._setFilters(this._fo, Array.from(hid));
+        this._renderAll(); this._renderSet();
+      } else if (act === 'fdelask') {
+        const dd = this._allDefs().find((x) => x.id === t.dataset.id);
+        if (dd && dd.personal) { this._fdel = { id: dd.id, label: dd.label, n: this._data.bottles.filter((b) => b.p && b.p[dd.label]).length, busy: false }; this._renderDlg(); }
+      } else if (act === 'fdelno') {
+        this._fdel = null; this._renderDlg();
+      } else if (act === 'fdelyes') {
+        this._delField();
+      } else if (act === 'fup' || act === 'fdn') {
+        this._fmove(t.dataset.id, act === 'fup' ? -1 : 1);
+      } else if (act === 'rack') {
+        this._setRack(t.dataset.n, t.dataset.k, t.dataset.v);
+      } else if (act === 'detv2') {
+        this._local.detailV2 = t.dataset.v === 'on'; this._saveState(); this._renderSet();
+      } else if (act === 'lang') {
+        this._setLang(t.dataset.v || '');
+        this._initLang().then(() => {
+          if (this._raw) this._ingest(this._raw);
+          this._renderAll(); this._renderSet();
+        });
+      } else if (act === 'scope') {
+        const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
+        if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+        else if (t.dataset.v === 'all' && dev) delete L[k];
+        this._saveState();
+        this._applyEff();
+        this._initLang().then(() => {
+          if (this._raw) this._ingest(this._raw);
+          this._renderAll(); this._renderSet();
+        });
+      } else if (act === 'scale') {
+        this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg();
+      } else if (act === 'wzopen') {
+        this._wzOpen();
+      } else if (act.startsWith('wz')) {
+        if (act === 'wzclose') { if (!this._wz.busy) { this._wz = null; this._renderDlg(); } }
+        else if (act === 'wzsave') this._wzSave();
+        else if (act === 'wzall') { this._wz.all = !this._wz.all; this._renderWz(); }
+        else if (act === 'wzw') this._wzTap(t.dataset.h, Number(t.dataset.i));
+        else if (act === 'wzdel') this._wzTap(t.dataset.h, -1);
+      } else if (act.startsWith('d')) {
+        this._onDlg(act, t);
+      } else if (act === 'chip') {
+        const set = f[t.dataset.g];
+        const v = t.dataset.v;
+        if (set.has(v)) set.delete(v); else set.add(v);
+        this._renderAll();
+      } else if (act === 'fdel') {
+        f[t.dataset.g].delete(t.dataset.v); this._renderAll();
+      } else if (act === 'pyes') {
+        this._cfm = false; this._renderDlg(); this._refreshNow();
+      } else if (act === 'pno') {
+        this._cfm = false; this._renderDlg();
+      } else if (act === 'az') {
+        const a = this._listEl.querySelector(`.azanc[data-az="${t.dataset.k}"]`);
+        if (a) this._listEl.scrollTo({ top: this._listEl.scrollTop + a.getBoundingClientRect().top - this._listEl.getBoundingClientRect().top, behavior: 'auto' });
+      } else if (act === 'toggle') {
+        const id = t.dataset.id;
+        if (this._open.has(id)) this._open.delete(id); else this._open = new Set([id]);
+        this._renderList();
+      } else if (act === 'view') {
+        this._view = t.dataset.v; this._saveState(); this._renderAll();
+      } else if (act === 'more') {
+        this._more = !this._more; this._autoFolded = false; this._manual = !this._more; this._renderHead();
+      } else if (act === 'clearq') {
+        f.q = ''; this._renderAll();
+      } else if (act === 'reset') {
+        this._f = { q: '' };
+        this._renderAll();
+      } else if (act === 'reload') {
+        this._refreshNow();
+      }
+    }
+    _onChange(e) {
+      const s = e.target && e.target.dataset && e.target.dataset.sel;
+      if (!s) return;
+      if (s === 'sort') { this._sort = e.target.value; this._saveState(); }
+      else if (e.target.value) { this._fs(s).add(e.target.value); }
+      this._renderAll();
+    }
+    _onInput(e) {
+      if (e.target.dataset && e.target.dataset.wzq !== undefined && this._wz) { this._wz.q = e.target.value; this._renderWzList(); return; }
+      if (!e.target.matches || !e.target.matches('input[type=search]')) return;
+      this._f.q = e.target.value;
+      const box = e.target.closest('.search');
+      if (box) box.classList.toggle('has', !!this._f.q);
+      clearTimeout(this._qTimer);
+      this._qTimer = setTimeout(() => this._renderAll(), 120);
+    }
+  }
+
+  if (!customElements.get('cellarion-bestand-card')) customElements.define('cellarion-bestand-card', CellarionBestandCard);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: 'cellarion-bestand-card',
+    name: 'My Cellarion',
+    description: 'Wine cellar inventory with search, filters, detail view and take-out (Cellarion).',
+  });
+})();

@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "My Cellarion",
+        "description": "Create an API token in Cellarion (Settings → API tokens) with the scope \"read\", plus \"consume\" if you want to take bottles out from the card.",
+        "data": { "url": "Cellarion address", "token": "API token" }
+      },
+      "reauth_confirm": {
+        "title": "New API token",
+        "description": "Cellarion rejected the stored token. Enter a new one.",
+        "data": { "token": "API token" }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cellarion could not be reached.",
+      "invalid_auth": "The token was rejected.",
+      "invalid_url": "The address must start with http:// or https://."
+    },
+    "abort": {
+      "single_instance_allowed": "My Cellarion is already set up.",
+      "reauth_successful": "The new token is saved."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "My Cellarion",
+        "data": { "scan_interval": "Refresh interval (seconds)" }
+      }
+    }
+  },
+  "services": {
+    "read": { "name": "Read inventory", "description": "Returns the cached inventory and shared card settings." },
+    "refresh": { "name": "Refresh inventory", "description": "Fetches the inventory from Cellarion now." },
+    "sync": {
+      "name": "Sync inventory",
+      "description": "Refreshes only if the cached inventory is older than the given age.",
+      "fields": { "max_age": { "name": "Maximum age", "description": "Seconds." } }
+    },
+    "bottle": {
+      "name": "Bottle details",
+      "description": "Note, purchase, rating, register profile and label image of one bottle.",
+      "fields": { "id": { "name": "Bottle ID", "description": "Cellarion bottle id (24 hex characters)." } }
+    },
+    "settings": {
+      "name": "Save card settings",
+      "description": "Settings shared by all devices.",
+      "fields": {
+        "filter_order": { "name": "Filter order", "description": "Filter ids in display order." },
+        "filter_hidden": { "name": "Hidden filters", "description": "Filter ids that are hidden." },
+        "language": { "name": "Language", "description": "Language code; empty uses the language of the Home Assistant user." },
+        "rack_settings": { "name": "Rack display", "description": "Per rack: shelf counting direction and position display." }
+      }
+    },
+    "winzer_sort": {
+      "name": "Producer sort word",
+      "description": "Chooses which word of a producer name is used for sorting.",
+      "fields": { "name": { "name": "Producer", "description": "Producer name." }, "index": { "name": "Word number", "description": "Counted from 0; -1 removes the entry." } }
+    },
+    "consume_bottle": {
+      "name": "Take out bottle",
+      "description": "Marks a bottle as consumed (token needs the consume scope).",
+      "fields": {
+        "bottle_id": { "name": "Bottle ID", "description": "Cellarion bottle id." },
+        "reason": { "name": "Reason", "description": "drank, gifted, sold or other." },
+        "rating": { "name": "Rating", "description": "Optional, 0–100." },
+        "note": { "name": "Note", "description": "Optional." }
+      }
+    }
+  }
+}

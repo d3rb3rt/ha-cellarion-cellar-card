@@ -3,6 +3,13 @@
 DOMAIN = "my_cellarion"
 
 
+CONF_URL = "url"
+CONF_TOKEN = "token"
+CONF_SCAN_INTERVAL = "scan_interval"
+DEFAULT_URL = "https://cellarion.app"
+DEFAULT_SCAN_INTERVAL = 1800  # seconds
+MIN_SCAN_INTERVAL = 300
+
 PAGE_SIZE = 200
 MCP_PATH = "/api/mcp"
 USER_AGENT = "ha-my-cellarion/0.1"  # Cloudflare in front of cellarion.app rejects default library user agents

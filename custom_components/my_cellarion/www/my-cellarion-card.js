@@ -345,7 +345,14 @@
     .frow .wmain { flex: 1; }
     .frow .btn.round { width: 36px; min-height: 36px; font-size: 16px; }
     .frow.off .wname { opacity: .5; }
-    .setrow { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--cb-line); text-align: left; width: 100%; }
+    .sblk { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--cb-line); }
+    .dh + .sblk { border-top: 0; padding-top: 4px; }
+    .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }
+    .racknm { font-size: .88em; font-weight: 600; color: var(--cb-sub); }
+    .shd { display: flex; align-items: center; gap: 10px; }
+    .shd .wmain { flex: 1; }
+    .scopeone { flex: none; cursor: default; pointer-events: none; }
+    .setrow { display: flex; align-items: center; gap: 12px; padding: 0; text-align: left; width: 100%; }
     .setrow .wmain { flex: 1; }
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
@@ -502,13 +509,17 @@
       this._applyEff();
     }
     // Switch "all devices" (globe) / "this device only" (phone): two round icons, one active
-    _scopeSw(k) {
-      const dev = this._local[k] !== undefined;
+    _scopeSw(k, only) {
+      const dev = only ? only === 'device' : this._local[k] !== undefined;
       const ico = {
         all: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
         device: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>',
       };
       const b = (v, label, on) => `<button class="btn round${on ? ' on' : ''}" data-act="scope" data-k="${k}" data-v="${v}" aria-pressed="${on}" title="${esc(label)}" aria-label="${esc(label)}">${ico[v]}</button>`;
+      if (only) { // fixed scope: show only the matching icon, highlighted, not clickable
+        const lbl = only === 'all' ? t('set.scopeAll') : t('set.scopeDevice');
+        return `<span class="btn round on scopeone" role="img" title="${esc(lbl)}" aria-label="${esc(lbl)}">${ico[only]}</span>`;
+      }
       return `<span style="display:flex;gap:6px;flex:none">${b('all', t('set.scopeAll'), !dev)}${b('device', t('set.scopeDevice'), dev)}</span>`;
     }
     _saveState() {
@@ -1211,32 +1222,31 @@
       const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Keep the scroll position when redrawing
       const sc = Math.round(this._scale * 100);
       const steps = [85, 100, 115, 130, 150, 175, 200];
+      const hd = (name, sub, right) => `<div class="shd"><div class="wmain"><span class="wname">${esc(name)}</span><span class="wsub">${esc(sub)}</span></div>${right || ''}</div>`;
       el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
         `<div class="dh"><span class="wmain"><span class="wname">${esc(t('head.settings'))}</span></span>` +
         `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
-        `<div class="dsec">${esc(t('set.general'))}</div>` +
-        `<div style="display:flex;align-items:center;gap:10px"><div class="wmain"><span class="wname">${esc(t('set.language'))}</span><span class="wsub">${esc(t('set.languageSub'))}</span></div>${this._scopeSw('language')}</div>` +
-        `<div class="scalechips" style="margin-bottom:10px">` + [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {})).map(([c, n]) => `<button class="chip${c === (this._langSel || '') ? ' on' : ''}" data-act="lang" data-v="${esc(c)}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px;white-space:nowrap">${esc(n)}</button>`).join('') + `</div>` +
-        `<button class="setrow" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span>` +
-        `<span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button>` +
-        (((this._data && this._data.racks) || []).length ? `<div class="wmain" style="margin-top:6px"><span class="wname">${esc(t('set.racks'))}</span><span class="wsub">${esc(t('set.racksSub'))}</span></div>` +
+        `<div class="sblk">` + hd(t('set.language'), t('set.languageSub'), this._scopeSw('language')) +
+        `<div class="scalechips">` + [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {})).map(([c, n]) => `<button class="chip${c === (this._langSel || '') ? ' on' : ''}" data-act="lang" data-v="${esc(c)}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px;white-space:nowrap">${esc(n)}</button>`).join('') + `</div></div>` +
+        `<div class="sblk"><button class="setrow" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span>` +
+        `<span class="wsub">${esc(t('set.producersSub'))}</span></span>${this._scopeSw(null, 'all')}<span class="chev">›</span></button></div>` +
+        (((this._data && this._data.racks) || []).length ? `<div class="sblk">` + hd(t('set.racks'), t('set.racksSub'), this._scopeSw(null, 'all')) +
           this._data.racks.map((n) => {
             const rs = this._rs(n);
             const grp = (key, label, opts) => `<div class="wsub" style="margin-top:4px">${esc(label)}</div><div class="scalechips">` + opts.map(([v, l]) => `<button class="chip${rs[key] === v ? ' on' : ''}" data-act="rack" data-n="${esc(n)}" data-k="${key}" data-v="${v}" style="width:auto;padding:0 14px;border-radius:20px;white-space:nowrap">${esc(l)}</button>`).join('') + `</div>`;
-            return `<div style="margin:6px 0 10px"><b>${esc(n)}</b>` + grp('order', t('set.rackOrder'), [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]]) +
+            return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` + grp('order', t('set.rackOrder'), [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]]) +
               grp('side', t('set.rackSide'), [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]]) + `</div>`;
-          }).join('') : '') +
-        `<div class="dsec">${esc(t('set.device'))}</div>` +
-        `<div class="wmain"><span class="wname">${esc(t('set.fontSize'))}</span><span class="wsub">${esc(t('set.fontSizeSub', { pct: sc }))}</span></div>` +
-        `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div>` +
-        `<div style="display:flex;align-items:center;gap:10px;margin-top:6px"><div class="wmain"><span class="wname">${esc(t('set.filters'))}</span><span class="wsub">${esc(t('set.filtersSub'))}</span></div>${this._scopeSw('filters')}</div>` + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
+          }).join('') + `</div>` : '') +
+        `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
+        `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
+        `<div class="sblk">` + hd(t('set.filters'), t('set.filtersSub'), this._scopeSw('filters')) + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
         this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
           `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
           `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
           (d.personal && !this._integ() ? `<button class="btn round" data-act="fdelask" data-id="${esc(d.id)}" aria-label="${esc(t('set.deleteForever', { label: d.label }))}" title="${esc(t('set.deleteTitle'))}">🗑</button>` : '') +
           `<button class="btn round" data-act="fup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
           `<button class="btn round" data-act="fdn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
-        `<div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
+        `</div><div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
     }

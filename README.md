@@ -40,6 +40,18 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 4. Settings → Devices & services → Add integration → **My Cellarion**, enter the address and the token. If your account has several cellars you choose one (changeable later under **Configure**).
 5. The card is registered automatically. Add **My Cellarion** to a dashboard (or `type: custom:my-cellarion-card`).
 
+## Settings
+
+Tap the gear in the card. Choices marked with the globe/phone switch can be shared by all devices or kept on this device only.
+
+- **Language:** automatic (language of the Home Assistant user), English or German.
+- **Filters:** which filters are shown and in which order (your own Cellarion data fields appear as filters too).
+- **Edit producers:** pick the word a producer is sorted by (for example "Haag" for "Fritz Haag"); drives the A–Z index.
+- **Storage locations, per rack:** count shelves from the top or from the bottom, and show the position as left/middle/right, as a slot number, or not at all.
+- **Font size:** zoom from 85 % to 200 %, remembered per browser.
+
+In Home Assistant, under the integration's **Configure**: refresh interval of the background update and, if your account has several cellars, which one is shown.
+
 ## Card options (all optional)
 
 ```yaml

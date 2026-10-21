@@ -432,6 +432,7 @@
       this._hass = hass;
       if (!this._cfg) return;
       if (first) this._start();
+      this._subEvt();
       const ent = this._cfg.count_entity || '';
       const st = hass.states && hass.states[ent];
       const val = st ? st.state : undefined;
@@ -447,17 +448,32 @@
     getGridOptions() { return { columns: 12, min_columns: 6, rows: 'auto' }; }
     static getStubConfig() { return {}; }
 
+    // Integration: the hub fires my_cellarion_updated on the HA bus when the inventory changed (event stream or timer): reload then
+    _subEvt() {
+      if (!this._integ() || this._evtUnsub || this._evtBusy || !this._hass || !this._hass.connection || !this._cfg) return;
+      this._evtBusy = true;
+      this._hass.connection.subscribeEvents(() => {
+        clearTimeout(this._evtTimer);
+        this._evtTimer = setTimeout(() => { if (this._built) this._load(); }, 800);
+      }, 'my_cellarion_updated').then((unsub) => {
+        this._evtBusy = false;
+        if (this.isConnected) this._evtUnsub = unsub; else unsub();
+      }).catch(() => { this._evtBusy = false; });
+    }
+
     connectedCallback() {
       this._onVis = this._onVis || (() => { if (!document.hidden && this._hass && this._cfg && this._built) this._openSync(); });
       this._onResize = this._onResize || (() => this._fit());
       document.addEventListener('visibilitychange', this._onVis);
       window.addEventListener('resize', this._onResize);
       if (this._hass && this._cfg) {
+        this._subEvt();
         this._startTimer();
         if (this._built) { this._fit(); this._openSync(); }
       }
     }
     disconnectedCallback() {
+      if (this._evtUnsub) { this._evtUnsub(); this._evtUnsub = null; } clearTimeout(this._evtTimer);
       clearInterval(this._timer); clearTimeout(this._cntTimer); clearTimeout(this._afterTimer); this._timer = null;
       document.removeEventListener('visibilitychange', this._onVis);
       window.removeEventListener('resize', this._onResize);

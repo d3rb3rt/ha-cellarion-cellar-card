@@ -162,6 +162,7 @@
       min-height: var(--cb-chip-h, 40px); border-radius: 20px; border: 1px solid var(--cb-line);
       background: var(--cb-chip); padding: 0 10px; font-size: var(--cb-chip-font, 14px); max-width: 100%;
     }
+    button.sel.hasv { color: var(--cb-on); font-weight: 600; box-shadow: 0 0 0 1px var(--cb-on) inset; } /* filter has values selected */
     button.sel { width: auto; flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: 6px; text-align: left; color: var(--cb-text); font-family: inherit; cursor: pointer; white-space: nowrap; overflow: hidden; }
     button.sel::after { content: ''; flex: none; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); opacity: .7; margin-right: 4px; }
     button.sel.more-pill { opacity: .75; }
@@ -960,7 +961,7 @@
             if (!m.size && !set.size) return '';
             const items = d.defs ? this._optsK(d.defs, m, set) : this._opts(m, set, d.sort || by);
             this._ddItems[d.id] = { label: d.label, items, cur: '' };
-            return `<button type="button" class="sel fs" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
+            return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') + `</div></div>`;
         const ic = (dot) => this._dotIc(dot);
         const pills = defs.map((d) => Array.from(this._fs(d.id)).map((v) => {

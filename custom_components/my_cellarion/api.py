@@ -172,7 +172,15 @@ class McpClient:
         return None
 
     async def tool(self, name: str, args: JsonDict) -> Any:
-        r = await self._rpc("tools/call", {"name": name, "arguments": args})
+        try:
+            r = await self._rpc("tools/call", {"name": name, "arguments": args})
+        except aiohttp.ClientResponseError as err:
+            if err.status != 404 or not self._sid:
+                raise
+            # 404 with a session id means the server dropped the session: sign in again, once
+            self._sid = None
+            await self.start()
+            r = await self._rpc("tools/call", {"name": name, "arguments": args})
         res = (r or {}).get("result") or {}
         if res.get("isError"):
             raise RuntimeError(res["content"][0]["text"][:200])

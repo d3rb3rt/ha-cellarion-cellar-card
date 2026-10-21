@@ -432,7 +432,7 @@
       this._hass = hass;
       if (!this._cfg) return;
       if (first) this._start();
-      const ent = this._cfg.count_entity || '';
+      const ent = this._cfg.count_entity || 'sensor.my_cellarion_total_bottles';
       const st = hass.states && hass.states[ent];
       // Integration: the sensor's `updated` attribute changes whenever the hub saw a change in Cellarion
       const val = st ? (this._integ() ? st.state + '|' + ((st.attributes && st.attributes.updated) || '') : st.state) : undefined;

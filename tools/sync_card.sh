@@ -17,7 +17,7 @@ s = hdr + s[s.index("*/") + 3:]
 s = s.replace("const BACKEND = 'dev';", "const BACKEND = 'integration';")
 s = s.replace("customElements.get('cellarion-bestand-card')", "customElements.get('my-cellarion-card')").replace("customElements.define('cellarion-bestand-card'", "customElements.define('my-cellarion-card'").replace("type: 'cellarion-bestand-card'", "type: 'my-cellarion-card'").replace("name: 'My Cellarion (dev)'", "name: 'My Cellarion'").replace("'cellarion-bestand:'", "'my-cellarion:'")
 s = s.replace("(this._integ() ? 'my_cellarion.consume_bottle' : 'cellarion.consume_bottle')", "'my_cellarion.consume_bottle'")
-s = s.replace("(this._integ() ? 'sensor.my_cellarion_total_bottles' : 'sensor.cellarion_total_bottles')", "''")
+s = s.replace("(this._integ() ? 'sensor.my_cellarion_total_bottles' : 'sensor.cellarion_total_bottles')", "'sensor.my_cellarion_total_bottles'")
 # The shipped card has only the new detail view: no "new detail view (test)" switch, no old page.
 s = s.replace("_detV2() { return this._local.detailV2 !== undefined ? !!this._local.detailV2 : this._cfg.detail === 'v2'; }", "_detV2() { return true; }")
 _l = s.split("\n")
@@ -33,6 +33,7 @@ s = "\n".join(l for l in s.split("\n") if not re.match(r"\s*\*\s+\w+_service:", 
 assert "cellarion-bestand-card'" not in s and "(dev)" not in s and "BACKEND = 'dev'" not in s
 assert "detailV2" not in s and "detv2" not in s
 assert "shell_command" not in s and "cellarion.consume_bottle'" not in s.replace("my_cellarion.consume_bottle'", ""), "dev-only code left in the card"
+assert "const ent = this._cfg.count_entity || 'sensor.my_cellarion_total_bottles'" in s, "the card must watch the integration sensor"
 open(sys.argv[2], "w", encoding="utf-8").write(s)
 PY
 for f in "$SRC"/cellarion-i18n/*.json; do

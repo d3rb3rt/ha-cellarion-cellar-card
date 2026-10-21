@@ -7,10 +7,15 @@ a searchable, filterable view of your cellar with bottle details, storage places
 >
 > **Heads-up:** this project was built entirely by vibe coding with Claude (Anthropic). If that is not your thing, please don't install it.
 
-![Inventory list](docs/list.png)
-![Bottle details](docs/detail.png)
+<p align="center">
+  <img src="docs/list.png" alt="Inventory list" width="780"><br>
+  <img src="docs/filters.png" alt="Filters and A-Z index" width="780"><br>
+  <img src="docs/detail.png" alt="Bottle details" width="420">
+  <img src="docs/settings.png" alt="Settings" width="340">
+  <img src="docs/producers.png" alt="Producer sort words" width="340">
+</p>
 
-*Screenshots show made-up sample wines.*
+*Desktop/tablet layout; a phone layout is included too.*
 
 ## What you get
 

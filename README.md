@@ -7,6 +7,11 @@ a searchable, filterable view of your cellar with bottle details, storage places
 >
 > **Heads-up:** this project was built entirely by vibe coding with Claude (Anthropic). If that is not your thing, please don't install it.
 
+![Inventory list](docs/list.png)
+![Bottle details](docs/detail.png)
+
+*Screenshots show made-up sample wines.*
+
 ## What you get
 
 - **Inventory** grouped by wine with search, A–Z index and filters (type, grape, region, producer, maturity, vintage, rack

@@ -31,14 +31,14 @@
  * Source of truth: https://github.com/d3rb3rt/my-cellarion-ha
  */
 (function () {
-  // ---------- Sprache (i18n) ----------
-  // Texte stehen in /local/cellarion-i18n/<sprache>.json (flach, Schluessel -> Text; Mehrzahl als {one, other}).
-  // Sprache: Konfiguration "language", sonst die Sprache des HA-Nutzers; fehlt ein Schluessel, gilt Englisch.
-  // Neue Sprache = neue Datei <sprache>.json mit denselben Schluesseln (en.json ist die Referenz).
-  // Cache-Schluessel der Sprachdateien: dieselbe ?v=N wie beim Laden der Karte (Ressource), damit Aenderungen sofort greifen
+  // ---------- Language (i18n) ----------
+  // Texts live in <path>/cellarion-i18n/<language>.json (flat, key -> text; plurals as {one, other}).
+  // Language: config "language", otherwise the language of the HA user; a missing key falls back to English.
+  // A new language is a new file <language>.json with the same keys (en.json is the reference).
+  // Cache key of the language files: the same ?v=N as the card resource, so changes take effect at once
   const CARD_V = ((document.currentScript && /[?&]v=([\w.-]+)/.exec(document.currentScript.src)) || [])[1] || String(Date.now());
-  // Ordner, aus dem die Karte geladen wurde: dort liegt auch cellarion-i18n/ (gilt fuer /local/ und fuer die Integration)
-  // Datenquelle dieser Datei: 'dev' = eigenes Entwicklungs-Setup, 'integration' = Dienste der Integration My Cellarion (setzt tools/sync_card.sh im Integrations-Repo)
+  // Folder the card was loaded from: cellarion-i18n/ lives next to it (works for /local/ and for the integration)
+  // Data source of this file: 'dev' = own development setup, 'integration' = services of the My Cellarion integration (set by tools/sync_card.sh in the integration repo)
   const BACKEND = 'integration';
   const SCRIPT_DIR = (((document.currentScript && document.currentScript.src) || '').split('?')[0].replace(/[^/]*$/, '')) || '/local/';
   const I18N = { lang: 'en', dict: {}, pr: new Intl.PluralRules('en'), files: {} };
@@ -55,7 +55,7 @@
     }
     return I18N.files[k];
   };
-  // Typen, Reife, Platzhalter: werden beim Sprachwechsel an Ort und Stelle neu gefuellt
+  // Types, maturity, placeholders: refilled in place when the language changes
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -99,7 +99,7 @@
     ha-card { position: relative; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; overflow: hidden; }
     ha-card.flush { background: none; box-shadow: none; border: 0; border-radius: 0; }
     .wrap {
-      /* Farben: alle ueberschreibbar per --cellarion-* (z. B. im HA-Theme), sonst aus den Standardvariablen des aktiven Themes abgeleitet */
+      /* Colours: all overridable via --cellarion-* (e.g. in the HA theme), otherwise derived from the standard variables of the active theme */
       --cb-text: var(--primary-text-color, #e1e1e1);
       --cb-sub: var(--secondary-text-color, #9b9b9b);
       --cb-line: var(--divider-color, rgba(127,127,127,.3));
@@ -411,7 +411,7 @@
       this._sortMap = {};
       this._info = {};
       this._gone = new Set();
-      this._more = true; // Filter beim Start aufgeklappt (Phone klappt sie beim Scrollen zu)
+      this._more = true; // Filters start expanded (the phone collapses them when scrolling)
       this._data = null;
       this._error = null;
       this._busy = false;
@@ -428,7 +428,7 @@
       const st = hass.states && hass.states[ent];
       const val = st ? st.state : undefined;
       if (this._countSeen !== undefined && val !== undefined && val !== this._countSeen) {
-        // Die Automation holt den Cache gerade neu; kurz warten, dann lesen.
+        // The automation is refreshing the cache right now; wait briefly, then read.
         clearTimeout(this._cntTimer);
         this._cntTimer = setTimeout(() => this._load(), 9000);
       }
@@ -455,13 +455,13 @@
       window.removeEventListener('resize', this._onResize);
     }
 
-    // Beim Oeffnen der Seite (und wenn der Tab wieder sichtbar wird) frisch von Cellarion holen, hoechstens einmal je Minute.
+    // Fetch fresh data from Cellarion when the page opens (and when the tab becomes visible again), at most once a minute.
     _openSync() {
       if (this._cfg.refresh_on_open === false || this._busy) return;
       if (this._lastRefresh && Date.now() - this._lastRefresh < 60000) return;
       this._refreshNow('sync');
     }
-    // Ohne feste Hoehe fuellt die Karte den Rest des Fensters, damit die Liste in der Karte scrollt und nicht die Seite.
+    // Without a fixed height the card fills the rest of the window, so the list scrolls inside the card and not the page.
     _fit() {
       if (!this._built || this._cfg.height) return;
       const card = this.shadowRoot.querySelector('ha-card');
@@ -470,7 +470,7 @@
       card.style.height = Math.max(420, window.innerHeight - top - 8) + 'px';
     }
 
-    // ---------- Zustand ----------
+    // ---------- State ----------
     _clampScale(v) {
       v = Number(v);
       return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
@@ -482,8 +482,8 @@
     _loadState() {
       try { return JSON.parse(localStorage.getItem(this._key) || '{}') || {}; } catch (e) { return {}; }
     }
-    // Einstellungen mit Wahl "alle Geraete" (zentral auf HA, this._shared) oder "nur dieses Geraet" (Browser, this._local):
-    // language und filters (Reihenfolge + Sichtbarkeit). Wirksam ist der Browserwert, wenn vorhanden, sonst der zentrale.
+    // Settings with the choice "all devices" (central on HA, this._shared) or "this device only" (browser, this._local):
+    // language and filters (order + visibility). The browser value wins when present, otherwise the central one.
     _applyEff() {
       const L = this._local || {}, S = this._shared || {};
       this._langSel = L.language !== undefined ? L.language : (typeof S.language === 'string' ? S.language : '');
@@ -501,7 +501,7 @@
       else { this._shared.filterOrder = order; this._shared.filterHidden = hidden; this._saveSettings(); }
       this._applyEff();
     }
-    // Umschalter "alle Geraete" (Globus) / "nur dieses Geraet" (Handy): zwei runde Symbole, eines aktiv
+    // Switch "all devices" (globe) / "this device only" (phone): two round icons, one active
     _scopeSw(k) {
       const dev = this._local[k] !== undefined;
       const ico = {
@@ -515,7 +515,7 @@
       try { localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._sort, scale: this._scale, local: this._local })); } catch (e) { /* ohne Speicher weiter */ }
     }
 
-    // ---------- Daten ----------
+    // ---------- Data ----------
     async _initLang() {
       const hl = this._hass && ((this._hass.locale && this._hass.locale.language) || this._hass.language);
       this._langUsed = this._langSel || '';
@@ -550,10 +550,10 @@
       const [domain, service] = String(name).split('.');
       return { domain, service };
     }
-    // Datenquelle: die Dienste der Integration my_cellarion (Antwort direkt als Objekt).
-    // Nur im Entwicklungs-Setup gibt es zusaetzlich eine Anbindung ueber eigene Dienste (Block "dev-only" unten).
+    // Data source: the services of the my_cellarion integration (response directly as an object).
+    // Only the development setup has an additional connection through its own services ("dev-only" block below).
     _integ() { return BACKEND === 'integration'; }
-    // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = Daten fuer den Dienst des Entwicklungs-Setups, int = Daten fuer den Dienst der Integration.
+    // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = data for the development setup's service, int = data for the integration's service.
     async _call(kind, sh, int) {
       const c = this._cfg || {};
       let res;
@@ -596,7 +596,7 @@
       }
       await this._load();
     }
-    // Lagerplatz-Anzeige je Regal (Einstellung, zentral gespeichert): Zaehlrichtung der Boeden und Lage im Boden
+    // Storage place display per rack (setting, stored centrally): counting direction of the shelves and position within the shelf
     _rs(name) {
       const r = (this._shared && this._shared.rackSettings && this._shared.rackSettings[name]) || {};
       return { order: r.order === 'bottom' ? 'bottom' : 'top', side: r.side === 'thirds' || r.side === 'slot' ? r.side : 'none' };
@@ -658,7 +658,7 @@
       };
       this._setHeader();
     }
-    // Kopfzeile der HA-Seite (Toolbar) um den Kellernamen ergaenzen: "My Cellarion Dev - HK4" (Option header_cellar: false schaltet das ab)
+    // Append the cellar name to the HA page header (toolbar), e.g. "My Cellarion - HK4" (option header_cellar: false turns it off)
     _setHeader() {
       try {
         if (this._cfg.header_cellar === false || !this._data || !this._data.cellar) return;
@@ -673,10 +673,10 @@
       } catch (e) { /* Kopfzeile ist optional */ }
     }
 
-    // ---------- Filter, Gruppen, Sortierung ----------
-    // skip: Filtergruppe auslassen (fuer die Zaehlung in den Auswahllisten: nur die uebrigen Filter wirken)
+    // ---------- Filters, groups, sorting ----------
+    // skip: leave out a filter group (for the counts in the pick lists: only the other filters apply)
     _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
-    // Alle moeglichen Filter: feste (Typ ... Ort) plus je persoenlichem Datenfeld einer (automatisch aus dem Cache)
+    // All possible filters: fixed ones (type ... place) plus one per personal data field (automatically from the cache)
     _allDefs() {
       const byProd = (a, b) => de.compare(this._pkey(a[0]), this._pkey(b[0]));
       const std = [
@@ -707,7 +707,7 @@
       });
     }
     _entries(bottles) {
-      // Eintrag = Wein + Jahrgang
+      // Entry = wine + vintage
       const m = new Map();
       bottles.forEach((b) => {
         const k = (b.wine || b.name) + '|' + (b.vintage || 'NV');
@@ -722,7 +722,7 @@
       });
       return Array.from(m.values());
     }
-    _old(v) { const n = this._vint(v); return n > 0 ? n : 99999; } // fuer "alt zuerst": NV ans Ende
+    _old(v) { const n = this._vint(v); return n > 0 ? n : 99999; } // for "oldest first": NV goes last
     _vint(v) { return v === 'NV' ? -1 : Number(v) || -1; }
     _cmpEntries(a, b) {
       switch (this._sort) {
@@ -761,7 +761,7 @@
       return groups.sort(cmp);
     }
 
-    // ---------- Aufbau ----------
+    // ---------- Layout ----------
     _build() {
       if (this._built) return;
       this._built = true;
@@ -786,19 +786,19 @@
       this._azEl = this.shadowRoot.querySelector('.az');
       this._ptr = this.shadowRoot.querySelector('.ptr');
       this._dlg = this.shadowRoot.querySelector('.dlg');
-      // Offene Filter einklappen, wenn der Nutzer die Liste scrollt (nur echte Touch/Rad-Eingabe, nicht Layout-Scroll)
+      // Collapse open filters when the user scrolls the list (real touch/wheel input only, not layout scrolling)
       const fold = () => {
         if (this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
       };
       this._listEl.addEventListener('scroll', () => {
         if (!this._azRaf) this._azRaf = requestAnimationFrame(() => { this._azRaf = 0; this._azUpdate(); });
-        // von Hand zugeklappt: sobald die Liste verlassen wurde, gilt wieder die Regel "oben angekommen -> aufklappen"
+        // collapsed by hand: once the list was left, the rule "at the top -> expand" applies again
         if (this._manual && !this._more && this._listEl.scrollTop > 40) { this._manual = false; this._autoFolded = true; }
         if (this._autoFolded && this._listEl.scrollTop <= 2) { this._autoFolded = false; this._more = true; this._renderHead(); }
       }, { passive: true });
       this._listEl.addEventListener('touchmove', fold, { passive: true });
       this._listEl.addEventListener('wheel', fold, { passive: true });
-      // Phone: Runterziehen am Listenanfang = Neu laden (mit Rueckfrage)
+      // Phone: pulling down at the top of the list = reload (with confirmation)
       const mob = () => window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
       let y0 = null, pull = 0;
       const ptr = this._ptr;
@@ -839,7 +839,7 @@
       const f = this._f;
       return Object.keys(f).reduce((n, k) => n + (k === 'q' ? 0 : f[k].size), 0);
     }
-    // Weinglas je Typ (Farbe = Weinfarbe): Rot/Weiss/Rose Kelch, Schaumwein Flute, Suess/Likoer kleines Glas
+    // Wine glass per type (colour = wine colour): red/white/rose goblet, sparkling flute, sweet/fortified small glass
     _glass(type, title) {
       const col = `var(--w-${type}, var(--cb-ring))`;
       const G = {
@@ -865,8 +865,8 @@
         (n != null ? `<span class="n">${n}</span>` : '') + `</button>`;
     }
 
-    // Auswahlliste: zuerst die Haeufigsten (ab TOP_MIN Flaschen, hoechstens TOP_MAX, mindestens 3), dann eine Linie, dann der Rest A-Z.
-    // Pulldown fuer feste Werte (Typ, Reife): Reihenfolge wie in defs, Wert = Schluessel, Text = Bezeichnung
+    // Pick list: the most frequent first (from TOP_MIN bottles, at most TOP_MAX, at least 3), then a line, then the rest A-Z.
+    // Pulldown for fixed values (type, maturity): order as in defs, value = key, text = label
     _optsK(defs, map, selected) {
       return defs.filter(([k]) => (map.get(k) && map.get(k).f) && !selected.has(k)).map(([k, l]) => {
         const o = map.get(k);
@@ -885,7 +885,7 @@
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
-    // Eigenes Auswahlmenue statt nativer Android-Liste (die war mal schwarz, mal durchsichtig, verrutschte beim Zoom und holte die Navileiste)
+    // Own pick menu instead of the native Android list (it was sometimes black, sometimes transparent, shifted when zooming and pulled in the navigation bar)
     _renderDd() {
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
@@ -905,17 +905,17 @@
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7m7.4-2.5c.04-.33.1-.66.1-1s-.06-.67-.1-1l2.1-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42L9.12 5.07a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11c-.04.33-.1.66-.1 1s.06.67.1 1l-2.1 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.22.39.3.6.22l2.5-1c.52.4 1.08.73 1.7 1l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.62-.27 1.18-.6 1.7-1l2.5 1c.23.09.47 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></button>`;
       const rlTxt = String(t('head.reload')).replace(/^\s*↻\s*/, '');
       const reload = `<button class="btn round rl" data-act="reloadask" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '↻'}</button>`;
-      const ttl = c.title || (c.header_cellar === false && this._data && this._data.cellar) || ''; // Kellername steht sonst in der Seitenkopfzeile
+      const ttl = c.title || (c.header_cellar === false && this._data && this._data.cellar) || ''; // otherwise the cellar name is shown in the page header
       let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}`;
       if (!d) html += reload + gear + `</div>`;
       if (d) {
-        // Zaehlung je Gruppe ueber die Flaschen, die alle uebrigen Filter (und die Suche) erfuellen
+        // Count per group over the bottles that meet all other filters (and the search)
         const cnt = (group, get) => {
           const m = new Map();
           this._filtered(group).forEach((b) => [].concat(get(b)).forEach((v) => { if (v) m.set(v, (m.get(v) || 0) + 1); }));
           return m;
         };
-        // Zaehlung fuer die Pulldowns: Weine | Jahrgaenge | Flaschen je Wert
+        // Count for the pulldowns: wines | vintages | bottles per value
         const cnt3 = (group, get) => {
           const m = new Map();
           this._filtered(group).forEach((b) => [].concat(get(b)).forEach((v) => {
@@ -961,7 +961,7 @@
         html += `<div class="sumline"><span class="grow" data-sum></span></div>`;
       }
       if (this._ptr && !this._pulling) { this._ptr.style.height = this._busy ? '24px' : '0px'; this._ptr.textContent = this._busy ? t('head.loading') : ''; }
-      // Fokus und Cursor im Suchfeld behalten, wenn der Kopf neu aufgebaut wird
+      // Keep focus and cursor in the search field when the header is rebuilt
       const input = this._head.querySelector('input[type=search]');
       const hadFocus = input && this.shadowRoot.activeElement === input;
       const pos = hadFocus ? input.selectionStart : 0;
@@ -978,7 +978,7 @@
       const inRow = brief === true;
       if (brief && m.size === 1) brief = 'one'; else brief = '';
       if (inRow && m.size > 1) {
-        // Mehrere Orte in der Weinzeile: je Regal zusammenfassen (Regal ×Anzahl), Details stehen in der Detailseite
+        // Several places in the wine row: summarise per rack (rack ×count), details are on the detail page
         const r = new Map();
         m.forEach((n, l) => { const k = l === NO_LOC ? NO_LOC : l.split(' · ')[0]; r.set(k, (r.get(k) || 0) + n); });
         return Array.from(r.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
@@ -1053,7 +1053,7 @@
       }
     }
 
-    // A-Z-Leiste: nur bei Wein A-Z / Winzer A-Z. Buchstabe = Anfang des Weinnamens bzw. des Winzer-Sortierworts.
+    // A-Z bar: only for wine A-Z / producer A-Z. Letter = start of the wine name or of the producer's sort word.
     _azKey(b) {
       const k = norm(this._sort === 'producer' ? this._pkey(b.producer) : b.name).replace(/[^a-z0-9]/g, '').charAt(0);
       return k >= 'a' && k <= 'z' ? k.toUpperCase() : '#';
@@ -1094,7 +1094,7 @@
       this._azUpdate();
     }
 
-    // Suchbegriffe im Text hervorheben (ohne Gross/Klein und Akzente, wie die Suche selbst)
+    // Highlight search terms in the text (ignoring case and accents, like the search itself)
     _hl(text) {
       text = String(text == null ? '' : text);
       const toks = norm(this._f.q).split(/\s+/).filter(Boolean);
@@ -1119,14 +1119,14 @@
       return this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
     }
     _sub(b) { return b.region || ''; }
-    // Bei der Sortierung "Winzer A-Z" und gepflegtem Sortierwort: dessen Anfangsbuchstabe fett (H bei "Fritz Haag")
+    // With sorting "producer A-Z" and a maintained sort word: its first letter in bold (H for "Fritz Haag")
     _prodHtml(name) {
       const i = this._sortMap && this._sortMap[name];
       const w = this._words(name);
       if (this._sort !== 'producer' || i === undefined || !(i >= 0 && i < w.length)) return this._hl(name);
       return w.map((x, k) => (k === i ? `<b class="wsl">${esc(x.charAt(0))}</b>${esc(x.slice(1))}` : esc(x))).join(' ');
     }
-    // Weinname | Winzer in einer Zeile
+    // Wine name | producer in one line
     _title(b) {
       const reg = (b._cls && b._cls.length ? `<span class="wsep">|</span><span class="wreg">${this._hl(b._cls.join(', '))}</span>` : '') +
         (b.region ? `<span class="wsep">|</span><span class="wreg">${this._hl(b.region)}</span>` : '');
@@ -1142,7 +1142,7 @@
       const asc = g.entries.slice().reverse();
       const vints = asc.map((e) => e.vintage).join(' · ');
       if (g.entries.length === 1) {
-        // Nur ein Jahrgang: Angaben stehen gleich in der Weinzeile, Tipp oeffnet die Details.
+        // Only one vintage: the details are right in the wine row, tapping opens the details.
         const e = g.entries[0];
         const win = this._winText(e);
         return `<div class="wine"><button class="wrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
@@ -1173,9 +1173,9 @@
         `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`;
     }
 
-    // ---------- Winzer pflegen (Sortierwort je Winzer) ----------
+    // ---------- Maintain producers (sort word per producer) ----------
     _words(name) { return String(name || '').trim().split(/\s+/).filter(Boolean); }
-    // Sortierschluessel: gepflegtes Wort zuerst, die uebrigen Woerter in alter Reihenfolge; sonst die Schreibweise
+    // Sort key: the maintained word first, the other words in their old order; otherwise the spelling
     _pkey(name, map) {
       name = name || '';
       const i = (map || this._sortMap || {})[name];
@@ -1193,7 +1193,7 @@
       this._wz = { q: '', all: false, err: '', busy: false, draft: Object.assign({}, this._sortMap) };
       this._renderWz();
     }
-    // Aenderungen im Entwurf gegenueber dem Gespeicherten: [Name, Wortnummer oder -1]
+    // Changes in the draft compared with the saved state: [name, word number or -1]
     _wzChanges() {
       const d = this._wz.draft, m = this._sortMap, out = [];
       Object.keys(d).forEach((n) => { if (d[n] !== m[n]) out.push([n, d[n]]); });
@@ -1208,7 +1208,7 @@
     _renderSet() {
       const el = this._dlg;
       if (!el) return;
-      const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Scrollstand beim Neuzeichnen erhalten
+      const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Keep the scroll position when redrawing
       const sc = Math.round(this._scale * 100);
       const steps = [85, 100, 115, 130, 150, 175, 200];
       el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
@@ -1240,7 +1240,7 @@
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
     }
-    // Filterwahl gilt fuer alle Geraete: im Home Assistant speichern, Fehler nur still melden
+    // The filter choice applies to all devices: save it in Home Assistant, report errors only quietly
     async _saveSettings() {
       const S = this._shared || {};
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x)).join(',') : '-');
@@ -1322,7 +1322,7 @@
       const bar = this._dlg.querySelector('[data-wzbar]');
       if (bar) bar.innerHTML = this._wzBar();
     }
-    // Tipp im Dialog: nur der Entwurf aendert sich, gespeichert wird erst mit "Speichern"
+    // Tap in the dialog: only the draft changes, it is saved with "Save"
     _wzTap(h, i) {
       const z = this._wz;
       if (!z || z.busy) return;
@@ -1356,7 +1356,7 @@
       this._renderList();
     }
 
-    // ---------- Detailansicht und Entnahme ----------
+    // ---------- Detail view and take-out ----------
     _detBottles() {
       const d = this._det;
       const list = this._data.bottles.filter((b) => (b.wine || b.name) === d.wine && String(b.vintage || 'NV') === d.vintage);
@@ -1366,7 +1366,7 @@
       const x = new Date(v);
       return isNaN(x) ? '' : x.toLocaleDateString(I18N.lang);
     }
-    // Weitere Flaschen des Jahrgangs nacheinander laden (erst die gewaehlte, damit Notiz und Profil sofort da sind)
+    // Load the other bottles of the vintage one after another (the chosen one first, so note and profile are there at once)
     async _queueInfo(first, ids) {
       this._iq = this._iq || [];
       ids.forEach((i) => { if (i !== first && !this._info[i] && !this._iq.includes(i)) this._iq.push(i); });
@@ -1394,7 +1394,7 @@
       if (this._det && (this._det.sel === id || this._detV2())) this._renderDlg();
     }
     _detV2() { return true; }
-    // Wert eines eigenen Datenfelds nach Aussehen formatieren (Datum, Ja/Nein, Zahl)
+    // Format the value of a personal data field by its look (date, yes/no, number)
     _fmtVal(v) {
       const x = String(v);
       if (/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(x)) return this._fmtDate(x) || x;
@@ -1404,11 +1404,11 @@
     _fmtMoney(v, cur) {
       try { return cur ? new Intl.NumberFormat(I18N.lang, { style: 'currency', currency: cur }).format(v) : String(v); } catch (e) { return v + ' ' + (cur || ''); }
     }
-    // Neue Detailansicht (nur "view"): ordnet die Angaben nach Cellarion (Wein, Reife, Profil, Mein Eintrag, Eigene Felder, Flaschen)
+    // Detail view ("view" only): orders the details like Cellarion (wine, maturity, profile, my entry, own fields, bottles)
     _viewV2(sel, bottles, info) {
       const yr = new Date().getFullYear();
       const d = this._det;
-      // Region und Einstufung stehen schon in der Titelzeile: hier nur Land und (abweichende) Appellation
+      // Region and classification are already in the title line: only country and (differing) appellation here
       const origin = Array.from(new Set([sel.country, sel.appellation !== sel.region ? sel.appellation : ''].filter(Boolean))).join(' · ');
       const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
       let bar = '';
@@ -1435,7 +1435,7 @@
           (fp ? `<div class="dsec">${esc(t('det.food'))}</div><div class="d2chips">${fp}</div>` : '') +
           (pr.description ? `<div class="d2txt" style="margin-top:8px">${esc(pr.description)}</div>` : '');
       }
-      // Meine Daten auf Jahrgangsebene: gleich bei allen Flaschen -> Wert, sonst Spanne und Hinweis
+      // My data at vintage level: same for all bottles -> value, otherwise range and hint
       const infos = bottles.map((b) => this._info[b.id]).filter((i) => i && !i.loading && !i.error);
       const ne = `<span class="d2ne" title="${esc(t('det.differs'))}" aria-label="${esc(t('det.differs'))}">≠</span>`;
       const lot = (key, fmt, rng) => {
@@ -1463,11 +1463,11 @@
       }));
       const loadingInfo = !info || info.loading;
       const mineRows = rows.filter((r) => r[1]);
-      // Werte aus lot()/Feldern sind schon maskiert, die Marke ne ebenfalls; Beschriftungen werden hier maskiert
+      // Values from lot()/fields are already escaped, the brand too; labels are escaped here
       const mine = `<div class="d2mine"><div class="d2h">${esc(t('det.mine'))}</div>` +
         (mineRows.length ? `<dl class="dfacts" style="margin:0">${mineRows.map((r) => `<dt>${esc(r[0])}</dt><dd>${r[1]}</dd>`).join('')}</dl>` : '') +
         (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
-      // Erste Notizabsatz mit dem Haendler (z. B. "Gekauft bei ...") weglassen: steht schon bei Meine Daten
+      // Leave out the first note paragraph with the merchant (e.g. "Bought at ..."): it is already under My data
       const stripShop = (n, shop) => {
         const parts = String(n).split(/\n\s*\n/);
         if (shop && parts.length > 1 && parts[0].toLowerCase().includes(String(shop).toLowerCase()) && parts[0].length < 140) parts.shift();
@@ -1475,7 +1475,7 @@
       };
       const notes = Array.from(new Set(infos.map((i) => (i.notes ? stripShop(i.notes, i.purchaseLocation) : '')).filter(Boolean)));
       const noteHtml = notes.length ? `<div class="dsec">${esc(t('det.myNote'))}${notes.length > 1 ? ne : ''}</div><div class="dnote">${esc(notes[0])}</div>` : '';
-      // Flaschen: nach Lagerort gruppiert waehlbar (Entnahme "von diesem Platz"), je Gruppe aufklappbar bis zur einzelnen Flasche
+      // Bottles: selectable grouped by place (take-out "from this place"), each group expandable down to the single bottle
       const nm = (l) => (l === NO_LOC ? t('loc.noneShort') : l);
       const groups = new Map();
       bottles.forEach((b) => { if (!groups.has(b._loc)) groups.set(b._loc, []); groups.get(b._loc).push(b); });
@@ -1498,7 +1498,7 @@
           `<button class="btn round" data-act="dgrp" data-l="${esc(l)}" aria-expanded="${op}" aria-label="${esc(t('det.bottlesN', { n: arr.length }))}">${op ? '▾' : '▸'}</button></div>` +
           (op ? arr.map(botRow).join('') : '');
       }).join('');
-      // Feste Leiste unten: gewaehlter Platz (Tipp = Auswahl als Blatt nach oben) + Entnehmen
+      // Fixed bar at the bottom: chosen place (tap = selection as a sheet from below) + take out
       const selGrp = groups.get(sel._loc) || [sel];
       const _split = (l) => { const n = nm(l), i = n.indexOf(' · '); return i < 0 ? [n, ''] : [n.slice(0, i), n.slice(i + 3)]; };
       const _rk = _split(sel._loc)[0];
@@ -1653,7 +1653,7 @@
       this._afterTimer = setTimeout(() => this._load(), 12000);
     }
 
-    // ---------- Bedienung ----------
+    // ---------- Interaction ----------
     _onClick(e) {
       if (e.target.classList && e.target.classList.contains('dlg') && this._dd) { this._dd = null; this._renderDlg(); return; }
       if (e.target.classList && e.target.classList.contains('dlg') && this._fdel) { if (!this._fdel.busy) { this._fdel = null; this._renderDlg(); } return; }
@@ -1760,7 +1760,7 @@
       } else if (act === 'reload') {
         this._refreshNow();
       } else if (act === 'reloadask') {
-        if (!this._busy) { this._cfm = true; this._renderDlg(); } // wie das Runterziehen am Phone: erst nachfragen
+        if (!this._busy) { this._cfm = true; this._renderDlg(); } // like pulling down on the phone: ask first
       }
     }
     _onChange(e) {

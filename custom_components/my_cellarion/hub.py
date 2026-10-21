@@ -13,13 +13,15 @@ from typing import Any
 
 import aiohttp
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.util import dt as dt_util
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from . import api
 from .const import (
-    EVENT_UPDATED, IMAGE_DIR_NAME, IMAGE_URL_BASE, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
-    STREAM_RETRY_MAX, STREAM_RETRY_MIN, STREAM_SILENCE, USER_AGENT,
+    IMAGE_DIR_NAME, IMAGE_URL_BASE, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
+    STREAM_RETRY_MAX, STREAM_RETRY_MIN, STREAM_SILENCE, USER_AGENT, signal_updated,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,6 +57,7 @@ class Hub:
         self._mcp: api.McpClient | None = None
         self._refresh_handle: asyncio.TimerHandle | None = None
         self._fingerprint: str | None = None
+        self.changed_at: str | None = None  # when the inventory last changed
 
     # ----- transport -----
 
@@ -210,8 +213,9 @@ class Hub:
             fp = hashlib.sha1(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest()
             changed = fp != self._fingerprint
             self._fingerprint = fp
-        if changed:  # lets open cards reload
-            self.hass.bus.async_fire(EVENT_UPDATED, {"entry_id": self.entry_id, "total": self.data["total"]})
+        if changed:  # the sensor writes its state, open cards watch it and reload
+            self.changed_at = dt_util.utcnow().isoformat()
+            async_dispatcher_send(self.hass, signal_updated(self.entry_id))
         placed = sum(1 for b in self.data["bottles"] if b.get("location"))
         return {"total": self.data["total"], "placed": placed, "unplaced": self.data["total"] - placed,
                 "personal": {"fields": self.data["fields"], "error": self.data.get("personalError")}}

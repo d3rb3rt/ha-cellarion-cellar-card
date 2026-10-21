@@ -106,17 +106,18 @@ async def test_consume_posts_to_cellarion(hass, aioclient_mock):
     assert call[2] == {"reason": "gifted"}
 
 
-async def test_event_fired_when_inventory_changes(hass, aioclient_mock):
-    seen = []
-    hass.bus.async_listen("my_cellarion_updated", lambda ev: seen.append(ev.data["total"]))
+async def test_sensor_updates_when_inventory_changes(hass, aioclient_mock):
     e = await setup(hass, aioclient_mock)
     await hass.async_block_till_done()
-    assert seen == [1]  # first load
+    st = hass.states.get("sensor.my_cellarion_total_bottles")
+    assert st is not None and st.state == "1"
+    first = st.attributes["updated"]
     await e.runtime_data.refresh()
     await hass.async_block_till_done()
-    assert seen == [1]  # unchanged: no event
+    assert hass.states.get("sensor.my_cellarion_total_bottles").attributes["updated"] == first  # unchanged
     changed = {"cellar": "HK4", "total": 0, "racks": [], "fields": [], "bottles": [], "personalError": None}
     with patch("custom_components.my_cellarion.api.build_inventory", AsyncMock(return_value=changed)):
         await e.runtime_data.refresh()
     await hass.async_block_till_done()
-    assert seen == [1, 0]
+    st = hass.states.get("sensor.my_cellarion_total_bottles")
+    assert st.state == "0" and st.attributes["updated"] != first

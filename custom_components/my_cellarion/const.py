@@ -23,8 +23,12 @@ CARD_FILENAME = "my-cellarion-card.js"
 IMAGE_URL_BASE = "/my-cellarion-img"
 IMAGE_DIR_NAME = "my_cellarion_img"
 
-EVENT_UPDATED = "my_cellarion_updated"  # fired on the HA bus when the inventory changed
 STREAM_DEBOUNCE = 3  # seconds to wait after a change event (several changes become one refresh)
 STREAM_SILENCE = 120  # seconds without any data (not even a heartbeat) before reconnecting
 STREAM_RETRY_MIN = 5
 STREAM_RETRY_MAX = 300
+
+
+def signal_updated(entry_id: str) -> str:
+    """Dispatcher signal sent when the inventory changed (the sensor listens)."""
+    return f"{DOMAIN}_updated_{entry_id}"

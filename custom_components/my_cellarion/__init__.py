@@ -6,6 +6,7 @@ from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
@@ -17,6 +18,8 @@ from .hub import CellarionAuthError, CellarionError, Hub
 from .services import async_setup_services
 
 _LOGGER = logging.getLogger(__name__)
+
+PLATFORMS = [Platform.SENSOR]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -37,6 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) 
     hub = Hub(hass, entry.entry_id, entry.data[CONF_URL], entry.data[CONF_TOKEN], cellar_id)
     await hub.async_load()
     entry.runtime_data = hub
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def _refresh(_now=None) -> None:
         try:
@@ -60,5 +64,5 @@ async def _reload(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> None:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> bool:
-    """Nothing to tear down besides the timers HA cancels itself."""
-    return True
+    """Unload the sensor; the timers and the stream task are cancelled by HA."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

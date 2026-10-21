@@ -23,7 +23,7 @@ def mock_api(aioclient_mock):
     aioclient_mock.get("https://cellarion.example/api/racks?cellar=c1&summary=1", json=RACKS)
     aioclient_mock.get("https://cellarion.example/api/bottles?limit=200&skip=0", json=BOTTLES)
     aioclient_mock.post("https://cellarion.example/api/mcp", status=404)  # no MCP: personal fields stay empty
-    aioclient_mock.get("https://cellarion.example/api/events/stream", status=404)  # stream probe
+    aioclient_mock.get("https://cellarion.example/api/events/stream", status=404)  # no event stream in tests
 
 
 async def setup(hass, aioclient_mock):
@@ -104,3 +104,19 @@ async def test_consume_posts_to_cellarion(hass, aioclient_mock):
     await hass.services.async_call(DOMAIN, "consume_bottle", {"bottle_id": "b" * 24, "reason": "gifted"}, blocking=True)
     call = [c for c in aioclient_mock.mock_calls if c[0] == "POST" and str(c[1]).endswith("/consume")][0]
     assert call[2] == {"reason": "gifted"}
+
+
+async def test_event_fired_when_inventory_changes(hass, aioclient_mock):
+    seen = []
+    hass.bus.async_listen("my_cellarion_updated", lambda ev: seen.append(ev.data["total"]))
+    e = await setup(hass, aioclient_mock)
+    await hass.async_block_till_done()
+    assert seen == [1]  # first load
+    await e.runtime_data.refresh()
+    await hass.async_block_till_done()
+    assert seen == [1]  # unchanged: no event
+    changed = {"cellar": "HK4", "total": 0, "racks": [], "fields": [], "bottles": [], "personalError": None}
+    with patch("custom_components.my_cellarion.api.build_inventory", AsyncMock(return_value=changed)):
+        await e.runtime_data.refresh()
+    await hass.async_block_till_done()
+    assert seen == [1, 0]

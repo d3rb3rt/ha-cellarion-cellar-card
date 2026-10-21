@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import logging
 import re
 import time
@@ -15,7 +17,10 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from . import api
-from .const import IMAGE_DIR_NAME, IMAGE_URL_BASE, STORAGE_KEY, STORAGE_VERSION, USER_AGENT
+from .const import (
+    EVENT_UPDATED, IMAGE_DIR_NAME, IMAGE_URL_BASE, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
+    STREAM_RETRY_MAX, STREAM_RETRY_MIN, STREAM_SILENCE, USER_AGENT,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,6 +53,8 @@ class Hub:
         self.updated: float = 0.0
         self._lock = asyncio.Lock()
         self._mcp: api.McpClient | None = None
+        self._refresh_handle: asyncio.TimerHandle | None = None
+        self._fingerprint: str | None = None
 
     # ----- transport -----
 
@@ -137,37 +144,59 @@ class Hub:
         await self._save_settings()
         return {"map": sort}
 
-    # ----- event stream (probe: only logs what arrives) -----
+    # ----- event stream -----
 
-    async def stream_probe(self) -> None:
-        """Hold GET /api/events/stream open and log what it sends (first lines only; no refresh yet)."""
-        delay = 5
+    async def stream_listener(self) -> None:
+        """Keep Cellarion's event stream open; refresh shortly after every change it reports.
+
+        After each (re)connect the inventory is fetched once, so changes missed while disconnected are caught up.
+        """
+        delay = STREAM_RETRY_MIN
+        first = True
         while True:
             try:
                 async with self._session.get(
                     self.url + "/api/events/stream",
                     headers={"User-Agent": USER_AGENT, "Authorization": f"Bearer {self._token}",
                              "Accept": "text/event-stream"},
-                    timeout=aiohttp.ClientTimeout(total=None, sock_connect=15, sock_read=None),
+                    # the server sends a heartbeat comment regularly: silence means a dead connection
+                    timeout=aiohttp.ClientTimeout(total=None, sock_connect=15, sock_read=STREAM_SILENCE),
                 ) as resp:
-                    _LOGGER.warning("Event stream: HTTP %s, %s", resp.status, resp.headers.get("Content-Type"))
                     if resp.status != 200:
-                        delay = 300
+                        _LOGGER.debug("Event stream not available (HTTP %s), retrying later", resp.status)
+                        delay = STREAM_RETRY_MAX
                     else:
-                        delay = 5
-                        seen = 0
+                        delay = STREAM_RETRY_MIN
+                        if not first:
+                            self._schedule_refresh(0)
+                        first = False
                         async for raw in resp.content:
-                            line = raw.decode("utf-8", "replace").strip()
-                            if line and seen < 60:
-                                seen += 1
-                                _LOGGER.warning("Event stream line: %s", line[:200])
-                _LOGGER.warning("Event stream closed, reconnecting in %s s", delay)
+                            if raw.decode("utf-8", "replace").strip() == "event: stats_changed":
+                                self._schedule_refresh(STREAM_DEBOUNCE)
             except asyncio.CancelledError:
+                self._cancel_refresh()
                 raise
             except (aiohttp.ClientError, TimeoutError) as err:
-                _LOGGER.warning("Event stream error: %s (retry in %s s)", err, delay)
+                _LOGGER.debug("Event stream interrupted: %s", err)
             await asyncio.sleep(delay)
-            delay = min(delay * 2, 300)
+            delay = min(delay * 2, STREAM_RETRY_MAX)
+
+    def _cancel_refresh(self) -> None:
+        if self._refresh_handle is not None:
+            self._refresh_handle.cancel()
+            self._refresh_handle = None
+
+    def _schedule_refresh(self, wait: float) -> None:
+        """Refresh after `wait` seconds; further changes in the meantime join the same refresh."""
+        self._cancel_refresh()
+        self._refresh_handle = self.hass.loop.call_later(wait, lambda: self.hass.async_create_task(self._stream_refresh()))
+
+    async def _stream_refresh(self) -> None:
+        self._refresh_handle = None
+        try:
+            await self.refresh()
+        except (CellarionError, RuntimeError) as err:
+            _LOGGER.warning("Could not refresh the Cellarion inventory after a change: %s", err)
 
     # ----- inventory -----
 
@@ -177,6 +206,12 @@ class Hub:
             mcp = await self._mcp_client()
             self.data = await api.build_inventory(self._get, mcp, self._cellar_id)
             self.updated = time.time()
+            body = {k: v for k, v in self.data.items() if k not in ("generated", "personalError")}
+            fp = hashlib.sha1(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest()
+            changed = fp != self._fingerprint
+            self._fingerprint = fp
+        if changed:  # lets open cards reload
+            self.hass.bus.async_fire(EVENT_UPDATED, {"entry_id": self.entry_id, "total": self.data["total"]})
         placed = sum(1 for b in self.data["bottles"] if b.get("location"))
         return {"total": self.data["total"], "placed": placed, "unplaced": self.data["total"] - placed,
                 "personal": {"fields": self.data["fields"], "error": self.data.get("personalError")}}

@@ -48,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) 
 
     # The first fetch can take a while (personal fields need many small queries): do not block startup
     entry.async_create_background_task(hass, _refresh(), name="my_cellarion_first_refresh")
-    entry.async_create_background_task(hass, hub.stream_probe(), name="my_cellarion_stream_probe")
+    entry.async_create_background_task(hass, hub.stream_listener(), name="my_cellarion_event_stream")
     interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     entry.async_on_unload(async_track_time_interval(hass, _refresh, timedelta(seconds=interval)))
     entry.async_on_unload(entry.add_update_listener(_reload))

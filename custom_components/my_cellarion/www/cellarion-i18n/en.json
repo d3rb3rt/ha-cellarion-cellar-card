@@ -41,6 +41,7 @@
  "head.resetFilters": "Reset filters",
  "head.moreShow": "Show more filters",
  "head.moreHide": "Hide more filters",
+ "dd.countHint": "(Wines | Vintages | Bottles)",
  "head.removePill": "Remove {label}",
  "list.error": "The inventory could not be read.",
  "list.reload": "Reload",

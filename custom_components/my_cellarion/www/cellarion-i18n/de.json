@@ -41,6 +41,7 @@
  "head.resetFilters": "Filter zurücksetzen",
  "head.moreShow": "Weitere Filter anzeigen",
  "head.moreHide": "Weitere Filter ausblenden",
+ "dd.countHint": "(Weine | Jahrgänge | Flaschen)",
  "head.removePill": "{label} entfernen",
  "list.error": "Der Bestand konnte nicht gelesen werden.",
  "list.reload": "Neu laden",

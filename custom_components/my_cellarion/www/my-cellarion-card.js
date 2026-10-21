@@ -901,7 +901,7 @@
     _renderDd() {
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
-      el.innerHTML = `<div class="dsheet ddsheet" role="listbox" aria-label="${esc(d.label)}"><div class="dh"><span class="wmain"><span class="wname">${esc(d.label)}</span></span>` +
+      el.innerHTML = `<div class="dsheet ddsheet" role="listbox" aria-label="${esc(d.label)}"><div class="dh"><span class="wmain"><span class="wname">${esc(d.label)}</span>${d.hint ? `<span class="wsub">${esc(d.hint)}</span>` : ''}</span>` +
         `<button class="dx" data-act="ddclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
         `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`;
       el.hidden = false;
@@ -960,7 +960,7 @@
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';
             const items = d.defs ? this._optsK(d.defs, m, set) : this._opts(m, set, d.sort || by);
-            this._ddItems[d.id] = { label: d.label, items, cur: '' };
+            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint') };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') + `</div></div>`;
         const ic = (dot) => this._dotIc(dot);

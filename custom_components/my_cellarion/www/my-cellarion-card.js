@@ -986,7 +986,7 @@
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7m7.4-2.5c.04-.33.1-.66.1-1s-.06-.67-.1-1l2.1-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42L9.12 5.07a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11c-.04.33-.1.66-.1 1s.06.67.1 1l-2.1 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.22.39.3.6.22l2.5-1c.52.4 1.08.73 1.7 1l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.62-.27 1.18-.6 1.7-1l2.5 1c.23.09.47 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></button>`;
       const rlTxt = String(t('head.reload')).replace(/^\s*↻\s*/, '');
       const reload = `<button class="btn round rl" data-act="reload" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '↻'}</button>`;
-      const ttl = c.title || (this._data && this._data.cellar) || '';
+      const ttl = c.title || (c.header_cellar === false && this._data && this._data.cellar) || ''; // Kellername steht sonst in der Seitenkopfzeile
       let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}`;
       if (!d) html += reload + gear + `</div>`;
       if (d) {
@@ -1289,6 +1289,7 @@
     _renderSet() {
       const el = this._dlg;
       if (!el) return;
+      const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Scrollstand beim Neuzeichnen erhalten
       const sc = Math.round(this._scale * 100);
       const steps = [85, 100, 115, 130, 150, 175, 200];
       el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
@@ -1318,6 +1319,7 @@
           `<button class="btn round" data-act="fdn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
         `<div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
       el.hidden = false;
+      if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
     }
     // Filterwahl gilt fuer alle Geraete: im Home Assistant speichern, Fehler nur still melden
     async _saveSettings() {

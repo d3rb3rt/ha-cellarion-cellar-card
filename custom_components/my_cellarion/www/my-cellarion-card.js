@@ -23,7 +23,6 @@
  *   font_scale: 1                 # optional, Start-Schriftgroesse (Faktor); die Wahl in den Einstellungen (Zahnrad) wird pro Browser gemerkt
  *   language: de                  # optional, Sprache der Karte (Standard: Sprache des HA-Nutzers); Dateien in /local/cellarion-i18n/<sprache>.json
  *   i18n_path: /local/cellarion-i18n/   # optional, Ordner der Sprachdateien
- *   detail: v2                    # optional, neue Detailansicht (Test); sonst je Geraet in den Einstellungen
  *   flush: true                   # optional, Karte ohne Rahmen und Rand (fuer den Einbau in eine Kombi-Karte)
  *
  * Trinkreife (je Flasche, nach Jahreszahlen): Zu frueh (vor drinkFrom), Frueh (im Fenster, vor dem Peak),
@@ -740,7 +739,7 @@
       };
       this._setHeader();
     }
-    // Kopfzeile der HA-Seite (Toolbar) um den Kellernamen ergaenzen: "My Cellarion - HK4" (Option header_cellar: false schaltet das ab)
+    // Kopfzeile der HA-Seite (Toolbar) um den Kellernamen ergaenzen: "My Cellarion Dev - HK4" (Option header_cellar: false schaltet das ab)
     _setHeader() {
       try {
         if (this._cfg.header_cellar === false || !this._data || !this._data.cellar) return;
@@ -1310,8 +1309,6 @@
         `<div class="dsec">${esc(t('set.device'))}</div>` +
         `<div class="wmain"><span class="wname">${esc(t('set.fontSize'))}</span><span class="wsub">${esc(t('set.fontSizeSub', { pct: sc }))}</span></div>` +
         `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div>` +
-        `<div class="wmain" style="margin-top:6px"><span class="wname">${esc(t('set.detailV2'))}</span><span class="wsub">${esc(t('set.detailV2Sub'))}</span></div>` +
-        `<div class="scalechips" style="margin-bottom:6px">` + [['on', t('set.on')], ['off', t('set.off')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._detV2() ? ' on' : ''}" data-act="detv2" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div>` +
         `<div style="display:flex;align-items:center;gap:10px;margin-top:6px"><div class="wmain"><span class="wname">${esc(t('set.filters'))}</span><span class="wsub">${esc(t('set.filtersSub'))}</span></div>${this._scopeSw('filters')}</div>` + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
         this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
           `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
@@ -1475,7 +1472,7 @@
       }
       if (this._det && (this._det.sel === id || this._detV2())) this._renderDlg();
     }
-    _detV2() { return this._local.detailV2 !== undefined ? !!this._local.detailV2 : this._cfg.detail === 'v2'; }
+    _detV2() { return true; }
     // Wert eines eigenen Datenfelds nach Aussehen formatieren (Datum, Ja/Nein, Zahl)
     _fmtVal(v) {
       const x = String(v);
@@ -1784,8 +1781,6 @@
         this._fmove(t.dataset.id, act === 'fup' ? -1 : 1);
       } else if (act === 'rack') {
         this._setRack(t.dataset.n, t.dataset.k, t.dataset.v);
-      } else if (act === 'detv2') {
-        this._local.detailV2 = t.dataset.v === 'on'; this._saveState(); this._renderSet();
       } else if (act === 'lang') {
         this._setLang(t.dataset.v || '');
         this._initLang().then(() => {

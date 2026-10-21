@@ -137,6 +137,38 @@ class Hub:
         await self._save_settings()
         return {"map": sort}
 
+    # ----- event stream (probe: only logs what arrives) -----
+
+    async def stream_probe(self) -> None:
+        """Hold GET /api/events/stream open and log what it sends (first lines only; no refresh yet)."""
+        delay = 5
+        while True:
+            try:
+                async with self._session.get(
+                    self.url + "/api/events/stream",
+                    headers={"User-Agent": USER_AGENT, "Authorization": f"Bearer {self._token}",
+                             "Accept": "text/event-stream"},
+                    timeout=aiohttp.ClientTimeout(total=None, sock_connect=15, sock_read=None),
+                ) as resp:
+                    _LOGGER.info("Event stream: HTTP %s, %s", resp.status, resp.headers.get("Content-Type"))
+                    if resp.status != 200:
+                        delay = 300
+                    else:
+                        delay = 5
+                        seen = 0
+                        async for raw in resp.content:
+                            line = raw.decode("utf-8", "replace").strip()
+                            if line and seen < 60:
+                                seen += 1
+                                _LOGGER.info("Event stream line: %s", line[:200])
+                _LOGGER.info("Event stream closed, reconnecting in %s s", delay)
+            except asyncio.CancelledError:
+                raise
+            except (aiohttp.ClientError, TimeoutError) as err:
+                _LOGGER.info("Event stream error: %s (retry in %s s)", err, delay)
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, 300)
+
     # ----- inventory -----
 
     async def refresh(self) -> JsonDict:

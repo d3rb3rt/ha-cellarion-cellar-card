@@ -23,6 +23,7 @@ def mock_api(aioclient_mock):
     aioclient_mock.get("https://cellarion.example/api/racks?cellar=c1&summary=1", json=RACKS)
     aioclient_mock.get("https://cellarion.example/api/bottles?limit=200&skip=0", json=BOTTLES)
     aioclient_mock.post("https://cellarion.example/api/mcp", status=404)  # no MCP: personal fields stay empty
+    aioclient_mock.get("https://cellarion.example/api/events/stream", status=404)  # stream probe
 
 
 async def setup(hass, aioclient_mock):

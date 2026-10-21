@@ -13,9 +13,10 @@ a searchable, filterable view of your cellar with bottle details, storage places
   <img src="docs/detail.png" alt="Bottle details" width="420">
   <img src="docs/settings.png" alt="Settings" width="340">
   <img src="docs/producers.png" alt="Producer sort words" width="340">
+  <img src="docs/phone.png" alt="Phone layout" width="300">
 </p>
 
-*Desktop/tablet layout; a phone layout is included too.*
+*Desktop/tablet layout; the last picture shows the phone layout.*
 
 ## What you get
 

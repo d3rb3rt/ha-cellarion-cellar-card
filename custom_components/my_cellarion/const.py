@@ -18,6 +18,6 @@ STORAGE_KEY = "my_cellarion.settings"
 STORAGE_VERSION = 1
 
 FRONTEND_URL_BASE = "/my-cellarion-files"
-CARD_FILENAME = "cellarion-bestand-card.js"
+CARD_FILENAME = "my-cellarion-card.js"
 IMAGE_URL_BASE = "/my-cellarion-img"
 IMAGE_DIR_NAME = "my_cellarion_img"

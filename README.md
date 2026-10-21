@@ -25,18 +25,18 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 2. Install, restart Home Assistant.
 3. In Cellarion create an API token (Settings → API tokens) with scope **read**, plus **consume** to take bottles out.
 4. Settings → Devices & services → Add integration → **My Cellarion**, enter the address and the token.
-5. The card is registered automatically. Add **My Cellarion** to a dashboard (or `type: custom:cellarion-bestand-card`).
+5. The card is registered automatically. Add **My Cellarion** to a dashboard (or `type: custom:my-cellarion-card`).
 
 ## Card options (all optional)
 
 ```yaml
-type: custom:cellarion-bestand-card
+type: custom:my-cellarion-card
 title: My Cellarion   # default: the cellar name
 language: de          # default: language of the Home Assistant user
 detail: v2            # new detail page
 ```
 
-More options are listed at the top of `custom_components/my_cellarion/www/cellarion-bestand-card.js`.
+More options are listed at the top of `custom_components/my_cellarion/www/my-cellarion-card.js`.
 
 ## Services
 

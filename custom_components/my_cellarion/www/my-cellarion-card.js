@@ -120,6 +120,8 @@
   // Cache-Schluessel der Sprachdateien: dieselbe ?v=N wie beim Laden der Karte (Ressource), damit Aenderungen sofort greifen
   const CARD_V = ((document.currentScript && /[?&]v=([\w.-]+)/.exec(document.currentScript.src)) || [])[1] || String(Date.now());
   // Ordner, aus dem die Karte geladen wurde: dort liegt auch cellarion-i18n/ (gilt fuer /local/ und fuer die Integration)
+  // Datenquelle dieser Datei: 'dev' = eigenes Entwicklungs-Setup, 'integration' = Dienste der Integration My Cellarion (setzt tools/sync_card.sh im Integrations-Repo)
+  const BACKEND = 'integration';
   const SCRIPT_DIR = (((document.currentScript && document.currentScript.src) || '').split('?')[0].replace(/[^/]*$/, '')) || '/local/';
   const I18N = { lang: 'en', dict: {}, pr: new Intl.PluralRules('en'), files: {} };
   const t = (key, p) => {
@@ -476,7 +478,7 @@
   class CellarionBestandCard extends HTMLElement {
     setConfig(config) {
       this._cfg = Object.assign({}, config || {});
-      this._key = 'cellarion-bestand:' + (this._cfg.key || 'bestand');
+      this._key = 'my-cellarion:' + (this._cfg.key || 'bestand');
       const st = this._loadState();
       this._view = this._cfg.view === 'flat' ? 'flat' : 'wine';
       this._sort = st.sort || 'name';
@@ -632,7 +634,7 @@
     }
     // Datenquelle: die Dienste der Integration my_cellarion (Antwort direkt als Objekt).
     // Nur im Entwicklungs-Setup gibt es zusaetzlich eine Anbindung ueber eigene Dienste (Block "dev-only" unten).
-    _integ() { return !!(this._hass && this._hass.services && this._hass.services.my_cellarion); }
+    _integ() { return BACKEND === 'integration'; }
     // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = Daten fuer den Dienst des Entwicklungs-Setups, int = Daten fuer den Dienst der Integration.
     async _call(kind, sh, int) {
       const c = this._cfg || {};
@@ -1861,10 +1863,10 @@
     }
   }
 
-  if (!customElements.get('cellarion-bestand-card')) customElements.define('cellarion-bestand-card', CellarionBestandCard);
+  if (!customElements.get('my-cellarion-card')) customElements.define('my-cellarion-card', CellarionBestandCard);
   window.customCards = window.customCards || [];
   window.customCards.push({
-    type: 'cellarion-bestand-card',
+    type: 'my-cellarion-card',
     name: 'My Cellarion',
     description: 'Wine cellar inventory with search, filters, detail view and take-out (Cellarion).',
   });

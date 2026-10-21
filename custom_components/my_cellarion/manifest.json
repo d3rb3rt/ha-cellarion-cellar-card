@@ -1,0 +1,16 @@
+{
+  "domain": "my_cellarion",
+  "name": "My Cellarion",
+  "after_dependencies": ["lovelace"],
+  "codeowners": ["@d3rb3rt"],
+  "config_flow": true,
+  "dependencies": ["http"],
+  "documentation": "https://github.com/d3rb3rt/my-cellarion-ha",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/d3rb3rt/my-cellarion-ha/issues",
+  "loggers": ["custom_components.my_cellarion"],
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

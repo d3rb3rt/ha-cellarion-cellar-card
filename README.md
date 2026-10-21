@@ -39,7 +39,7 @@ More options are listed at the top of `custom_components/my_cellarion/www/my-cel
 
 ## Services
 
-`my_cellarion.read`, `refresh`, `sync`, `bottle`, `settings`, `winzer_sort`, `consume_bottle` (used by the card, `consume_bottle`
+`my_cellarion.read`, `refresh`, `sync`, `bottle`, `settings`, `producer_sort`, `consume_bottle` (used by the card, `consume_bottle`
 is also handy for automations).
 
 ## Privacy

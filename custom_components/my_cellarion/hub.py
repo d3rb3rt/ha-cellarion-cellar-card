@@ -121,7 +121,7 @@ class Hub:
         await self._save_settings()
         return dict(s)
 
-    async def winzer_sort(self, name: str, index: int) -> JsonDict:
+    async def producer_sort(self, name: str, index: int) -> JsonDict:
         """Sort word of a producer (word number from 0, -1 removes the entry)."""
         sort: JsonDict = dict(self._settings.get("winzerSort") or {})
         known = set(sort) | {b.get("producer") for b in (self.data or {}).get("bottles", []) if b.get("producer")}

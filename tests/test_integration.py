@@ -83,12 +83,12 @@ async def test_settings_roundtrip_and_validation(hass, aioclient_mock):
     assert out["einstellungen"]["language"] == "de" and out["einstellungen"]["filterHidden"] == ["shop"]
 
 
-async def test_winzer_sort(hass, aioclient_mock):
+async def test_producer_sort(hass, aioclient_mock):
     await setup(hass, aioclient_mock)
-    res = await hass.services.async_call(DOMAIN, "winzer_sort", {"name": "Anna Müller", "index": 1}, blocking=True, return_response=True)
+    res = await hass.services.async_call(DOMAIN, "producer_sort", {"name": "Anna Müller", "index": 1}, blocking=True, return_response=True)
     assert res["map"] == {"Anna Müller": 1}
     with pytest.raises(Exception):
-        await hass.services.async_call(DOMAIN, "winzer_sort", {"name": "Unknown", "index": 0}, blocking=True, return_response=True)
+        await hass.services.async_call(DOMAIN, "producer_sort", {"name": "Unknown", "index": 0}, blocking=True, return_response=True)
 
 
 async def test_bottle_rejects_bad_id(hass, aioclient_mock):

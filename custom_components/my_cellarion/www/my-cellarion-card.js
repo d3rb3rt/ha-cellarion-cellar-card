@@ -1,115 +1,34 @@
 /*
- * cellarion-bestand-card: Bestandsuebersicht des Cellarion-Weinkellers, mit Detailansicht und Entnahme.
- * Zeigt alle Flaschen gruppiert nach Wein mit den Jahrgaengen darunter, mit Suche, Filtern
- * (Typ, Trinkreife, Lagerort, Jahrgang, Winzer, Region, Rebsorte), Sortierung und Flach-Ansicht.
+ * my-cellarion-card: browse your Cellarion wine cellar in Home Assistant.
+ * Lists all bottles grouped by wine with their vintages, with search, filters (type, maturity, rack, vintage, producer,
+ * region, grape and your own data fields), sorting and a flat view. Tap a vintage for details (your data, register profile,
+ * storage places, note); "Take out" asks which bottle and why, then confirms before the bottle is consumed.
  *
- * Daten: kommen von den Diensten der Integration My Cellarion (my_cellarion.read u. a.); der Cellarion-Token liegt nie im Browser.
- * Die Karte liest neu: beim Laden, alle refresh_seconds und per Taste "Neu laden".
+ * Data comes from the services of the My Cellarion integration (my_cellarion.read and others). The Cellarion API token is
+ * never sent to the browser.
  *
- * Konfiguration (YAML):
- *   type: custom:cellarion-bestand-card
- *   key: bestand                  # optional, Schluessel fuer Ansicht und Sortierung (pro Browser gemerkt)
- *   title: My Cellarion           # optional, Titel (Standard: Name des Kellers aus Cellarion)
- *   view: wine                    # optional, Start-Ansicht: wine (nach Wein) oder flat (flach); gemerkt wird die letzte Wahl
- *   refresh_seconds: 300          # optional, Cache so oft neu lesen (Standard 300, 0 = nie)
- *   count_entity: sensor.cellarion_total_bottles   # optional, bei Aenderung wird der Cache neu gelesen
- *   height: 600px                 # optional, feste Hoehe der Karte (Standard: fuellt den Rest des Fensters)
- *   refresh_on_open: true         # optional, beim Oeffnen/Sichtbarwerden frisch von Cellarion holen (Standard an, max. 1x je Minute)
- *   row_h: 44                     # optional, Mindesthoehe einer Zeile in px (Standard 44)
- *   row_font: 14                  # optional, Schrift der Zeilen in px (Standard 14)
- *   title_font: 18                # optional, Schrift des Titels in px (Standard 18)
- *   chip_font: 14                 # optional, Schrift der Filtertasten in px (Standard 14)
- *   chip_h: 40                    # optional, Hoehe der Filtertasten in px (Standard 40)
- *   font_scale: 1                 # optional, Start-Schriftgroesse (Faktor); die Wahl in den Einstellungen (Zahnrad) wird pro Browser gemerkt
- *   language: de                  # optional, Sprache der Karte (Standard: Sprache des HA-Nutzers); Dateien in /local/cellarion-i18n/<sprache>.json
- *   i18n_path: /local/cellarion-i18n/   # optional, Ordner der Sprachdateien
- *   flush: true                   # optional, Karte ohne Rahmen und Rand (fuer den Einbau in eine Kombi-Karte)
+ * Configuration (YAML, all optional):
+ *   type: custom:my-cellarion-card
+ *   key: bestand                  # key for the remembered view and sorting (per browser)
+ *   title: My Cellarion           # title above the card (default: none, the cellar name is shown by the page header)
+ *   view: wine                    # start view: wine (grouped) or flat; the last choice is remembered
+ *   refresh_seconds: 300          # re-read the cached inventory this often (default 300, 0 = never)
+ *   refresh_on_open: true         # fetch fresh data from Cellarion when the card opens or becomes visible (at most once a minute)
+ *   height: 600px                 # fixed height (default: fills the rest of the window)
+ *   flush: true                   # no frame and border (for use inside a combined card)
+ *   language: de                  # card language (default: language of the Home Assistant user); files in cellarion-i18n/<language>.json
+ *   i18n_path: /my-cellarion-files/cellarion-i18n/   # folder with the language files
+ *   header_cellar: false          # do not append the cellar name to the page header
+ *   row_h / row_font / title_font / chip_font / chip_h / font_scale   # sizes in px (font_scale is a factor)
  *
- * Trinkreife (je Flasche, nach Jahreszahlen): Zu frueh (vor drinkFrom), Frueh (im Fenster, vor dem Peak),
- * Peak, Spaet (im Fenster, nach dem Peak), Drueber (nach drinkTo). Das entspricht den Sensoren der
- * Cellarion-Integration (at peak, early window, late window, declining, not ready).
+ * Maturity (per bottle, by years): not ready (before drinkFrom), early (in the window, before peak), peak,
+ * late (in the window, after peak), past (after drinkTo).
  *
- * Farben: nur Theme-Variablen mit Fallback, der keine Festfarbe voraussetzt (card_mod greift hier nicht).
- * Standard: Farben aus den HA-Themevariablen (primary-color, success/warning/error-color ...). Optional im Theme ueberschreibbar:
- * cellarion-accent, cellarion-on-text, cellarion-chip-bg, cellarion-seg-bg, cellarion-wine-red/white/rose/sparkling/dessert/fortified,
- * cellarion-maturity-notready/early/peak/late/over.
- * Die Auswahl (Ansicht, Sortierung) merkt sich der Browser (localStorage), es ist kein Helfer noetig.
+ * Colours: Home Assistant theme variables only, with fallbacks. Optional overrides in your theme:
+ * cellarion-accent, cellarion-on-text, cellarion-chip-bg, cellarion-seg-bg,
+ * cellarion-wine-red/white/rose/sparkling/dessert/fortified, cellarion-maturity-notready/early/peak/late/over.
  *
- * Bedienung: Tipp auf einen Jahrgang oeffnet die Detailansicht (Daten, Lagerorte, Notiz). "Entnehmen" fragt
- * Flasche (bei mehreren) und Grund ab und verlangt eine Bestaetigung, erst dann wird die Flasche entnommen.
- *
- * Verlauf: v1 (2026-10-19): erste Fassung, nur lesend (Liste, Suche, Filter, Wein mit Jahrgaengen, Flach).
- *          v2 (2026-10-19): Detailansicht je Jahrgang mit Notiz (bei Bedarf geladen), Entnehmen mit Bestaetigung.
- *          v43 (2026-10-20): Kein Standardtitel mehr in der Kopfzeile (title: nur bei Bedarf setzen).
- *          v44 (2026-10-20): Einstellungen (Zahnrad rechts oben): Winzer pflegen, Schriftgroesse pro Browser (Zoom 85-200 %).
- *          v42 (2026-10-20): Titel, Suche, Sortierung und Neu laden in einer Zeile; keine Stand-Anzeige mehr.
- *          v41 (2026-10-20): Filter-Pulldowns nur so breit wie ihre Beschriftung (alle Filter in einer Zeile), die Auswahlliste bleibt breit.
- *          v40 (2026-10-20): Ein Wein mit einem Jahrgang klappt aufgeklappte Weine beim Antippen zu.
- *          v39 (2026-10-20): Aufgeklappter Wein klappt zu, wenn man einen anderen aufklappt; # steht in der A-Z-Leiste am Anfang.
- *          v38 (2026-10-20): Detailfenster: Notiz immer komplett, Fenster scrollt (Inhalt schrumpft nicht mehr).
- *          v37 (2026-10-20): Suchbegriff wird in Weinname, Winzer, Einstufung und Region farbig hervorgehoben.
- *          v36 (2026-10-20): Filter starten aufgeklappt, auch auf dem Phone.
- *          v35 (2026-10-20): Filter-Pulldowns zeigen Weine | Jahrgaenge | Flaschen (bei 1 Flasche nur die 1).
- *          v34 (2026-10-20): Typ und Reife erscheinen ebenfalls als Filter-Pillen mit x.
- *          v46 (2026-10-20): Typ (ganz vorn) und Reife (nach Winzer) zusaetzlich als Pulldown in der Filterzeile.
- *          v90 (2026-10-21): Detailseite v2 (Register, Meine Daten, feste Entnahmeleiste); Lagerplatz-Anzeige je Regal einstellbar; Farben aus HA-Theme (--cellarion-* optional); Sprache und Filter pro Geraet oder zentral.
- *          v62 (2026-10-21): Kopfzeile der Seite zeigt "Titel – Kellername" (header_cellar: false schaltet ab). Typ-Symbole als Weinglaeser, ganz gefuellt, einfarbig (Rot, Weiss/Rose, Flute, Dessert/Likoer); Titel = Kellername; Kartenname My Cellarion.
- *          v61 (2026-10-21): Mehrsprachig (de, en): Texte in /local/cellarion-i18n/<sprache>.json, Sprache = HA-Nutzersprache, Fallback Englisch.
- *          v60 (2026-10-21): Kellername (aus Cellarion) steht vor der Summenzeile; Kopfzeile/Seitenleiste heissen neutral "Cellarion".
- *          v59 (2026-10-21): Einstellungen: Datenfeld-Filter in eckigen Klammern; Datenfelder koennen nach Rueckfrage endgueltig geloescht werden.
- *          v58 (2026-10-21): Filter von Hand zugeklappt: nach dem Wegscrollen klappen sie oben wieder auf (wie beim automatischen Einklappen).
- *          v57 (2026-10-21): Pille fuer ausgeblendete Filter nur noch "…" mit Pfeil (auf) bzw. X (zu).
- *          v56 (2026-10-21): Filter Haendler (Kaufort, standardmaessig ausgeblendet); Pille "... Anzeigen" blendet ausgeblendete Filter ein/aus.
- *          v55 (2026-10-21): Detailseite: Einstufung (Cellarion) nur noch, wenn Lage und Praedikat nicht gesetzt sind.
- *          v54 (2026-10-21): Detailseite zeigt die persoenlichen Datenfelder (Lage, Praedikat, Stil, Dosage ...).
- *          v53 (2026-10-21): Filter "Ort" heisst Lagerort; Cellarion-Feld "Lagen-Stufe" heisst Lagen (filter id p:Lagen).
- *          v52 (2026-10-21): Pull-to-Refresh erst bei haertarem Zug (ca. 200 px statt 100 px).
- *          v51 (2026-10-21): Auswahlmenue: Liste scrollt wieder.
- *          v50 (2026-10-21): Auswahlmenue zentriert, Kopf mit Schliessen fest, nur die Liste scrollt; Pulldowns so breit wie ihr Text.
- *          v49 (2026-10-21): Pulldowns als eigenes Auswahlmenue statt nativer Android-Liste (einheitliche Optik, Zoom, keine Navileiste).
- *          v48 (2026-10-21): Filterwahl und -reihenfolge gelten fuer alle Geraete (gespeichert in HA, einstellungen.json).
- *          v47 (2026-10-21): Typ/Reife-Chipreihen raus; alle Filter als Pulldowns, in den Einstellungen waehl- und sortierbar;
- *                            persoenliche Datenfelder (VDP-Stufe, Dosage, Stil ...) erscheinen automatisch als Filter;
- *                            Filter klappen in allen Ansichten beim Scrollen ein und am Listenanfang wieder auf.
- *          v45 (2026-10-20): Schaum heisst Bubbles; Kringel gold mit schwarzen Blaeschen (Test).
- *          v33 (2026-10-20): Phone: Beschriftung Typ/Reife wieder da, Schaum-Kringel weiss mit goldenen Blaeschen.
- *          v32 (2026-10-20): Filter mehrfach waehlbar (kleine Pillen, Auswahl als eigene Pillen mit x), Schaum-Kringel mit Blaeschen,
- *          A-Z hebt den aktuellen Buchstaben hervor; Phone: eine Kopfzeile (Suche, Sortierung, Filter), Typ/Reife nur als Kringel,
- *          Neu laden per Runterziehen mit Rueckfrage, A-Z scrollt mit.
- *          v31 (2026-10-19): Einstufung (VDP.Grosse Lage, Kabinett, GG ...): neuer Filter und in der ersten Zeile vor der Region.
- *          v30 (2026-10-19): Reset-Taste hervorgehoben, wenn es etwas zurueckzusetzen gibt.
- *          v29 (2026-10-19): Phone: Filter-Taste hervorgehoben, solange Filter gesetzt sind.
- *          v28 (2026-10-19): Phone: nach dem automatischen Einklappen klappen die Filter wieder aus, wenn man ganz nach oben scrollt.
- *          v27 (2026-10-19): Phone: ausgeklappte Filter klappen zu, sobald man in der Liste zu scrollen beginnt.
- *          v26 (2026-10-19): Phone (<=600px): Filter hinter Taste, A-Z einzeilig scrollbar, Zeile zweizeilig (Titel umbricht, darunter Lagerort/Jahrgang/Flaschen).
- *          v25 (2026-10-19): Reihenfolge rechts: Lagerort | Jahrgang | Ampel | Flaschen.
- *          v24 (2026-10-19): Lagerort bei Weinen mit einem Jahrgang rechts vor der Flaschenzahl (Lagerort | n Fl.).
- *          v23 (2026-10-19): Region als dritter Wert in der ersten Zeile (Wein | Winzer | Region).
- *          v22 (2026-10-19): Sortierwert (Wein bzw. Winzer) etwas groesser als der zweite Wert.
- *          v21 (2026-10-19): Mehr Abstand zwischen Typ und Reife, Beschriftung groesser und kontrastreicher.
- *          v20 (2026-10-19): A-Z linksbuendig, Typ und Reife nebeneinander, Detail: Bild links neben den Daten.
- *          v19 (2026-10-19): A-Z-Leiste bei Wein A-Z und Winzer A-Z (Tipp springt zum Buchstaben, ohne Eintrag ausgegraut).
- *          v18 (2026-10-19): Sortierbuchstabe wieder in Textfarbe (nur fett und unterstrichen).
- *          v17 (2026-10-19): Winzer-Sortierung zeigt Winzer vor dem Weinnamen; Sortierungen Jahrgang neu/alt und neu: Region mit
- *          Zwischenueberschriften (Jahrgang bzw. Region mit Anzahl Weine/Flaschen).
- *          v16 (2026-10-19): Sortierbuchstabe zusaetzlich unterstrichen und in Akzentfarbe.
- *          v15 (2026-10-19): Winzer pflegen mit Speichern/Abbrechen (Aenderungen erst beim Speichern), Aktionsleiste unten fest;
- *          bei Sortierung Winzer A-Z ist der Sortierbuchstabe gepflegter Winzer fett.
- *          v14 (2026-10-19): Winzer pflegen (Taste ✎): Sortierwort je Winzer per Tipp auf ein Wort, gespeichert in
- *          custom_templates/cellarion/sortnamen.json; Winzer-Pulldown und Sortierung "Winzer A–Z" nutzen es.
- *          v13 (2026-10-19): Winzer neben dem Weinnamen (Name | Winzer), darunter nur noch die Region.
- *          v12 (2026-10-19): Sortierung "Jahrgang alt" (aeltester Jahrgang zuerst, NV am Ende).
- *          v11 (2026-10-19): Umschalter Nach Wein/Flach entfernt (immer nach Wein; view: flat in der Konfiguration bleibt moeglich).
- *          v10 (2026-10-19): runde Taste ↺ (Filter zurücksetzen) vor den Auswahllisten, immer sichtbar (grau, solange nichts gesetzt ist).
- *          v9 (2026-10-19): Auswahllisten und Zaehler passen sich den uebrigen Filtern und der Suche an (nur Treffer-Optionen).
- *          v8 (2026-10-19): Auswahllisten in der Reihenfolge Rebsorte, Region, Winzer, Jahrgang, Ort.
- *          v7 (2026-10-19): Typ nach Menge; Winzer/Region/Rebsorte: Haeufigste zuerst (ab 8 Flaschen, max. 10), Linie, Rest A-Z.
- *          v6 (2026-10-19): Ort als Auswahlliste; Jahrgang/Winzer/Region/Rebsorte/Ort stehen immer sichtbar in einer Zeile.
- *          v5 (2026-10-19): Etikettenbild in den Details (das Skript legt es unter www/cellarion-img ab, Cellarion
- *          erlaubt kein Einbetten von aussen), Weinzeile bricht erst bei Platzmangel um.
- *          v4 (2026-10-19): Wein mit nur einem Jahrgang: Lagerort und Trinkfenster in der Weinzeile, Tipp oeffnet die Details.
- *          v3 (2026-10-19): Hoehe passt sich dem Fenster an, Detailfenster im Sichtfeld, Abgleich mit Cellarion beim Oeffnen
- *          (serverseitig gedrosselt: hoechstens alle 5 Min.; die Taste "Neu laden" holt immer).
+ * Source of truth: https://github.com/d3rb3rt/my-cellarion-ha
  */
 (function () {
   // ---------- Sprache (i18n) ----------
@@ -639,7 +558,7 @@
       const c = this._cfg || {};
       let res;
       if (this._integ()) {
-        const name = { read: 'read', sync: 'sync', refresh: 'refresh', settings: 'settings', fielddel: 'delete_field', winzer: 'winzer_sort', bottle: 'bottle' }[kind];
+        const name = { read: 'read', sync: 'sync', refresh: 'refresh', settings: 'settings', fielddel: 'delete_field', winzer: 'producer_sort', bottle: 'bottle' }[kind];
         res = await this._hass.callWS({ type: 'call_service', domain: 'my_cellarion', service: name, service_data: int || {}, return_response: true });
         const out = (res && res.response) || {};
         if (out.error) throw new Error(out.error);

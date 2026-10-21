@@ -1,6 +1,6 @@
 """Parity check: the integration's data layer (api.py) must deliver the same inventory as the development setup's bestand.py.
 
-The development setup (private ha-config repo) is the place where the card is tested; the integration re-implements its data
+The development setup (a separate Home Assistant setup) is the place where the card is tested; the integration re-implements its data
 layer. This test feeds the same fake Cellarion responses through both and compares the resulting inventory, so the card never
 waits for a field that the integration does not deliver.
 

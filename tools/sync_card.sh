@@ -7,10 +7,13 @@ set -e
 SRC="${1:?path to ha-config/www}"
 DST="$(dirname "$0")/../custom_components/my_cellarion/www"
 mkdir -p "$DST/cellarion-i18n"
-python3 - "$SRC/cellarion-bestand-card.js" "$DST/my-cellarion-card.js" <<'PY'
+python3 - "$SRC/cellarion-bestand-card.js" "$DST/my-cellarion-card.js" "$(dirname "$0")/card_header.txt" <<'PY'
 import re, sys
 s = open(sys.argv[1], encoding="utf-8").read()
 s = re.sub(r"[ \t]*// @dev-only begin.*?// @dev-only end\n", "", s, flags=re.S)
+# English header instead of the development header (German notes and version history)
+hdr = open(sys.argv[3], encoding="utf-8").read()
+s = hdr + s[s.index("*/") + 3:]
 s = s.replace("const BACKEND = 'dev';", "const BACKEND = 'integration';")
 s = s.replace("customElements.get('cellarion-bestand-card')", "customElements.get('my-cellarion-card')").replace("customElements.define('cellarion-bestand-card'", "customElements.define('my-cellarion-card'").replace("type: 'cellarion-bestand-card'", "type: 'my-cellarion-card'").replace("name: 'My Cellarion (dev)'", "name: 'My Cellarion'").replace("'cellarion-bestand:'", "'my-cellarion:'")
 s = s.replace("(this._integ() ? 'my_cellarion.consume_bottle' : 'cellarion.consume_bottle')", "'my_cellarion.consume_bottle'")

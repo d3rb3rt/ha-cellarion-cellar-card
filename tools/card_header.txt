@@ -1,0 +1,32 @@
+/*
+ * my-cellarion-card: browse your Cellarion wine cellar in Home Assistant.
+ * Lists all bottles grouped by wine with their vintages, with search, filters (type, maturity, rack, vintage, producer,
+ * region, grape and your own data fields), sorting and a flat view. Tap a vintage for details (your data, register profile,
+ * storage places, note); "Take out" asks which bottle and why, then confirms before the bottle is consumed.
+ *
+ * Data comes from the services of the My Cellarion integration (my_cellarion.read and others). The Cellarion API token is
+ * never sent to the browser.
+ *
+ * Configuration (YAML, all optional):
+ *   type: custom:my-cellarion-card
+ *   key: bestand                  # key for the remembered view and sorting (per browser)
+ *   title: My Cellarion           # title above the card (default: none, the cellar name is shown by the page header)
+ *   view: wine                    # start view: wine (grouped) or flat; the last choice is remembered
+ *   refresh_seconds: 300          # re-read the cached inventory this often (default 300, 0 = never)
+ *   refresh_on_open: true         # fetch fresh data from Cellarion when the card opens or becomes visible (at most once a minute)
+ *   height: 600px                 # fixed height (default: fills the rest of the window)
+ *   flush: true                   # no frame and border (for use inside a combined card)
+ *   language: de                  # card language (default: language of the Home Assistant user); files in cellarion-i18n/<language>.json
+ *   i18n_path: /my-cellarion-files/cellarion-i18n/   # folder with the language files
+ *   header_cellar: false          # do not append the cellar name to the page header
+ *   row_h / row_font / title_font / chip_font / chip_h / font_scale   # sizes in px (font_scale is a factor)
+ *
+ * Maturity (per bottle, by years): not ready (before drinkFrom), early (in the window, before peak), peak,
+ * late (in the window, after peak), past (after drinkTo).
+ *
+ * Colours: Home Assistant theme variables only, with fallbacks. Optional overrides in your theme:
+ * cellarion-accent, cellarion-on-text, cellarion-chip-bg, cellarion-seg-bg,
+ * cellarion-wine-red/white/rose/sparkling/dessert/fortified, cellarion-maturity-notready/early/peak/late/over.
+ *
+ * Source of truth: https://github.com/d3rb3rt/my-cellarion-ha
+ */

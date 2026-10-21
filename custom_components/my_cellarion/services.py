@@ -54,8 +54,8 @@ def async_setup_services(hass: HomeAssistant) -> None:
         return {"ok": True, "settings": await _guard(_hub(call.hass).set_settings(
             d["filter_order"], d["filter_hidden"], d.get("language"), d.get("rack_settings")))}
 
-    async def winzer_sort(call: ServiceCall) -> dict[str, Any]:
-        return await _guard(_hub(call.hass).winzer_sort(call.data["name"], call.data["index"]))
+    async def producer_sort(call: ServiceCall) -> dict[str, Any]:
+        return await _guard(_hub(call.hass).producer_sort(call.data["name"], call.data["index"]))
 
     async def consume(call: ServiceCall) -> None:
         hub = _hub(call.hass)
@@ -74,7 +74,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
         vol.Optional("language"): cv.string,
         vol.Optional("rack_settings"): dict,
     }))
-    hass.services.async_register(DOMAIN, "winzer_sort", winzer_sort, supports_response=only, schema=vol.Schema({
+    hass.services.async_register(DOMAIN, "producer_sort", producer_sort, supports_response=only, schema=vol.Schema({
         vol.Required("name"): vol.All(cv.string, vol.Length(max=200)),
         vol.Required("index"): vol.All(vol.Coerce(int), vol.Range(min=-1, max=20)),
     }))

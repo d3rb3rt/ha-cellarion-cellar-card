@@ -32,7 +32,7 @@ settings:
     rack_settings:
       selector:
         object:
-winzer_sort:
+producer_sort:
   fields:
     name:
       required: true

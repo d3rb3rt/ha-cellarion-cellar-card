@@ -97,7 +97,7 @@
         }
       }
     },
-    "winzer_sort": {
+    "producer_sort": {
       "name": "Producer sort word",
       "description": "Chooses which word of a producer name is used for sorting.",
       "fields": {

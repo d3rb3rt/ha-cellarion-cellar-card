@@ -3,11 +3,8 @@
  * Zeigt alle Flaschen gruppiert nach Wein mit den Jahrgaengen darunter, mit Suche, Filtern
  * (Typ, Trinkreife, Lagerort, Jahrgang, Winzer, Region, Rebsorte), Sortierung und Flach-Ansicht.
  *
- * Daten: kommen aus dem Cache von custom_templates/cellarion/bestand.py. Die Karte liest ihn ueber
- * die shell_command-Antwort (shell_command.cellarion_bestand_read), der Cellarion-Token liegt nie im Browser.
- * Aktualisiert wird der Cache von der Automation "My Cellarion aktualisieren" (alle 15 Min.,
- * beim Start, bei Aenderung der Flaschenzahl). Die Karte liest ihn neu: beim Laden, alle refresh_seconds,
- * wenn sich der Sensor count_entity aendert und per Taste "Neu laden".
+ * Daten: kommen von den Diensten der Integration My Cellarion (my_cellarion.read u. a.); der Cellarion-Token liegt nie im Browser.
+ * Die Karte liest neu: beim Laden, alle refresh_seconds und per Taste "Neu laden".
  *
  * Konfiguration (YAML):
  *   type: custom:cellarion-bestand-card
@@ -16,11 +13,7 @@
  *   view: wine                    # optional, Start-Ansicht: wine (nach Wein) oder flat (flach); gemerkt wird die letzte Wahl
  *   refresh_seconds: 300          # optional, Cache so oft neu lesen (Standard 300, 0 = nie)
  *   count_entity: sensor.cellarion_total_bottles   # optional, bei Aenderung wird der Cache neu gelesen
- *   read_service: shell_command.cellarion_bestand_read       # optional, liefert den Cache als stdout
- *   refresh_service: shell_command.cellarion_bestand_refresh # optional, holt frisch von Cellarion (Taste "Neu laden")
  *   height: 600px                 # optional, feste Hoehe der Karte (Standard: fuellt den Rest des Fensters)
- *   winzer_service: shell_command.cellarion_winzer_sort   # optional, schreibt die Sortierwoerter der Winzer
- *   sync_service: shell_command.cellarion_bestand_sync   # optional, Abgleich beim Oeffnen: holt nur, wenn der Cache aelter als 5 Min. ist
  *   refresh_on_open: true         # optional, beim Oeffnen/Sichtbarwerden frisch von Cellarion holen (Standard an, max. 1x je Minute)
  *   row_h: 44                     # optional, Mindesthoehe einer Zeile in px (Standard 44)
  *   row_font: 14                  # optional, Schrift der Zeilen in px (Standard 14)
@@ -28,13 +21,9 @@
  *   chip_font: 14                 # optional, Schrift der Filtertasten in px (Standard 14)
  *   chip_h: 40                    # optional, Hoehe der Filtertasten in px (Standard 40)
  *   font_scale: 1                 # optional, Start-Schriftgroesse (Faktor); die Wahl in den Einstellungen (Zahnrad) wird pro Browser gemerkt
- *   settings_service: shell_command.cellarion_einstellungen   # optional, speichert die gemeinsamen Einstellungen (Filterwahl)
- *   fielddel_service: shell_command.cellarion_feld_loeschen   # optional, loescht ein persoenliches Datenfeld samt Werten in Cellarion
  *   language: de                  # optional, Sprache der Karte (Standard: Sprache des HA-Nutzers); Dateien in /local/cellarion-i18n/<sprache>.json
  *   i18n_path: /local/cellarion-i18n/   # optional, Ordner der Sprachdateien
- *   consume_service: cellarion.consume_bottle   # optional, Dienst fuer "Entnehmen"
  *   detail: v2                    # optional, neue Detailansicht (Test); sonst je Geraet in den Einstellungen
- *   bottle_service: shell_command.cellarion_bestand_bottle  # optional, liefert Notiz/Einkauf einer Flasche (id)
  *   flush: true                   # optional, Karte ohne Rahmen und Rand (fuer den Einbau in eine Kombi-Karte)
  *
  * Trinkreife (je Flasche, nach Jahreszahlen): Zu frueh (vor drinkFrom), Frueh (im Fenster, vor dem Peak),
@@ -515,7 +504,7 @@
       this._hass = hass;
       if (!this._cfg) return;
       if (first) this._start();
-      const ent = this._cfg.count_entity || (this._integ() ? 'sensor.my_cellarion_total_bottles' : 'sensor.cellarion_total_bottles');
+      const ent = this._cfg.count_entity || '';
       const st = hass.states && hass.states[ent];
       const val = st ? st.state : undefined;
       if (this._countSeen !== undefined && val !== undefined && val !== this._countSeen) {
@@ -641,10 +630,10 @@
       const [domain, service] = String(name).split('.');
       return { domain, service };
     }
-    // Datenquelle: ist die Integration my_cellarion installiert, nutzt die Karte deren Dienste (Antwort direkt als Objekt);
-    // sonst die shell_command-Anbindung (Antwort als JSON-Text in stdout). Namen der shell_commands per Kartenoption aenderbar.
+    // Datenquelle: die Dienste der Integration my_cellarion (Antwort direkt als Objekt).
+    // Nur im Entwicklungs-Setup gibt es zusaetzlich eine Anbindung ueber eigene Dienste (Block "dev-only" unten).
     _integ() { return !!(this._hass && this._hass.services && this._hass.services.my_cellarion); }
-    // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = Daten fuer shell_command, int = Daten fuer den Dienst.
+    // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = Daten fuer den Dienst des Entwicklungs-Setups, int = Daten fuer den Dienst der Integration.
     async _call(kind, sh, int) {
       const c = this._cfg || {};
       let res;
@@ -655,18 +644,7 @@
         if (out.error) throw new Error(out.error);
         return out;
       }
-      const dflt = { read: 'shell_command.cellarion_bestand_read', sync: 'shell_command.cellarion_bestand_sync', refresh: 'shell_command.cellarion_bestand_refresh',
-        settings: 'shell_command.cellarion_einstellungen', fielddel: 'shell_command.cellarion_feld_loeschen', winzer: 'shell_command.cellarion_winzer_sort', bottle: 'shell_command.cellarion_bestand_bottle' }[kind];
-      const opt = { read: c.read_service, sync: c.sync_service, refresh: c.refresh_service, settings: c.settings_service, fielddel: c.fielddel_service, winzer: c.winzer_service, bottle: c.bottle_service }[kind];
-      const { domain, service } = this._svc(opt || dflt);
-      res = await this._hass.callWS(Object.assign({ type: 'call_service', domain, service }, sh ? { service_data: sh } : {}, kind === 'sync' || kind === 'refresh' ? {} : { return_response: true }));
-      if (kind === 'sync' || kind === 'refresh') return {};
-      const out = (res && res.response) || res || {};
-      if (out.returncode && out.returncode !== 0) throw new Error(out.stderr || t('err.script', { code: out.returncode }));
-      let data = {};
-      try { data = out.stdout ? JSON.parse(out.stdout) : {}; } catch (e) { if (kind === 'read' || kind === 'bottle' || kind === 'winzer') throw e; }
-      if (data.error) throw new Error(data.error);
-      return data;
+      throw new Error('My Cellarion integration not found');
     }
     async _load() {
       if (!this._hass) return;
@@ -1342,7 +1320,7 @@
         `<div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
       el.hidden = false;
     }
-    // Filterwahl gilt fuer alle Geraete: im Home Assistant speichern (shell_command), Fehler nur still melden
+    // Filterwahl gilt fuer alle Geraete: im Home Assistant speichern, Fehler nur still melden
     async _saveSettings() {
       const S = this._shared || {};
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x)).join(',') : '-');
@@ -1737,7 +1715,7 @@
       d.busy = true; d.err = '';
       this._renderDlg();
       try {
-        const { domain, service } = this._svc(this._cfg.consume_service || (this._integ() ? 'my_cellarion.consume_bottle' : 'cellarion.consume_bottle'));
+        const { domain, service } = this._svc(this._cfg.consume_service || 'my_cellarion.consume_bottle');
         await this._hass.callService(domain, service, { bottle_id: sel.id, reason: d.reason });
       } catch (e) {
         d.busy = false;

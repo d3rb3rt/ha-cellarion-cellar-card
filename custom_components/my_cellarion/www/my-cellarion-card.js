@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'phoneList' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'phoneList' }, { id: 'backClose' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -502,6 +502,8 @@
       this._onResize = this._onResize || (() => this._fit());
       document.addEventListener('visibilitychange', this._onVis);
       window.addEventListener('resize', this._onResize);
+      this._onPop = this._onPop || (() => this._hpop());
+      window.addEventListener('popstate', this._onPop);
       if (this._hass && this._cfg) {
         this._startTimer();
         if (this._built) { this._fit(); this._openSync(); }
@@ -511,6 +513,7 @@
       clearInterval(this._timer); clearTimeout(this._cntTimer); clearTimeout(this._afterTimer); this._timer = null;
       document.removeEventListener('visibilitychange', this._onVis);
       window.removeEventListener('resize', this._onResize);
+      window.removeEventListener('popstate', this._onPop);
     }
 
     // Fetch fresh data from Cellarion when the page opens (and when the tab becomes visible again), at most once a minute.
@@ -1773,7 +1776,36 @@
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       return `<div class="d2hero">${img}${main}</div>${maturity}${about}${noteHtml}${botsSec}${actBar}`;
     }
-    _renderDlg() {
+    _renderDlg() { this._renderDlg0(); this._hsync(); }
+    // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
+    _hdepth() {
+      if (!this._flag('backClose')) return 0;
+      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._fdel ? 1 : 0) + (this._cfm ? 1 : 0);
+    }
+    _hsync() {
+      if (this._hskip) return;
+      const d = this._hdepth(), h = this._hd || 0;
+      try {
+        if (d > h) { for (let i = h; i < d; i++) history.pushState({ cbDlg: i + 1 }, ''); this._hd = d; }
+        else if (d < h) { this._hskip = 1; this._hd = d; history.go(d - h); }
+      } catch (e) { this._hd = d; this._hskip = 0; }
+    }
+    _hpop() {
+      if (this._hskip) { this._hskip = 0; this._hsync(); return; }
+      if (!this._hd) return;
+      this._hd--;
+      // one level back
+      if (this._fdel) { if (!this._fdel.busy) this._fdel = null; }
+      else if (this._cfm) this._cfm = null;
+      else if (this._dd) this._dd = null;
+      else if (this._wz) { if (!this._wz.busy) this._wz = null; }
+      else if (this._set) this._set = null;
+      else if (this._stat) { if (this._stat.path.length) { this._stat.path.pop(); this._stat.all = false; } else this._stat = null; }
+      else if (this._det) { if (!this._det.busy) this._det = null; }
+      this._renderDlg0();
+      this._hsync();
+    }
+    _renderDlg0() {
       const el = this._dlg;
       if (!el) return;
       el.classList.toggle('dd', !!this._dd);

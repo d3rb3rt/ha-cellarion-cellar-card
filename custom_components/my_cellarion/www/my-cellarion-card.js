@@ -57,7 +57,8 @@
   };
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
-  const FLAGS = [{ id: 'phoneList' }];
+  // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'phoneList' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];

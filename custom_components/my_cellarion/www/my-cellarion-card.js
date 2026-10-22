@@ -344,14 +344,23 @@
     .stab.on { background: var(--cb-on); border-color: var(--cb-on); color: var(--cb-card); font-weight: 600; }
     .shead { margin-top: 6px; font-weight: 600; }
     .shint { text-align: center; opacity: .7; }
-    .dlg { position: fixed; inset: 0; z-index: 5; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.5); }
+    .dlg { position: fixed; inset: 0; z-index: 5; display: flex; align-items: flex-start; justify-content: center; background: rgba(0,0,0,.5); }
     .dsheet {
-      background: var(--cb-card); color: var(--cb-text); width: 100%; max-width: 560px; max-height: 92%;
-      overflow-y: auto; border-radius: 16px 16px 0 0; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column;
-      gap: 12px; box-shadow: 0 -4px 24px rgba(0,0,0,.4);
+      background-color: var(--cb-card); color: var(--cb-text); width: 100%; max-width: 560px; max-height: 92%;
+      overflow-y: auto; border-radius: 0 0 16px 16px; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column;
+      gap: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.4);
+      /* Scroll hint: shadows at the top/bottom edge appear only where more content is hidden, plus a visible thin scrollbar */
+      --cb-sh: color-mix(in srgb, var(--cb-text) 28%, transparent);
+      background-image: linear-gradient(var(--cb-card) 30%, transparent), linear-gradient(transparent, var(--cb-card) 70%),
+        radial-gradient(farthest-side at 50% 0, var(--cb-sh), transparent), radial-gradient(farthest-side at 50% 100%, var(--cb-sh), transparent);
+      background-position: 0 0, 0 100%, 0 0, 0 100%; background-repeat: no-repeat; background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+      background-attachment: local, local, scroll, scroll;
+      scrollbar-width: thin; scrollbar-color: var(--cb-sub) transparent;
       overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
     }
     .dsheet > * { flex: none; }
+    .dsheet::-webkit-scrollbar { width: 5px; }
+    .dsheet::-webkit-scrollbar-thumb { background: var(--cb-sub); border-radius: 3px; }
     .dh { display: flex; align-items: flex-start; gap: 10px; }
     .dh .wmain { flex: 1; }
     .dh .wname { white-space: normal; font-size: 1.2em; }
@@ -471,6 +480,7 @@
       .pl2 .wright .wvint { order: -2; }
       .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
       .pl2 .wright .wvint.multi { flex: 1 1 auto; }
+      .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; }
       .dtop { gap: 10px; }
       .dimg { width: 84px; max-height: 150px; }
     }
@@ -1841,7 +1851,7 @@
       el.classList.toggle('dd', !!this._dd);
       if (this._fdel) {
         const f = this._fdel;
-        el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('fd.title', { label: f.label }))}</span>` +
+        el.innerHTML = `<div class="dsheet csheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('fd.title', { label: f.label }))}</span>` +
           `<span class="wsub">${esc(t('fd.text', { n: f.n }))}</span></span></div>` +
           (f.err ? `<div class="derr">${esc(f.err)}</div>` : '') +
           `<div class="dact"><button class="btn" data-act="fdelno" ${f.busy ? 'disabled' : ''}>${esc(t('fd.cancel'))}</button><button class="btn danger" data-act="fdelyes" ${f.busy ? 'disabled' : ''}>${esc(f.busy ? t('fd.starting') : t('fd.confirm'))}</button></div></div>`;
@@ -1849,7 +1859,7 @@
         return;
       }
       if (this._cfm) {
-        el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('rl.title'))}</span>` +
+        el.innerHTML = `<div class="dsheet csheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('rl.title'))}</span>` +
           `<span class="wsub">${esc(t('rl.text'))}</span></span></div>` +
           `<div class="dact"><button class="btn" data-act="pno">${esc(t('rl.cancel'))}</button><button class="btn on" data-act="pyes">${esc(t('rl.confirm'))}</button></div></div>`;
         el.hidden = false;

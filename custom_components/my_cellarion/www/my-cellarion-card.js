@@ -432,7 +432,7 @@
       .wrow .wpd { display: none; }
       .wrow .wpm { display: block; flex: none; margin-top: 2px; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
-      .wrow .winfo { display: block; }
+      .wrow .winfo { display: none; }
       .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }
       .wright .wsep { display: none; }
       .wright .wloc { flex: 1 1 auto; justify-content: flex-start; text-align: left; max-width: none; min-width: 0; }

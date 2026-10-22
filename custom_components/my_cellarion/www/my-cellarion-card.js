@@ -445,6 +445,7 @@
       .pl2 .wrow .wtitle { column-gap: 6px; }
       .pl2 .yv { color: var(--yc); font-weight: 700; }
       .pl2 .wright .sdots { display: none; }
+      .pl2 .wright { padding-left: 32px; }
       .pl2 .wright .wvint { order: -2; }
       .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
       .pl2 .wright .wvint.multi { flex: 1 1 auto; }

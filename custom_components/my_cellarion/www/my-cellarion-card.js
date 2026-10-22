@@ -127,7 +127,7 @@
       --w-dessert: var(--cellarion-wine-dessert, #e39b2d);
       --w-fortified: var(--cellarion-wine-fortified, #8a5a3c);
       --s-notready: var(--cellarion-maturity-notready, var(--info-color, #5b8def));
-      --s-early: var(--cellarion-maturity-early, #86c96d);
+      --s-early: var(--cellarion-maturity-early, #3cc8c0);
       --s-peak: var(--cellarion-maturity-peak, var(--success-color, #2fa84f));
       --s-late: var(--cellarion-maturity-late, var(--warning-color, #e8a33d));
       --s-over: var(--cellarion-maturity-over, var(--error-color, #d9534f));
@@ -446,6 +446,12 @@
       .pl2 .yv { color: var(--yc); font-weight: 700; }
       .pl2 .wright .sdots { display: none; }
       .pl2 .wright { padding-left: 32px; }
+      .pl2 .vlist { padding-left: 44px; }
+      .pl2 .vrow { padding-left: 0; }
+      .pl2 .vrow .vyear { min-width: 0; flex: 0 0 auto; }
+      .pl2 .vrow .vmid { align-items: flex-end; text-align: right; }
+      .pl2 .vrow .locs { justify-content: flex-end; }
+      .pl2 .vrow .vstat { display: none; }
       .pl2 .wright .wvint { order: -2; }
       .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
       .pl2 .wright .wvint.multi { flex: 1 1 auto; }

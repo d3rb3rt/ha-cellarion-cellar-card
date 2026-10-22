@@ -94,6 +94,10 @@
         "rack_settings": {
           "name": "Rack display",
           "description": "Per rack: shelf counting direction and position display."
+        },
+        "keep_state": {
+          "name": "Keep filters on reload",
+          "description": "Keep the last filters and sorting when the page reloads."
         }
       }
     },

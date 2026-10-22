@@ -32,6 +32,9 @@ settings:
     rack_settings:
       selector:
         object:
+    keep_state:
+      selector:
+        boolean:
 producer_sort:
   fields:
     name:

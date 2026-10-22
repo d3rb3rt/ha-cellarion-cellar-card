@@ -143,7 +143,7 @@ class Hub:
         return self._settings
 
     async def set_settings(self, filter_order: list[str], filter_hidden: list[str], language: str | None,
-                           rack_settings: JsonDict | None) -> JsonDict:
+                           rack_settings: JsonDict | None, keep_state: bool | None = None) -> JsonDict:
         """Settings shared by all devices: filter order/visibility, language, per-rack place display."""
         s = self._settings
         s["filterOrder"] = [str(x) for x in filter_order][:60]
@@ -158,6 +158,8 @@ class Hub:
                 for name, v in rack_settings.items()
                 if isinstance(v, dict) and v.get("order") in RACK_ORDERS and v.get("side") in RACK_SIDES and name
             }
+        if keep_state is not None:
+            s["keepState"] = bool(keep_state)  # keep filters and sorting when the page reloads
         await self._save_settings()
         return dict(s)
 

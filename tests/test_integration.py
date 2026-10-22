@@ -87,8 +87,11 @@ async def test_settings_roundtrip_and_validation(hass, aioclient_mock):
         "rack_settings": {"Cabinet": {"order": "bottom", "side": "thirds"}, "Bad": {"order": "x", "side": "none"}}},
         blocking=True, return_response=True)
     assert res["settings"]["rackSettings"] == {"Cabinet": {"order": "bottom", "side": "thirds"}}
+    assert "keepState" not in res["settings"]
     out = await hass.services.async_call(DOMAIN, "read", blocking=True, return_response=True)
     assert out["einstellungen"]["language"] == "de" and out["einstellungen"]["filterHidden"] == ["shop"]
+    res = await hass.services.async_call(DOMAIN, "settings", {"filter_order": [], "filter_hidden": [], "keep_state": True}, blocking=True, return_response=True)
+    assert res["settings"]["keepState"] is True
 
 
 async def test_producer_sort(hass, aioclient_mock):

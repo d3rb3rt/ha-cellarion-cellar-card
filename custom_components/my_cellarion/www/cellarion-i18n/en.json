@@ -203,5 +203,9 @@
  "set.rackSide": "Position in shelf",
  "set.sideNone": "none",
  "set.sideThirds": "left/middle/right",
- "set.sideSlot": "slot number"
+ "set.sideSlot": "slot number",
+ "set.keepState": "When the page reloads",
+ "set.keepStateSub": "This device only",
+ "set.keepOn": "Keep filters and sorting",
+ "set.keepOff": "Start fresh"
 }

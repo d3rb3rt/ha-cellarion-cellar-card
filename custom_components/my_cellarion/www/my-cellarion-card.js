@@ -407,10 +407,17 @@
       this._key = 'my-cellarion:' + (this._cfg.key || 'bestand');
       const st = this._loadState();
       this._view = this._cfg.view === 'flat' ? 'flat' : 'wine';
-      this._sort = st.sort || 'name';
+      this._local = st.local && typeof st.local === 'object' ? st.local : {};
+      const keep = !!this._local.keepState;
+      this._sort = keep ? (st.sort || 'name') : 'name';
       this._scale = this._clampScale(st.scale != null ? st.scale : this._cfg.font_scale);
       this._f = { q: '' };
-      this._local = st.local && typeof st.local === 'object' ? st.local : {};
+      if (keep && st.f && typeof st.f === 'object') {
+        for (const k of Object.keys(st.f)) {
+          if (k === 'q') this._f.q = String(st.f.q || '');
+          else if (Array.isArray(st.f[k]) && st.f[k].length) this._f[k] = new Set(st.f[k]);
+        }
+      }
       this._shared = {};
       this._applyEff();
       this._open = new Set();
@@ -525,7 +532,12 @@
       return `<span style="display:flex;gap:6px;flex:none">${b('all', t('set.scopeAll'), !dev)}${b('device', t('set.scopeDevice'), dev)}</span>`;
     }
     _saveState() {
-      try { localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._sort, scale: this._scale, local: this._local })); } catch (e) { /* ohne Speicher weiter */ }
+      try { let f;
+        if (this._local && this._local.keepState && this._f) {
+          f = { q: this._f.q || '' };
+          for (const k of Object.keys(this._f)) if (k !== 'q' && this._f[k] && this._f[k].size) f[k] = Array.from(this._f[k]);
+        }
+        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._sort, scale: this._scale, local: this._local, f })); } catch (e) { /* ohne Speicher weiter */ }
     }
 
     // ---------- Data ----------
@@ -844,6 +856,7 @@
 
     _renderAll() {
       if (!this._built) return;
+      if (this._local && this._local.keepState) this._saveState();
       this._renderHead();
       this._renderList();
     }
@@ -1241,6 +1254,8 @@
           }).join('') + `</div>` : '') +
         `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
         `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
+        `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw(null, 'device')) +
+        `<div class="scalechips">` + [['on', t('set.keepOn')], ['off', t('set.keepOff')]].map(([v, n]) => `<button class="chip${(v === 'on') === !!this._local.keepState ? ' on' : ''}" data-act="keepst" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
         `<div class="sblk">` + hd(t('set.filters'), t('set.filtersSub'), this._scopeSw('filters')) + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
         this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
           `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
@@ -1711,6 +1726,8 @@
         this._fmove(t.dataset.id, act === 'fup' ? -1 : 1);
       } else if (act === 'rack') {
         this._setRack(t.dataset.n, t.dataset.k, t.dataset.v);
+      } else if (act === 'keepst') {
+        this._local.keepState = t.dataset.v === 'on'; this._saveState(); this._renderSet();
       } else if (act === 'lang') {
         this._setLang(t.dataset.v || '');
         this._initLang().then(() => {

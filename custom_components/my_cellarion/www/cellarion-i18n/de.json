@@ -203,5 +203,9 @@
  "set.rackSide": "Lage im Fach",
  "set.sideNone": "keine",
  "set.sideThirds": "links/Mitte/rechts",
- "set.sideSlot": "Platznummer"
+ "set.sideSlot": "Platznummer",
+ "set.keepState": "Beim Neuladen der Seite",
+ "set.keepStateSub": "Nur dieses Gerät",
+ "set.keepOn": "Filter und Sortierung behalten",
+ "set.keepOff": "Frisch starten"
 }

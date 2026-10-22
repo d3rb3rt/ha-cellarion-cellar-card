@@ -1884,6 +1884,7 @@
       } else if (act === 'statfilter') {
         const g = t.dataset.g, v = t.dataset.v;
         this._stat = null;
+        this._f = { q: '' }; // only the filter of the tap, earlier filters are cleared
         if (g === 'q') this._f.q = v; else this._fs(g).add(v);
         this._renderDlg(); this._renderAll();
       } else if (act === 'setopen') {

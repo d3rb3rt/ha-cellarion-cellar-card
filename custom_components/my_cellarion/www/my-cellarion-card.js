@@ -429,8 +429,6 @@
       .wrow .wmain { flex: 1 1 0; min-width: 0; }
       .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
       .wrow .wsep { display: none; }
-      .wrow .wpd { display: none; }
-      .wrow .wpm { display: block; flex: none; margin-top: 2px; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
       .wrow .winfo { display: none; }
       .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }

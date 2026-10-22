@@ -57,7 +57,7 @@
   };
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
-  const FLAGS = [];
+  const FLAGS = [{ id: 'phoneList' }];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -428,11 +428,7 @@
       .wrow .tdot, .wrow .tsp { margin-top: 5px; }
       .wrow .wmain { flex: 1 1 0; min-width: 0; }
       .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
-      .wrow .wsep { display: inline; font-size: 0; }
-      .wrow .wsep::before { content: '·'; font-size: 1rem; }
-      .wrow .wtitle > :first-child { flex: 0 0 100%; }
-      .wrow .wtitle > :first-child + .wsep { display: none; }
-      .wrow .wtitle { column-gap: 6px; row-gap: 0; }
+      .wrow .wsep { display: none; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
       .wrow .winfo { display: none; }
       .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }
@@ -441,6 +437,11 @@
       .wright .wvint { flex: 0 0 auto; max-width: none; }
       .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
       .wright .chev { margin-left: 0; }
+      .pl2 .wrow .wtitle .wsep { display: inline; font-size: 0; }
+      .pl2 .wrow .wtitle .wsep::before { content: '·'; font-size: 1rem; }
+      .pl2 .wrow .wtitle > :first-child { flex: 0 0 100%; }
+      .pl2 .wrow .wtitle > :first-child + .wsep { display: none; }
+      .pl2 .wrow .wtitle { column-gap: 6px; }
       .dtop { gap: 10px; }
       .dimg { width: 84px; max-height: 150px; }
     }
@@ -1127,6 +1128,7 @@
       }
       if (!bottles.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
       el.innerHTML = html;
+      el.classList.toggle('pl2', this._flag('phoneList'));
       el.scrollTop = top;
       this._renderAz();
       const f = this._f;

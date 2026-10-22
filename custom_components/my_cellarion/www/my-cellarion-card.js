@@ -1468,7 +1468,6 @@
         [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
         [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
-        [t('det.reserved'), bottles.some((b) => b.reserved) ? (bottles.every((b) => b.reserved) ? '✓' : `${bottles.filter((b) => b.reserved).length}/${bottles.length}` + ne) : ''],
       ].concat(((this._data && this._data.fields) || []).map((l) => {
         const vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
         return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
@@ -1497,8 +1496,7 @@
       const botRow = (b) => {
         const i = this._info[b.id] || {};
         const sub = [i.price != null ? this._fmtMoney(i.price, i.currency) : (b.price != null ? this._fmtMoney(b.price, b.currency) : ''),
-          i.purchaseDate ? this._fmtDate(i.purchaseDate) : '', i.purchaseLocation || b.shop || '', i.rating != null ? '★ ' + i.rating : '',
-          b.reserved ? t('det.reserved') : ''].filter(Boolean).join(' · ');
+          i.purchaseDate ? this._fmtDate(i.purchaseDate) : '', i.purchaseLocation || b.shop || '', i.rating != null ? '★ ' + i.rating : ''].filter(Boolean).join(' · ');
         return `<button class="dbot${b.id === sel.id ? ' on' : ''}" data-act="dsel" data-id="${esc(b.id)}" style="margin-left:18px;width:calc(100% - 18px)"><span class="rd"></span>` +
           `<span class="wmain"><span class="loc${b._loc === NO_LOC ? ' none' : ''}">${esc(nm(b._loc))}</span>${sub ? `<span class="dpur">${esc(sub)}</span>` : ''}</span></button>`;
       };
@@ -1506,7 +1504,7 @@
         const on = arr.some((b) => b.id === sel.id);
         const op = gOpen.has(l);
         return `<div style="display:flex;align-items:stretch;gap:6px"><button class="dbot${on ? ' on' : ''}" data-act="dsel" data-id="${esc((arr.find((b) => b.id === sel.id) || arr[0]).id)}" style="flex:1"><span class="rd"></span>` +
-          `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(nm(l))}${arr.length > 1 ? ' ×' + arr.length : ''}${arr.some((b) => b.reserved) ? ' · ' + esc(t('det.reserved')) : ''}</span></button>` +
+          `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(nm(l))}${arr.length > 1 ? ' ×' + arr.length : ''}</span></button>` +
           `<button class="btn round" data-act="dgrp" data-l="${esc(l)}" aria-expanded="${op}" aria-label="${esc(t('det.bottlesN', { n: arr.length }))}">${op ? '▾' : '▸'}</button></div>` +
           (op ? arr.map(botRow).join('') : '');
       }).join('');
@@ -1575,7 +1573,7 @@
       } else if (d.step === 'confirm') {
         const reasons = ['drank', 'gifted', 'sold', 'other'].map((v) => [v, t('reason.' + v)]);
         body = `<div class="dask">${esc(t('det.confirmTitle'))}</div>` +
-          `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc)}${sel.reserved ? ' · ' + esc(t('det.reserved')) : ''}</span></div>` +
+          `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc)}</span></div>` +
           `<div class="dsec">${esc(t('det.reason'))}</div><div class="row-chips">` +
           reasons.map(([v, l]) => `<button class="chip${d.reason === v ? ' on' : ''}" data-act="dreason" data-v="${v}">${l}</button>`).join('') + `</div>` +
           (d.err ? `<div class="derr">${esc(d.err)}</div>` : '') +
@@ -1596,13 +1594,12 @@
         let bots = '';
         const locs = new Map();
         bottles.forEach((b) => { if (!locs.has(b._loc)) locs.set(b._loc, []); locs.get(b._loc).push(b); });
-        const tag = (b) => (b.reserved ? ' · ' + t('det.reserved') : '');
         if (locs.size > 1) {
           bots = `<div class="dsec">${esc(t('det.pickBottle', { n: bottles.length }))}</div>` + Array.from(locs.entries()).map(([l, arr]) =>
             `<button class="dbot${l === sel._loc ? ' on' : ''}" data-act="dsel" data-id="${esc(arr[0].id)}"><span class="rd"></span>` +
-            `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}${arr.length > 1 ? ' ×' + arr.length : ''}${arr.some((b) => b.reserved) ? ' · ' + esc(t('det.reserved')) : ''}</span></button>`).join('');
+            `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}${arr.length > 1 ? ' ×' + arr.length : ''}</span></button>`).join('');
         } else {
-          facts.push([bottles.length > 1 ? t('det.bottles') : t('det.location'), esc((sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc) + (bottles.length > 1 ? ' ×' + bottles.length : '') + tag(sel))]);
+          facts.push([bottles.length > 1 ? t('det.bottles') : t('det.location'), esc((sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc) + (bottles.length > 1 ? ' ×' + bottles.length : ''))]);
         }
         let note = '';
         if (!info || info.loading) note = `<div class="dpur">${esc(t('det.noteLoading'))}</div>`;

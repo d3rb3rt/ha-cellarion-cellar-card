@@ -77,7 +77,6 @@
  "det.noteError": "Note not loaded: {err}",
  "det.boughtAt": "Bought at {shop}",
  "det.label": "Label",
- "det.reserved": "reserved",
  "det.pickBottle": "{n} bottles – from which spot?",
  "det.take": "Take out …",
  "det.close": "Close",

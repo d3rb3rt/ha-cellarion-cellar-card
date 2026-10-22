@@ -77,7 +77,6 @@
  "det.noteError": "Notiz nicht geladen: {err}",
  "det.boughtAt": "Gekauft bei {shop}",
  "det.label": "Etikett",
- "det.reserved": "reserviert",
  "det.pickBottle": "{n} Flaschen – von welchem Platz?",
  "det.take": "Entnehmen …",
  "det.close": "Schließen",

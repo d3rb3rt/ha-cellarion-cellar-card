@@ -453,6 +453,11 @@
       .pl2 .vrow .locs { justify-content: flex-end; }
       .pl2 .vrow .vstat { display: none; }
       .pl2 .vrow .vwin { display: none; }
+      .pl2 .vrow .vpr { display: none; }
+      .pl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
+      .pl2 .vrow .locs { color: var(--cb-sub); font-size: .9em; }
+      .pl2 .vrow .loc b { color: var(--text-primary-color, inherit); }
+      .pl2 .wright .wvint { color: var(--cb-sub); font-weight: 400; }
       .pl2 .wright .wvint { order: -2; }
       .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
       .pl2 .wright .wvint.multi { flex: 1 1 auto; }

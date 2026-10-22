@@ -56,6 +56,8 @@
     return I18N.files[k];
   };
   // Types, maturity, placeholders: refilled in place when the language changes
+  // Experiments behind a switch (empty = no switch in the settings)
+  const FLAGS = [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -1435,6 +1437,8 @@
           }).join('') + `</div>` : '') +
         `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
         `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
+        FLAGS.map((f) => `<div class="sblk">` + hd(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), this._scopeSw(null, 'device')) +
+          `<div class="scalechips">` + [['on', t('set.on')], ['off', t('set.off')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._flag(f.id) ? ' on' : ''}" data-act="flag" data-id="${esc(f.id)}" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>`).join('') +
         `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw('keepState')) +
         `<div class="scalechips">` + [['on', t('set.keepOn')], ['off', t('set.keepOff')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._keep() ? ' on' : ''}" data-act="keepst" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
         `<div class="sblk">` + hd(t('set.filters'), t('set.filtersSub'), this._scopeSw('filters')) + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
@@ -1599,9 +1603,15 @@
         this._info[id] = { error: (e && e.message) || String(e) };
         setTimeout(() => { if (this._info[id] && this._info[id].error) delete this._info[id]; }, 30000);
       }
-      if (this._det && (this._det.sel === id || this._detV2())) this._renderDlg();
+      if (this._det) this._renderDlg();
     }
-    _detV2() { return true; }
+    // Feature flags for experiments: add {id, label, sub} (texts in the language files as flag.<id> and flag.<id>Sub) and ask _flag(id).
+    // Per device in the settings (only shown while FLAGS is not empty) or in the card config (flags: {id: true}).
+    _flag(id) {
+      const L = (this._local && this._local.flags) || {};
+      if (L[id] !== undefined) return !!L[id];
+      return !!((this._cfg.flags || {})[id]);
+    }
     // Format the value of a personal data field by its look (date, yes/no, number)
     _fmtVal(v) {
       const x = String(v);
@@ -1756,7 +1766,7 @@
       const sel = bottles.find((b) => b.id === d.sel);
       if (sel && d.step !== 'done') {
         this._fetchInfo(sel.id);
-        if (this._detV2()) this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
+        this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
       }
       const info = sel ? this._info[sel.id] : null;
       const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>` +
@@ -1776,42 +1786,8 @@
           (d.err ? `<div class="derr">${esc(d.err)}</div>` : '') +
           `<div class="dact"><button class="btn" data-act="dback" ${d.busy ? 'disabled' : ''}>${esc(t('det.cancel'))}</button>` +
           `<button class="btn danger" data-act="dgo" ${d.busy ? 'disabled' : ''}>${esc(d.busy ? t('det.taking') : t('det.takeYes'))}</button></div>`;
-      } else if (this._detV2()) {
-        body = this._viewV2(sel, bottles, info);
       } else {
-        const st = sel._status;
-        const win = this._winText({ b: sel, bottles: [sel] });
-        const facts = [
-          [t('det.vintage'), esc(sel.vintage || 'NV')],
-          [t('det.maturity'), `${this._sdot(st)} ${esc(STATUS_LABEL[st])}${win ? ' · ' + esc(win) : ''}`],
-          [t('det.origin'), esc(Array.from(new Set([sel.country, sel.region, sel.appellation].filter(Boolean))).join(' · '))],
-          [t('det.grapes'), esc((sel.grapes || []).join(', '))],
-          [t('det.classification'), (() => { const pv = Object.values(sel.p || {}).map((v) => String(v).toLowerCase()); const parts = String(sel.classification || '').split(/[,;]/).map((x) => x.trim()).filter(Boolean); return parts.length && parts.every((x) => pv.some((v) => v.includes(x.toLowerCase()))) ? '' : esc(sel.classification || ''); })()],
-        ].concat(((this._data && this._data.fields) || []).map((l) => [l, esc((sel.p && sel.p[l]) || '')])).filter((r) => r[1]);
-        let bots = '';
-        const locs = new Map();
-        bottles.forEach((b) => { if (!locs.has(b._loc)) locs.set(b._loc, []); locs.get(b._loc).push(b); });
-        if (locs.size > 1) {
-          bots = `<div class="dsec">${esc(t('det.pickBottle', { n: bottles.length }))}</div>` + Array.from(locs.entries()).map(([l, arr]) =>
-            `<button class="dbot${l === sel._loc ? ' on' : ''}" data-act="dsel" data-id="${esc(arr[0].id)}"><span class="rd"></span>` +
-            `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}${arr.length > 1 ? ' ×' + arr.length : ''}</span></button>`).join('');
-        } else {
-          facts.push([bottles.length > 1 ? t('det.bottles') : t('det.location'), esc((sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc) + (bottles.length > 1 ? ' ×' + bottles.length : ''))]);
-        }
-        let note = '';
-        if (!info || info.loading) note = `<div class="dpur">${esc(t('det.noteLoading'))}</div>`;
-        else if (info.error) note = `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>`;
-        else {
-          const pur = [info.purchaseLocation ? t('det.boughtAt', { shop: info.purchaseLocation }) : '', info.purchaseDate ? this._fmtDate(info.purchaseDate) : '',
-            info.price != null ? info.price + ' ' + (info.currency || '') : '', info.bottleSize || ''].filter(Boolean).join(' · ');
-          note = (pur ? `<div class="dpur">${esc(pur)}</div>` : '') +
-            (info.notes ? `<div class="dnote">${esc(info.notes)}</div>` : '');
-        }
-        const img = info && info.image ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(info.image)}" onerror="this.remove()">` : '';
-        body = `<div class="dtop">${img}<dl class="dfacts">${facts.map((r) => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl></div>` + bots +
-          (note ? `<div class="dsec">${esc(t('det.note'))}</div>${note}` : '') +
-          `<div class="dact"><button class="btn" data-act="dclose">${esc(t('det.close'))}</button>` +
-          `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button></div>`;
+        body = this._viewV2(sel, bottles, info);
       }
       const top = el.firstElementChild ? el.firstElementChild.scrollTop : 0;
       el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">${head}${body}</div>`;
@@ -1938,6 +1914,8 @@
         if (this._local.keepState !== undefined) { this._local.keepState = on; this._saveState(); }
         else { this._shared.keepState = on; this._saveSettings(); }
         this._renderSet();
+      } else if (act === 'flag') {
+        this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: t.dataset.v === 'on' }); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg();
       } else if (act === 'lang') {
         this._setLang(t.dataset.v || '');
         this._initLang().then(() => {

@@ -1338,7 +1338,7 @@
           const list = Array.from(S.wines.values()).filter((w) => w.value > 0).sort((a, b) => b.value - a.value);
           const l = top(list, 10);
           return { title: t('stat.value'), sections: [
-            { head: t('stat.valueByType'), rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['type', k] })), total: 0, limit: 99 },
+            { head: t('stat.valueByType'), rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['types', k] })), total: 0, limit: 99 },
             { head: t('stat.valueTop'), rows: l.map((w) => ({ label: w.name, sub: w.producer, n: w.value, text: fmt(w.value), filter: ['q', w.name] })), total: list.length, limit: 10 },
           ] };
         }
@@ -1373,7 +1373,7 @@
           `<div class="sgrid">${tile('wines', num(S.wines.size), t('stat.wines'))}${tile('countries', num(S.countries.length), t('stat.countries'))}` +
           `${tile('producers', num(S.producers.length), t('stat.producers'))}${tile('vintages', S.oldest || '–', t('stat.oldest'))}</div>` +
           (S.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(this._money(S.currency)(S.value))}</span><span class="slbl">${esc(t('stat.cellarValue'))}</span></button>` : '') +
-          `<div class="sbars">${S.types.map(([k, n]) => `<button class="sbar" data-act="statfilter" data-g="type" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+          `<div class="sbars">${S.types.map(([k, n]) => `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
             `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / maxT * 100))}%;background:var(--w-${esc(k)}, var(--cb-ring))"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +
           `<div class="sgrid">${mini('countries', t('stat.topCountry'), (S.countries[0] || [])[0])}${mini('producers', t('stat.topProducer'), (S.producers[0] || [])[0])}` +
           `${mini('regions', t('stat.topRegion'), (S.regions[0] || [])[0])}${mini('grapes', t('stat.topGrape'), (S.grapes[0] || [])[0])}</div>`;

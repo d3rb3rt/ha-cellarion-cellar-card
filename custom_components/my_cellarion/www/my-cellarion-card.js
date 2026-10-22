@@ -300,6 +300,31 @@
     .dimg { flex: none; width: 120px; max-height: 180px; object-fit: contain; border-radius: 8px; margin: 0 0 8px; background: var(--cb-chip); }
     .vrow, .frow { cursor: pointer; }
     .vrow:active, .frow:active { background: var(--cb-chip); }
+    .statsheet { gap: 10px; }
+    .statsheet .dh { align-items: center; }
+    .shero { display: flex; flex-direction: column; align-items: center; padding: 4px 0 2px; }
+    .sbig { font-size: 1.5em; font-weight: 700; color: var(--cb-text); line-height: 1.1; }
+    .sbig.huge { font-size: 3.2em; color: var(--cb-on); }
+    .sbig.val { color: var(--cb-on); }
+    .slbl { font-size: .75em; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); }
+    .sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stile, .smini { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border: 1px solid var(--cb-line); border-radius: 12px; background: var(--cb-chip); color: var(--cb-text); font: inherit; cursor: pointer; min-width: 0; }
+    .stile.wide { width: 100%; }
+    .smini { align-items: flex-start; padding: 8px 12px; }
+    .smini .sval { font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stile:active, .smini:active, .sbar:active, .srow:active { background: var(--cb-line); }
+    .sbars, .slist { display: flex; flex-direction: column; }
+    .sbar, .srow { display: grid; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; border: 0; background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
+    .sbar { grid-template-columns: 16px 64px 1fr 40px; }
+    .srow { grid-template-columns: minmax(0, 1.4fr) minmax(40px, 1fr) auto; min-height: 40px; }
+    .srl { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .srt { display: flex; flex-direction: column; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .srt small { color: var(--cb-sub); font-size: .8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sbt { height: 8px; border-radius: 4px; background: var(--cb-chip); overflow: hidden; }
+    .sbf { display: block; height: 100%; border-radius: 4px; background: var(--cb-on); }
+    .sbc { text-align: right; font-variant-numeric: tabular-nums; color: var(--cb-sub); }
+    .shead { margin-top: 6px; font-weight: 600; }
+    .shint { text-align: center; opacity: .7; }
     .dlg { position: fixed; inset: 0; z-index: 5; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.5); }
     .dsheet {
       background: var(--cb-card); color: var(--cb-text); width: 100%; max-width: 560px; max-height: 92%;
@@ -944,6 +969,8 @@
       const active = f.q || nAct;
       const gear = `<button class="btn round gear" data-act="setopen" title="${esc(t('head.settings'))}" aria-label="${esc(t('head.settings'))}">` +
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7m7.4-2.5c.04-.33.1-.66.1-1s-.06-.67-.1-1l2.1-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42L9.12 5.07a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11c-.04.33-.1.66-.1 1s.06.67.1 1l-2.1 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.22.39.3.6.22l2.5-1c.52.4 1.08.73 1.7 1l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.62-.27 1.18-.6 1.7-1l2.5 1c.23.09.47 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></button>`;
+      const stat = `<button class="btn round st" data-act="statopen" title="${esc(t('stat.title'))}" aria-label="${esc(t('stat.title'))}">` +
+        `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
       const rlTxt = String(t('head.reload')).replace(/^\s*↻\s*/, '');
       const reload = `<button class="btn round rl" data-act="reloadask" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '↻'}</button>`;
       const ttl = c.title || (c.header_cellar === false && this._data && this._data.cellar) || ''; // otherwise the cellar name is shown in the page header
@@ -977,7 +1004,7 @@
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
           })() +
           `<button class="btn fbtn${nAct ? ' on' : ''}${this._more ? ' open' : ''}" data-act="more" aria-label="${esc(t('head.filter'))}" aria-expanded="${this._more ? 'true' : 'false'}">` +
-          `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.5V20l-4-2v-4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${nAct ? `<span class="fcnt">${nAct}</span>` : ''}</button>` + reload + gear + `</div>`;
+          `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.5V20l-4-2v-4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${nAct ? `<span class="fcnt">${nAct}</span>` : ''}</button>` + stat + reload + gear + `</div>`;
         const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id));
         const defs = this._showHid ? vis.concat(hid) : vis.concat(hid.filter((d) => this._fs(d.id).size));
         const t3 = {};
@@ -1245,6 +1272,128 @@
       const z = this._wz, n = this._wzChanges().length;
       return `<button class="btn" data-act="wzclose" ${z.busy ? 'disabled' : ''}>${esc(n ? t('wz.cancel') : t('wz.close'))}</button>` +
         `<button class="btn on" data-act="wzsave" ${n && !z.busy ? '' : 'disabled'}>${esc(z.busy ? t('wz.saving') : n ? t('wz.saveN', { n }) : t('wz.save'))}</button>`;
+    }
+    // ---------- Statistics (computed from the bottle list of the card, whole cellar) ----------
+    _statData() {
+      const d = this._data;
+      if (!d) return null;
+      if (this._statC && this._statC.d === d) return this._statC.v;
+      const bs = d.bottles;
+      const grp = (get) => {
+        const m = new Map();
+        bs.forEach((b) => [].concat(get(b)).forEach((v) => { if (v) m.set(v, (m.get(v) || 0) + 1); }));
+        return m;
+      };
+      const arr = (m) => Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(a[0], b[0]));
+      const wines = new Map(); // wine id -> {name, producer, vintages, n, value}
+      const cur = new Map();
+      bs.forEach((b) => { if (typeof b.price === 'number' && b.currency) cur.set(b.currency, (cur.get(b.currency) || 0) + 1); });
+      const currency = (arr(cur)[0] || [''])[0];
+      let value = 0;
+      const byTypeVal = new Map();
+      bs.forEach((b) => {
+        let w = wines.get(b.wine);
+        if (!w) { w = { name: b.name, producer: b.producer, n: 0, value: 0 }; wines.set(b.wine, w); }
+        w.n++;
+        if (typeof b.price === 'number' && b.currency === currency) {
+          value += b.price; w.value += b.price;
+          byTypeVal.set(b._type, (byTypeVal.get(b._type) || 0) + b.price);
+        }
+      });
+      const vint = grp((b) => (/^\d{4}$/.test(String(b.vintage)) ? String(b.vintage) : ''));
+      const regionsOf = new Map();
+      bs.forEach((b) => {
+        if (!b.country || !b.region) return;
+        let m = regionsOf.get(b.country);
+        if (!m) { m = new Map(); regionsOf.set(b.country, m); }
+        m.set(b.region, (m.get(b.region) || 0) + 1);
+      });
+      const v = {
+        total: bs.length, wines, currency, value,
+        types: arr(grp((b) => b._type)), countries: arr(grp((b) => b.country)), regions: arr(grp((b) => b.region)),
+        producers: arr(grp((b) => b.producer)), grapes: arr(grp((b) => b.grapes || [])), vintages: vint,
+        regionsOf, byTypeVal: arr(byTypeVal),
+        oldest: vint.size ? Math.min(...Array.from(vint.keys()).map(Number)) : null,
+      };
+      this._statC = { d, v };
+      return v;
+    }
+    // Page content: {title, sections: [{head, rows: [{label, n, text, go | filter [g, v], dot}]}], more}
+    _statPage(key, S, all) {
+      const top = (list, limit) => (all || list.length <= limit ? list : list.slice(0, limit));
+      const rows = (list, g, limit) => ({ rows: top(list, limit).map(([k, n]) => ({ label: k, n, filter: [g, k] })), total: list.length, limit });
+      switch (key) {
+        case 'countries': return { title: t('stat.countries'), sections: [Object.assign({ hint: t('stat.hintCountry') }, { rows: S.countries.map(([k, n]) => ({ label: k, n, go: 'country:' + k })), total: S.countries.length, limit: 99 })] };
+        case 'regions': return { title: t('stat.regions'), sections: [rows(S.regions, 'region', 15)] };
+        case 'producers': return { title: t('stat.producers'), sections: [rows(S.producers, 'producer', 10)] };
+        case 'grapes': return { title: t('stat.grapes'), sections: [rows(S.grapes, 'grape', 10)] };
+        case 'vintages': return { title: t('stat.vintages'), sections: [{ rows: Array.from(S.vintages.entries()).sort((a, b) => b[0] - a[0]).map(([k, n]) => ({ label: k, n, filter: ['vintage', k] })), total: S.vintages.size, limit: 99 }] };
+        case 'wines': {
+          const list = Array.from(S.wines.values()).sort((a, b) => b.n - a.n || de.compare(a.name, b.name));
+          const l = top(list, 10);
+          return { title: t('stat.wines'), sections: [{ rows: l.map((w) => ({ label: w.name, sub: w.producer, n: w.n, filter: ['q', w.name] })), total: list.length, limit: 10 }] };
+        }
+        case 'value': {
+          const fmt = this._money(S.currency);
+          const list = Array.from(S.wines.values()).filter((w) => w.value > 0).sort((a, b) => b.value - a.value);
+          const l = top(list, 10);
+          return { title: t('stat.value'), sections: [
+            { head: t('stat.valueByType'), rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['type', k] })), total: 0, limit: 99 },
+            { head: t('stat.valueTop'), rows: l.map((w) => ({ label: w.name, sub: w.producer, n: w.value, text: fmt(w.value), filter: ['q', w.name] })), total: list.length, limit: 10 },
+          ] };
+        }
+        default:
+          if (key.startsWith('country:')) {
+            const c = key.slice(8), m = S.regionsOf.get(c) || new Map();
+            return { title: c, sections: [rows(Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(a[0], b[0])), 'region', 99)] };
+          }
+          return { title: '', sections: [] };
+      }
+    }
+    _money(cur) {
+      let f;
+      try { f = new Intl.NumberFormat(I18N.lang || 'de', { style: 'currency', currency: cur || 'EUR', maximumFractionDigits: 0 }); } catch (e) { f = null; }
+      return (v) => (f ? f.format(v) : Math.round(v) + ' ' + (cur || ''));
+    }
+    _renderStat() {
+      const el = this._dlg, S = this._statData();
+      if (!el || !S) return;
+      const st = this._stat, num = (n) => new Intl.NumberFormat(I18N.lang || 'de').format(n);
+      const keep = el.querySelector('.dsheet'); const topPos = keep && !el.hidden ? keep.scrollTop : 0;
+      const key = st.path[st.path.length - 1];
+      const nav = (title) => `<div class="dh">${key ? `<button class="dx" data-act="statback" aria-label="${esc(t('stat.back'))}">←</button>` : ''}<span class="wmain"><span class="wname">${esc(title)}</span></span>` +
+        `<button class="dx" data-act="statclose" aria-label="${esc(t('head.close'))}">✕</button></div>`;
+      let html;
+      if (!key) {
+        const tile = (go, big, label) => `<button class="stile" data-act="statgo" data-to="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`;
+        const mini = (go, label, val) => `<button class="smini" data-act="statgo" data-to="${go}"><span class="slbl">${esc(label)}</span><span class="sval">${esc(val || '–')}</span></button>`;
+        const maxT = Math.max(1, ...S.types.map((x) => x[1]));
+        html = nav(this._data.cellar || t('stat.title')) +
+          `<div class="shero"><span class="sbig huge">${esc(num(S.total))}</span><span class="slbl">${esc(t('stat.bottles'))}</span></div>` +
+          `<div class="sgrid">${tile('wines', num(S.wines.size), t('stat.wines'))}${tile('countries', num(S.countries.length), t('stat.countries'))}` +
+          `${tile('producers', num(S.producers.length), t('stat.producers'))}${tile('vintages', S.oldest || '–', t('stat.oldest'))}</div>` +
+          (S.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(this._money(S.currency)(S.value))}</span><span class="slbl">${esc(t('stat.cellarValue'))}</span></button>` : '') +
+          `<div class="sbars">${S.types.map(([k, n]) => `<button class="sbar" data-act="statfilter" data-g="type" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+            `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / maxT * 100))}%;background:var(--w-${esc(k)}, var(--cb-ring))"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +
+          `<div class="sgrid">${mini('countries', t('stat.topCountry'), (S.countries[0] || [])[0])}${mini('producers', t('stat.topProducer'), (S.producers[0] || [])[0])}` +
+          `${mini('regions', t('stat.topRegion'), (S.regions[0] || [])[0])}${mini('grapes', t('stat.topGrape'), (S.grapes[0] || [])[0])}</div>`;
+      } else {
+        const pg = this._statPage(key, S, st.all);
+        html = nav(pg.title) + pg.sections.map((sec) => {
+          const mx = Math.max(1, ...sec.rows.map((r) => r.n));
+          const more = sec.total > sec.limit && sec.limit !== 99;
+          return (sec.head ? `<div class="wsub shead">${esc(sec.head)}</div>` : '') + (sec.hint ? `<div class="wsub">${esc(sec.hint)}</div>` : '') +
+            `<div class="slist">${sec.rows.map((r) => {
+              const attr = r.go ? `data-act="statgo" data-to="${esc(r.go)}"` : `data-act="statfilter" data-g="${esc(r.filter[0])}" data-v="${esc(r.filter[1])}"`;
+              return `<button class="srow" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
+                `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(r.n / mx * 100))}%"></span></span><span class="sbc">${esc(r.text || num(r.n))}</span></button>`;
+            }).join('')}</div>` +
+            (more || (st.all && sec.total > sec.limit) ? `<button class="btn" data-act="statall">${esc(st.all ? t('stat.less') : t('stat.all', { n: sec.total }))}</button>` : '');
+        }).join('') + `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
+      }
+      el.innerHTML = `<div class="dsheet statsheet" role="dialog" aria-modal="true">${html}</div>`;
+      el.hidden = false;
+      const sh = el.querySelector('.dsheet'); if (sh) sh.scrollTop = topPos;
     }
     _renderSet() {
       const el = this._dlg;
@@ -1580,6 +1729,7 @@
       if (this._dd) { this._renderDd(); return; }
       if (this._wz) { this._renderWz(); return; }
       if (this._set) { this._renderSet(); return; }
+      if (this._stat) { this._renderStat(); return; }
       const d = this._det;
       if (!d || !this._data) { el.hidden = true; el.innerHTML = ''; return; }
       const bottles = this._detBottles();
@@ -1697,6 +1847,7 @@
       if (e.target.classList && e.target.classList.contains('dlg') && this._dd) { this._dd = null; this._renderDlg(); return; }
       if (e.target.classList && e.target.classList.contains('dlg') && this._fdel) { if (!this._fdel.busy) { this._fdel = null; this._renderDlg(); } return; }
       if (e.target.classList && e.target.classList.contains('dlg') && this._cfm) { this._cfm = false; this._renderDlg(); return; }
+      if (e.target.classList && e.target.classList.contains('dlg') && this._stat) { this._stat = null; this._renderDlg(); return; }
       if (e.target.classList && e.target.classList.contains('dlg') && this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); return; }
       if (e.target.classList && e.target.classList.contains('dlg')) {
         if (this._det && !this._det.busy) { this._det = null; this._renderDlg(); }
@@ -1720,6 +1871,21 @@
         if (t.classList.contains('wrow') && this._open.size) { this._open = new Set(); this._renderList(); }
         this._det = { wine: t.dataset.w, vintage: t.dataset.v, step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
         this._renderDlg();
+      } else if (act === 'statopen') {
+        this._det = null; this._stat = { path: [], all: false }; this._renderDlg();
+      } else if (act === 'statclose') {
+        this._stat = null; this._renderDlg();
+      } else if (act === 'statback') {
+        if (this._stat) { this._stat.path.pop(); this._stat.all = false; this._renderDlg(); }
+      } else if (act === 'statall') {
+        if (this._stat) { this._stat.all = !this._stat.all; this._renderDlg(); }
+      } else if (act === 'statgo') {
+        if (this._stat) { this._stat.path.push(t.dataset.to); this._stat.all = false; this._renderDlg(); }
+      } else if (act === 'statfilter') {
+        const g = t.dataset.g, v = t.dataset.v;
+        this._stat = null;
+        if (g === 'q') this._f.q = v; else this._fs(g).add(v);
+        this._renderDlg(); this._renderAll();
       } else if (act === 'setopen') {
         this._det = null; this._set = true; this._renderDlg();
       } else if (act === 'setclose') {

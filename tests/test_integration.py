@@ -9,9 +9,15 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.my_cellarion.const import DOMAIN
 
 CELLARS = {"cellars": [{"_id": "c1", "name": "HK4"}]}
-RACKS = {"racks": [{"name": "Cabinet", "typeConfig": {"shelfRows": [1, 1]}, "slots": [{"position": 8, "bottle": "b" * 24}]}]}
-BOTTLES = {"bottles": {"total": 1, "items": [{"_id": "b" * 24, "status": "active", "vintage": "2021",
-                                              "wineDefinition": {"_id": "w1", "name": "Riesling", "producer": "Anna Müller"}}]}}
+RACKS = {"racks": [{"_id": "r1", "name": "Cabinet", "typeConfig": {"shelfRows": [1, 1]}}]}
+INVENTORY = {"schema": 1, "cellars": [{"id": "c1", "name": "HK4", "role": "owner"}],
+             "racks": [{"id": "r1", "cellar": "c1", "name": "Cabinet"}],
+             "wines": {"w1": {"name": "Riesling", "producer": "Anna Müller"}},
+             "bottles": [{"id": "b" * 24, "wine": "w1", "cellar": "c1", "vintage": "2021", "window": {},
+                          "location": {"rack": "r1", "rackName": "Cabinet", "position": 8, "shelf": 2, "row": 1, "col": 2},
+                          "personal": [{"key": "Stil", "value": "Sekt", "level": "wine"}]}]}
+INV_URL = "https://cellarion.example/api/inventory"
+RACKS_URL = "https://cellarion.example/api/racks?cellar=c1&summary=1"
 
 
 def entry():
@@ -20,9 +26,9 @@ def entry():
 
 def mock_api(aioclient_mock):
     aioclient_mock.get("https://cellarion.example/api/cellars", json=CELLARS)
-    aioclient_mock.get("https://cellarion.example/api/racks?cellar=c1&summary=1", json=RACKS)
-    aioclient_mock.get("https://cellarion.example/api/bottles?limit=200&skip=0", json=BOTTLES)
-    aioclient_mock.post("https://cellarion.example/api/mcp", status=404)  # no MCP: personal fields stay empty
+    aioclient_mock.get(INV_URL, json=INVENTORY, headers={"ETag": 'W/"v1"'})
+    aioclient_mock.get(RACKS_URL, json=RACKS)
+    aioclient_mock.post("https://cellarion.example/api/mcp", status=404)  # no MCP: no bottle extras
     aioclient_mock.get("https://cellarion.example/api/events/stream", status=404)  # no event stream in tests
 
 
@@ -70,6 +76,7 @@ async def test_read_returns_inventory_and_settings(hass, aioclient_mock):
     assert out["cellar"] == "HK4" and out["total"] == 1
     b = out["bottles"][0]
     assert b["location"] == "Cabinet · Fach 2" and b["where"]["fach"] == 1 and b["producer"] == "Anna Müller"
+    assert b["p"] == {"Stil": "Sekt"} and out["fields"] == ["Stil"]
     assert out["einstellungen"] == {} and out["sortnamen"] == {}
 
 
@@ -115,9 +122,49 @@ async def test_sensor_updates_when_inventory_changes(hass, aioclient_mock):
     await e.runtime_data.refresh()
     await hass.async_block_till_done()
     assert hass.states.get("sensor.my_cellarion_total_bottles").attributes["updated"] == first  # unchanged
-    changed = {"cellar": "HK4", "total": 0, "racks": [], "fields": [], "bottles": [], "personalError": None}
+    changed = {"cellar": "HK4", "total": 0, "racks": [], "fields": [], "bottles": []}
     with patch("custom_components.my_cellarion.api.build_inventory", AsyncMock(return_value=changed)):
         await e.runtime_data.refresh()
     await hass.async_block_till_done()
     st = hass.states.get("sensor.my_cellarion_total_bottles")
     assert st.state == "0" and st.attributes["updated"] != first
+
+
+def calls(aioclient_mock, url):
+    return [c for c in aioclient_mock.mock_calls if c[0] == "GET" and str(c[1]) == url]
+
+
+async def test_unchanged_inventory_answers_304_and_reads_nothing_else(hass, aioclient_mock):
+    e = await setup(hass, aioclient_mock)
+    first = calls(aioclient_mock, INV_URL)[0]
+    assert "If-None-Match" not in first[3]  # nothing known yet: a full read
+    assert len(calls(aioclient_mock, RACKS_URL)) == 1
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(INV_URL, status=304)
+    res = await e.runtime_data.refresh()
+    assert res["total"] == 1
+    assert calls(aioclient_mock, INV_URL)[0][3]["If-None-Match"] == 'W/"v1"'
+    assert not calls(aioclient_mock, RACKS_URL)  # the rack layout is not read again
+
+
+async def test_rack_layout_is_read_again_after_a_day(hass, aioclient_mock):
+    e = await setup(hass, aioclient_mock)
+    hub = e.runtime_data
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(RACKS_URL, json=RACKS)
+    hub._geo_at -= 25 * 3600
+    answers = [(None, 'W/"v1"'), (INVENTORY, 'W/"v2"')]  # first 304, then the full read without If-None-Match
+    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory:
+        await hub.refresh()
+    assert [c.args[0] for c in get_inventory.call_args_list] == ['W/"v1"', None]
+    assert len(calls(aioclient_mock, RACKS_URL)) == 1
+    assert hub._etag == 'W/"v2"'
+
+
+async def test_old_server_without_inventory_endpoint_gives_a_clear_error(hass, aioclient_mock):
+    from custom_components.my_cellarion.hub import CellarionError, Hub
+
+    hub = Hub(hass, "x", "https://cellarion.example", "cel_x")
+    aioclient_mock.get(INV_URL, status=404)
+    with pytest.raises(CellarionError, match="v1.275"):
+        await hub.refresh()

@@ -32,6 +32,11 @@ a searchable, filterable view of your cellar with bottle details, storage places
 It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellarion) integration (sensors, statistics,
 "ready to drink" card); both can run side by side. This one is independent and uses its own API token.
 
+## Requirements
+
+Cellarion **v1.275 or newer** (cellarion.app is always current). The inventory is read with a single request to `GET /api/inventory`,
+and an unchanged inventory answers `304`, so keeping the card up to date costs almost nothing. Older self-hosted servers do not have that endpoint.
+
 ## Install
 
 1. HACS → Integrations → ⋮ → Custom repositories → `https://github.com/d3rb3rt/my-cellarion-ha`, category **Integration**.

@@ -50,7 +50,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) 
         except (CellarionError, RuntimeError) as err:
             _LOGGER.warning("Could not refresh the Cellarion inventory: %s", err)
 
-    # The first fetch can take a while (personal fields need many small queries): do not block startup
+    # Do not block startup on the first fetch
     entry.async_create_background_task(hass, _refresh(), name="my_cellarion_first_refresh")
     entry.async_create_background_task(hass, hub.stream_listener(), name="my_cellarion_event_stream")
     interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)

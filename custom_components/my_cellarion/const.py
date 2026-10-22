@@ -11,7 +11,8 @@ DEFAULT_URL = "https://cellarion.app"
 DEFAULT_SCAN_INTERVAL = 3600  # seconds; only a safety net, changes arrive through the event stream
 MIN_SCAN_INTERVAL = 300
 
-PAGE_SIZE = 200
+INVENTORY_PATH = "/api/inventory"  # Cellarion v1.275 or newer
+GEO_MAX_AGE = 24 * 3600  # seconds; the rack layout (shelves, places per row) is re-read at least once a day
 MCP_PATH = "/api/mcp"
 USER_AGENT = "ha-my-cellarion/0.1"  # Cloudflare in front of cellarion.app rejects default library user agents
 

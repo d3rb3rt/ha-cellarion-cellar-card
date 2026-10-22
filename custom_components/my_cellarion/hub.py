@@ -20,7 +20,7 @@ from homeassistant.helpers.storage import Store
 
 from . import api
 from .const import (
-    IMAGE_DIR_NAME, IMAGE_URL_BASE, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
+    GEO_MAX_AGE, IMAGE_DIR_NAME, IMAGE_URL_BASE, INVENTORY_PATH, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
     STREAM_RETRY_MAX, STREAM_RETRY_MIN, STREAM_SILENCE, USER_AGENT, signal_updated,
 )
 
@@ -57,6 +57,8 @@ class Hub:
         self._mcp: api.McpClient | None = None
         self._refresh_handle: asyncio.TimerHandle | None = None
         self._fingerprint: str | None = None
+        self._etag: str | None = None  # of the last /api/inventory answer: an unchanged inventory answers 304
+        self._geo_at: float = 0.0  # when the rack layout was last read
         self.changed_at: str | None = None  # when the inventory last changed
 
     # ----- transport -----
@@ -87,6 +89,34 @@ class Hub:
 
     async def _get(self, path: str) -> JsonDict:
         return await self.request("GET", path)
+
+    async def _get_inventory(self, etag: str | None) -> tuple[JsonDict | None, str | None]:
+        """GET /api/inventory with If-None-Match: (inventory, etag), or (None, etag) when it is unchanged (304)."""
+        headers = {"User-Agent": USER_AGENT, "Authorization": f"Bearer {self._token}", "Accept": "application/json"}
+        if etag:
+            headers["If-None-Match"] = etag
+        for attempt in (1, 2):
+            try:
+                async with self._session.get(self.url + INVENTORY_PATH, headers=headers,
+                                             timeout=aiohttp.ClientTimeout(total=60)) as resp:
+                    if resp.status == 304:
+                        return None, etag
+                    if resp.status == 401:
+                        raise CellarionAuthError("token rejected")
+                    if resp.status == 403:
+                        raise CellarionAuthError(f"token lacks the scope for GET {INVENTORY_PATH}")
+                    if resp.status == 404:
+                        raise CellarionError(f"{INVENTORY_PATH} not found: this needs Cellarion v1.275 or newer")
+                    if resp.status == 429 and attempt == 1:
+                        await asyncio.sleep(min(int(resp.headers.get("Retry-After", "10")), 30))
+                        continue
+                    if not 200 <= resp.status < 300:
+                        raise CellarionError(f"GET {INVENTORY_PATH} returned {resp.status}")
+                    data = await resp.json(content_type=None)
+                    return (data if isinstance(data, dict) else {}), resp.headers.get("ETag")
+            except (aiohttp.ClientError, TimeoutError) as err:
+                raise CellarionError(f"request failed: {err}") from err
+        raise CellarionError(f"GET {INVENTORY_PATH} was rate limited")
 
     async def _mcp_client(self) -> api.McpClient | None:
         """MCP session (for personal data fields and profiles); None when the server does not offer it."""
@@ -204,21 +234,31 @@ class Hub:
     # ----- inventory -----
 
     async def refresh(self) -> JsonDict:
-        """Fetch the inventory from Cellarion (one run at a time)."""
+        """Fetch the inventory from Cellarion (one run at a time).
+
+        One request for the whole cellar; an unchanged inventory answers 304 and nothing else is read.
+        The rack layout (shelves, places per row) is read along with every changed inventory, and at least once a day.
+        """
         async with self._lock:
-            mcp = await self._mcp_client()
-            self.data = await api.build_inventory(self._get, mcp, self._cellar_id)
+            inv, etag = await self._get_inventory(self._etag if self.data is not None else None)
+            if inv is None and time.time() - self._geo_at >= GEO_MAX_AGE:
+                inv, etag = await self._get_inventory(None)  # re-read the rack layout once a day
+            changed = False
+            if inv is not None:
+                self.data = await api.build_inventory(inv, self._get, self._cellar_id)
+                self._etag, self._geo_at = etag, time.time()
+                body = {k: v for k, v in self.data.items() if k != "generated"}
+                fp = hashlib.sha1(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest()
+                changed = fp != self._fingerprint
+                self._fingerprint = fp
             self.updated = time.time()
-            body = {k: v for k, v in self.data.items() if k not in ("generated", "personalError")}
-            fp = hashlib.sha1(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest()
-            changed = fp != self._fingerprint
-            self._fingerprint = fp
         if changed:  # the sensor writes its state, open cards watch it and reload
             self.changed_at = dt_util.utcnow().isoformat()
             async_dispatcher_send(self.hass, signal_updated(self.entry_id))
+        assert self.data is not None
         placed = sum(1 for b in self.data["bottles"] if b.get("location"))
         return {"total": self.data["total"], "placed": placed, "unplaced": self.data["total"] - placed,
-                "personal": {"fields": self.data["fields"], "error": self.data.get("personalError")}}
+                "personal": {"fields": self.data["fields"]}}
 
     async def sync(self, max_age: int = 300) -> JsonDict:
         """Refresh only when the inventory is older than max_age seconds."""

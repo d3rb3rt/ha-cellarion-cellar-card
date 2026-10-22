@@ -1,8 +1,8 @@
-"""Reading the cellar from Cellarion: bottle list, racks, personal data fields, bottle details.
+"""Reading the cellar from Cellarion: the whole inventory (GET /api/inventory), rack layout, bottle details.
 
-Everything here is read-only. The pure helpers (location, slim, ...) have no Home Assistant
-dependency so they can be tested on their own. Authentication and transport come from the
-official integration's client (same URL, same token), nothing is stored twice.
+Everything here is read-only. The pure helpers (place, slim, build, ...) have no Home Assistant
+dependency so they can be tested on their own. Authentication and transport are the hub's (URL and token
+of the config entry), nothing is stored twice.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from typing import Any
 
 import aiohttp
 
-from .const import MCP_PATH, PAGE_SIZE, USER_AGENT
+from .const import MCP_PATH, USER_AGENT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,73 +28,90 @@ Getter = Callable[[str], Awaitable[JsonDict]]
 # ---------- pure helpers ----------
 
 
-def location(rack: JsonDict, position: int) -> tuple[str, JsonDict]:
-    """Storage place from rack + position: (neutral text, raw values).
+def geometry(racks: Any) -> dict[str, JsonDict]:
+    """Rack layout from /api/racks: {rack id or name: {name, fachen, cols}}.
+
+    The inventory names, per bottle, only shelf (counted from the top), row and place; the number of
+    shelves and the places per row come from here.
+    """
+    geo: dict[str, JsonDict] = {}
+    for r in racks or []:
+        g = {"name": r.get("name"), "fachen": len((r.get("typeConfig") or {}).get("shelfRows") or []),
+             "cols": r.get("cols") or 6}
+        for key in (r.get("_id"), r.get("id"), r.get("name")):
+            if key:
+                geo[key] = g
+    return geo
+
+
+def place(loc: JsonDict | None, geo: dict[str, JsonDict]) -> tuple[str, JsonDict] | None:
+    """Storage place of a bottle from its inventory location: (neutral text, raw values) or None.
 
     The text counts shelves from the top like Cellarion itself. The card builds its own display
     from the raw values (count direction and left/middle/right are a per-rack card setting).
 
-    shelfRows lists the number of rows per shelf (top first); each row holds `cols` places (6 by default).
+    loc = {rack (id), rackName, shelf (from the top), row (within the shelf), col (within the row)}.
     Raw values: fach = shelf counted from the bottom (1 = lowest), fachen = number of shelves,
     lage = row within the shelf, platz = place within the row (1..cols).
     """
-    cols = rack.get("cols") or 6
-    shelf_rows = (rack.get("typeConfig") or {}).get("shelfRows") or []
-    idx = int(position) - 1
-    start = 0
-    for i, rows in enumerate(shelf_rows):
-        size = rows * cols
-        if idx < start + size:
-            raw = {
-                "rack": rack["name"],
-                "fach": len(shelf_rows) - i,
-                "fachen": len(shelf_rows),
-                "cols": cols,
-                "lage": (idx - start) // cols + 1,
-                "platz": idx % cols + 1,
-            }
-            return f"{rack['name']} · Fach {i + 1}", raw
-        start += size
-    return f"{rack['name']} · ?", {"rack": rack["name"]}
+    if not loc:
+        return None
+    g = geo.get(loc.get("rack")) or geo.get(loc.get("rackName")) or {}
+    name = loc.get("rackName") or g.get("name")
+    if not name:
+        return None
+    shelf, row, col = loc.get("shelf"), loc.get("row"), loc.get("col")
+    if not (shelf and row and col):  # the position lies outside the shelves
+        return f"{name} · ?", {"rack": name}
+    text = f"{name} · Fach {shelf}"
+    fachen = g.get("fachen")
+    if not fachen:  # rack layout unknown: text only
+        return text, {"rack": name}
+    return text, {"rack": name, "fach": fachen - shelf + 1, "fachen": fachen, "cols": g.get("cols") or 6,
+                  "lage": row, "platz": col}
 
 
-def names(items: Any) -> list[str]:
-    """Names of a list of {name: ...} dicts."""
-    return [x["name"] for x in (items or []) if isinstance(x, dict) and x.get("name")]
-
-
-def slim(bottle: JsonDict, place: tuple[str, JsonDict] | None) -> JsonDict:
-    """Reduce a bottle to what the card needs."""
-    wd = bottle.get("wineDefinition") or {}
-    country = wd.get("country") if isinstance(wd.get("country"), dict) else {}
-    region = wd.get("region") if isinstance(wd.get("region"), dict) else {}
+def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | None) -> JsonDict:
+    """Reduce an inventory bottle to what the card needs. `wine` is its entry of inventory["wines"] (each wine once)."""
+    w = wine or {}
+    win = bottle.get("window") or {}
     out: JsonDict = {
-        "id": bottle["_id"],
-        "wine": wd.get("_id"),
-        "name": wd.get("name"),
-        "producer": wd.get("producer"),
+        "id": bottle["id"],
+        "wine": bottle.get("wine"),
+        "name": w.get("name"),
+        "producer": w.get("producer"),
         "vintage": bottle.get("vintage") or "NV",
-        "type": wd.get("type"),
-        "colour": wd.get("colour"),
-        "country": country.get("name"),
-        "region": region.get("name"),
-        "appellation": wd.get("appellation"),
-        "grapes": names(wd.get("grapes")),
-        "classification": wd.get("classification"),
-        "drinkFrom": bottle.get("drinkFrom"),
-        "drinkTo": bottle.get("drinkTo"),
-        "peakFrom": bottle.get("peakFrom"),
-        "peakUntil": bottle.get("peakUntil"),
+        "type": w.get("type"),
+        "colour": w.get("colour"),
+        "country": w.get("country"),
+        "region": w.get("region"),
+        "appellation": w.get("appellation"),
+        "grapes": [str(g) for g in (w.get("grapes") or []) if g],
+        "classification": w.get("classification"),
+        "drinkFrom": win.get("drinkFrom"),
+        "drinkTo": win.get("drinkTo"),
+        "peakFrom": win.get("peakFrom"),
+        "peakUntil": win.get("peakUntil"),
         "price": bottle.get("price"),
         "currency": bottle.get("currency"),
-        "reserved": bool(bottle.get("reservation") or bottle.get("reserved")),
+        "reserved": bool(bottle.get("reservation") or bottle.get("reserved")),  # not in the inventory (yet): then always False
         "shop": bottle.get("purchaseLocation"),
     }
-    if place:
-        out["location"], out["where"] = place
+    if plc:
+        out["location"], out["where"] = plc
     else:
         out["location"] = None
     return {k: v for k, v in out.items() if v not in (None, [], "")}
+
+
+def personal(entries: Any) -> dict[str, str]:
+    """Personal data fields of a bottle from the inventory: {field name: value}. An entry on the bottle wins over one on the wine."""
+    out: dict[str, str] = {}
+    for e in sorted(entries or [], key=lambda e: e.get("level") == "bottle"):
+        v = e.get("value")
+        if e.get("key") and v not in (None, ""):
+            out[e["key"]] = v if isinstance(v, str) else str(v)
+    return out
 
 
 def profile_from_get_bottle(g: JsonDict) -> JsonDict:
@@ -188,40 +205,6 @@ class McpClient:
         return d.get("data", d) if isinstance(d, dict) else d
 
 
-async def personal_fields(mcp: McpClient) -> tuple[dict[str, dict[str, str]], list[str]]:
-    """Personal data fields per bottle: ({bottle id: {field label: value}}, [labels]).
-
-    The tools only offer personal fields as filter/group, not as a column: per field fetch the values by
-    grouping, then per value the bottle ids by a rows query.
-    """
-    fields = [
-        f for f in await mcp.tool("list_analytics_fields", {})
-        if str(f.get("key", "")).startswith("personal.") and f.get("groupable") and "eq" in (f.get("ops") or [])
-    ]
-    out: dict[str, dict[str, str]] = {}
-    labels: list[str] = []
-    for f in fields:
-        key, label = f["key"], f.get("label") or f["key"]
-        buckets = (await mcp.tool("analyze_cellar", {"dimensions": [key]})).get("buckets") or []
-        values = [b["dimensions"][0] for b in buckets if b["dimensions"][0] is not None]
-        if not values:
-            continue
-        labels.append(label)
-        for v in values:
-            off = 0
-            while True:
-                d = await mcp.tool("analyze_cellar", {
-                    "mode": "rows", "columns": ["wine.name"], "limit": 50, "offset": off,
-                    "filters": [{"field": key, "op": "eq", "value": v}]})
-                rows = d.get("rows") or []
-                for r in rows:
-                    out.setdefault(r["id"], {})[label] = v
-                off += len(rows)
-                if not rows or off >= d.get("total", 0):
-                    break
-    return out, labels
-
-
 # ---------- inventory ----------
 
 
@@ -237,49 +220,38 @@ def pick_cellar(cellars: list[JsonDict], cellar_id: str | None) -> JsonDict:
     raise RuntimeError("the configured cellar no longer exists")
 
 
-async def build_inventory(get: Getter, mcp: McpClient | None, cellar_id: str | None = None) -> JsonDict:
-    """Compact inventory (cellar name, racks, active bottles with places and personal fields) of one cellar."""
-    cellars = (await get("/api/cellars")).get("cellars") or []
-    cellar = pick_cellar(cellars, cellar_id)
-    cid = cellar.get("_id") or cellar.get("id")
-    racks = (await get(f"/api/racks?cellar={cid}&summary=1")).get("racks") or []
-    slot: dict[str, tuple[str, JsonDict]] = {}
-    for r in racks:
-        for s in r.get("slots") or []:
-            if s.get("bottle"):
-                slot[s["bottle"]] = location(r, s["position"])
-    items: list[JsonDict] = []
-    skip, total = 0, None
-    while total is None or skip < total:
-        page = (await get(f"/api/bottles?limit={PAGE_SIZE}&skip={skip}"))["bottles"]
-        total = page["total"]
-        got = page.get("items") or []
-        if not got:
-            break
-        items.extend(got)
-        skip += len(got)
-    bottles = [slim(b, slot.get(b["_id"])) for b in items if b.get("status", "active") == "active"]
-    pers: dict[str, dict[str, str]] = {}
-    labels: list[str] = []
-    perr = None
-    if mcp is not None:
-        try:
-            pers, labels = await personal_fields(mcp)
-        except Exception as err:  # personal fields are optional: still deliver the inventory
-            perr = str(err)[:120]
-            _LOGGER.debug("Personal fields unavailable: %s", err)
-    for b in bottles:
-        if b["id"] in pers:
-            b["p"] = pers[b["id"]]
+def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_id: str | None = None) -> JsonDict:
+    """Compact inventory (cellar name, racks, bottles with places and personal fields) of one cellar from GET /api/inventory."""
+    cellar = pick_cellar(inv.get("cellars") or [], cellar_id)
+    cid = cellar.get("id") or cellar.get("_id")
+    wines = inv.get("wines") or {}
+    bottles: list[JsonDict] = []
+    labels: set[str] = set()
+    for b in inv.get("bottles") or []:
+        if b.get("cellar") not in (None, cid):  # the inventory also holds cellars shared with the user
+            continue
+        s = slim(b, wines.get(b.get("wine")), place(b.get("location"), geo))
+        p = personal(b.get("personal"))
+        if p:
+            s["p"] = p
+            labels.update(p)
+        bottles.append(s)
     return {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "cellar": cellar.get("name"),
         "total": len(bottles),
-        "racks": [r["name"] for r in racks],
-        "fields": labels,
+        "racks": [r["name"] for r in inv.get("racks") or [] if r.get("cellar") in (None, cid) and r.get("name")],
+        "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
-        "personalError": perr,
     }
+
+
+async def build_inventory(inv: JsonDict, get: Getter, cellar_id: str | None = None) -> JsonDict:
+    """Compact inventory from an already fetched /api/inventory. Only the rack layout (shelves, places per row) is read on top."""
+    cellar = pick_cellar(inv.get("cellars") or [], cellar_id)
+    cid = cellar.get("id") or cellar.get("_id")
+    geo = geometry((await get(f"/api/racks?cellar={cid}&summary=1")).get("racks"))
+    return build(inv, geo, cellar_id)
 
 
 async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,

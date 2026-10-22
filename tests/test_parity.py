@@ -31,63 +31,63 @@ for _n in ("const", "api"):
 api = sys.modules["mcp_par.api"]
 
 RACKS = {"racks": [
-    {"name": "R", "typeConfig": {"shelfRows": [1, 2, 1]}, "slots": [{"position": 1, "bottle": "a" * 24}, {"position": 15, "bottle": "b" * 24}]},
-    {"name": "S", "cols": 4, "typeConfig": {"shelfRows": [2, 2]}, "slots": [{"position": 5, "bottle": "c" * 24}, {"position": 99, "bottle": "d" * 24}]},
+    {"_id": "r1", "name": "R", "typeConfig": {"shelfRows": [1, 2, 1]}},
+    {"_id": "r2", "name": "S", "cols": 4, "typeConfig": {"shelfRows": [2, 2]}},
 ]}
-BOTTLES = [
-    {"_id": "a" * 24, "vintage": 2019, "price": 24.5, "currency": "EUR", "drinkFrom": 2024, "drinkTo": 2032, "peakFrom": 2026, "peakUntil": 2029,
-     "purchaseLocation": "Lobenberg", "reservation": {"x": 1}, "status": "active",
-     "wineDefinition": {"_id": "w1", "name": "Riesling", "producer": "Weingut", "type": "still", "colour": "white", "appellation": "Mosel",
-                        "grapes": [{"name": "Riesling"}], "classification": "Spaetlese", "country": {"name": "Germany"}, "region": {"name": "Mosel"}}},
-    {"_id": "b" * 24, "vintage": None, "status": "active", "wineDefinition": {"_id": "w2", "name": "Cremant", "type": "sparkling", "grapes": []}},
-    {"_id": "c" * 24, "vintage": 2015, "status": "active", "wineDefinition": {"_id": "w3", "name": "Barolo", "country": "Italy", "region": None}},
-    {"_id": "d" * 24, "vintage": 2010, "status": "consumed", "wineDefinition": {"_id": "w4", "name": "Gone"}},
-    {"_id": "e" * 24, "vintage": 2020, "reserved": True, "wineDefinition": {"_id": "w5", "name": "Unplaced"}},
-]
-CELLARS = {"cellars": [{"_id": "c1", "name": "HK4"}]}
-PERS = ({"a" * 24: {"Stil": "Sekt"}}, ["Stil"])
+INVENTORY = {
+    "schema": 1,
+    "cellars": [{"id": "c1", "name": "HK4", "role": "owner"}, {"id": "c2", "name": "Shared", "role": "member"}],
+    "racks": [{"id": "r1", "cellar": "c1", "name": "R"}, {"id": "r2", "cellar": "c1", "name": "S"}, {"id": "r3", "cellar": "c2", "name": "Other"}],
+    "wines": {
+        "w1": {"name": "Riesling", "producer": "Weingut", "type": "still", "colour": "white", "country": "Germany", "region": "Mosel",
+               "appellation": "Mosel", "classification": "Spaetlese", "grapes": ["Riesling"]},
+        "w2": {"name": "Cremant", "type": "sparkling", "grapes": []},
+        "w3": {"name": "Barolo", "country": "Italy", "region": None},
+        "w5": {"name": "Unplaced"},
+    },
+    "bottles": [
+        {"id": "a" * 24, "wine": "w1", "cellar": "c1", "vintage": "2019", "price": 24.5, "currency": "EUR", "purchaseLocation": "Lobenberg",
+         "window": {"drinkFrom": 2024, "drinkTo": 2032, "peakFrom": 2026, "peakUntil": 2029}, "reservation": {"x": 1},
+         "location": {"rack": "r1", "rackName": "R", "position": 1, "shelf": 1, "row": 1, "col": 1},
+         "personal": [{"key": "Stil", "value": "Sekt", "level": "wine"}, {"key": "Lage", "value": "Grosse Lage", "level": "wine"},
+                      {"key": "Lage", "value": "Erste Lage", "level": "bottle"}, {"key": "Leer", "value": "", "level": "wine"}]},
+        {"id": "b" * 24, "wine": "w2", "cellar": "c1", "vintage": None, "window": {},
+         "location": {"rack": "r1", "rackName": "R", "position": 15, "shelf": 2, "row": 2, "col": 3}, "personal": []},
+        {"id": "c" * 24, "wine": "w3", "cellar": "c1", "vintage": "2015", "window": {"drinkFrom": 2020},
+         "location": {"rack": "r2", "rackName": "S", "position": 9, "shelf": 2, "row": 1, "col": 1}, "personal": []},
+        {"id": "d" * 24, "wine": "w5", "cellar": "c1", "vintage": "2020", "reserved": True, "window": {}, "location": None, "place": None, "personal": []},
+        {"id": "e" * 24, "wine": "w1", "cellar": "c2", "vintage": "2018", "window": {}, "location": None, "personal": []},  # shared cellar: left out
+        {"id": "f" * 24, "wine": "w3", "cellar": "c1", "vintage": "2010", "window": {},
+         "location": {"rack": "r2", "rackName": "S", "position": 99, "shelf": None, "row": None, "col": None}, "personal": []},
+    ],
+}
 
 
 def _dev_inventory(tmp_path):
     spec = importlib.util.spec_from_file_location("bestand_dev", DEV)
     dev = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dev)
-    dev.CACHE_FILE = str(tmp_path / "bestand.json")
+    dev.CACHE_FILE = str(tmp_path / "bestand.json")  # the state file follows the cache file
     dev.token = lambda: "t"
-    dev.personal_fields = lambda tok: PERS
-
-    def get(path, tok):
-        if path.startswith("/api/cellars"):
-            return CELLARS
-        if path.startswith("/api/racks"):
-            return RACKS
-        return {"bottles": {"total": len(BOTTLES), "items": BOTTLES}}
-
-    dev.get = get
+    dev.get_cond = lambda path, tok, etag: (200, INVENTORY, 'W/"x"')
+    dev.get = lambda path, tok: RACKS
     dev.refresh()
     return json.loads(pathlib.Path(dev.CACHE_FILE).read_text(encoding="utf-8"))
 
 
-def _integration_inventory(monkeypatch):
+def _integration_inventory():
     async def get(path):
-        if path.startswith("/api/cellars"):
-            return CELLARS
-        if path.startswith("/api/racks"):
-            return RACKS
-        return {"bottles": {"total": len(BOTTLES), "items": BOTTLES}}
+        assert path.startswith("/api/racks?cellar=c1")
+        return RACKS
 
-    async def pers(mcp):
-        return PERS
-
-    monkeypatch.setattr(api, "personal_fields", pers)
-    return asyncio.run(api.build_inventory(get, object()))
+    return asyncio.run(api.build_inventory(INVENTORY, get))
 
 
-def test_inventory_matches_development_setup(tmp_path, monkeypatch, capsys):
+def test_inventory_matches_development_setup(tmp_path, capsys):
     dev = _dev_inventory(tmp_path)
     capsys.readouterr()
-    integ = _integration_inventory(monkeypatch)
+    integ = _integration_inventory()
     for d in (dev, integ):
         d.pop("generated", None)
-        d.pop("personalError", None)
     assert integ == dev
+    assert dev["total"] == 5 and dev["racks"] == ["R", "S"] and dev["fields"] == ["Lage", "Stil"]

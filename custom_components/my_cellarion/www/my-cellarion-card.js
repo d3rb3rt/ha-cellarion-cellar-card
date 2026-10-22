@@ -63,6 +63,13 @@
   const TYPES = [];
   const TYPE_LABEL = {};
   const STATUS = [];
+  // Price bands per bottle in EUR: upper limit (inclusive) and key; the last one is open-ended
+  const PRICE_BANDS = [[10, 'p10'], [20, 'p20'], [30, 'p30'], [50, 'p50'], [75, 'p75'], [100, 'p100'], [Infinity, 'pmax']];
+  const PRICE = [];
+  const priceKey = (b) => {
+    if (typeof b.price !== 'number' || !(b.price > 0) || (b.currency && b.currency !== 'EUR')) return '';
+    return PRICE_BANDS.find(([max]) => b.price <= max)[1];
+  };
   const STATUS_LABEL = {};
   let NO_LOC = 'Ohne Platz';
   let de = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
@@ -71,9 +78,10 @@
     I18N.dict = dict;
     I18N.pr = new Intl.PluralRules(lang);
     de = new Intl.Collator(lang, { sensitivity: 'base', numeric: true });
-    TYPES.length = 0; STATUS.length = 0;
+    TYPES.length = 0; STATUS.length = 0; PRICE.length = 0;
     TYPE_KEYS.forEach((k) => { TYPES.push([k, t('type.' + k)]); TYPE_LABEL[k] = t('type.' + k); });
     STATUS_KEYS.forEach((k) => { STATUS.push([k, t('status.' + k)]); STATUS_LABEL[k] = t('status.' + k); });
+    PRICE_BANDS.forEach(([, k]) => PRICE.push([k, t('price.' + k)]));
     STATUS_LABEL.window = t('status.window');
     STATUS_LABEL.unknown = t('status.unknown');
     NO_LOC = t('loc.none');
@@ -695,6 +703,7 @@
       const bottles = (data.bottles || []).filter((b) => !this._gone.has(b.id)).map((b) => {
         const o = Object.assign({}, b);
         o._status = statusOf(o, year);
+        o._price = priceKey(o);
         o._loc = this._placeText(o) || o.location || NO_LOC;
         o._rack = o.where && o.where.rack ? o.where.rack : NO_LOC;
         o._type = o.type || '';
@@ -757,6 +766,7 @@
         { id: 'status', label: t('filter.status'), defs: STATUS, dot: '--s-', get: (b) => (b._status === 'window' ? 'peak' : b._status) },
         { id: 'cls', label: t('filter.cls'), get: (b) => b._cls || [] },
         { id: 'vintage', label: t('filter.vintage'), get: (b) => String(b.vintage || 'NV'), sort: (a, b) => this._vint(b[0]) - this._vint(a[0]) },
+        { id: 'price', label: t('filter.price'), defs: PRICE, get: (b) => b._price },
         { id: 'racks', label: t('filter.racks'), get: (b) => b._rack, sort: (a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]) },
         { id: 'shop', label: t('filter.shop'), get: (b) => b.shop || null },
       ];
@@ -1296,6 +1306,7 @@
       const currency = (arr(cur)[0] || [''])[0];
       let value = 0;
       const byTypeVal = new Map();
+      const pb = new Map();
       const vb = { producer: new Map(), country: new Map(), region: new Map(), vintage: new Map() };
       bs.forEach((b) => {
         let w = wines.get(b.wine);
@@ -1304,6 +1315,7 @@
         if (typeof b.price === 'number' && b.currency === currency) {
           value += b.price; w.value += b.price;
           byTypeVal.set(b._type, (byTypeVal.get(b._type) || 0) + b.price);
+          if (b._price) { const o = pb.get(b._price) || { n: 0, v: 0 }; o.n++; o.v += b.price; pb.set(b._price, o); }
           const add = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + b.price); };
           add(vb.producer, b.producer); add(vb.country, b.country); add(vb.region, b.region);
           add(vb.vintage, /^\d{4}$/.test(String(b.vintage)) ? String(b.vintage) : '');
@@ -1321,7 +1333,7 @@
         total: bs.length, wines, currency, value,
         types: arr(grp((b) => b._type)), countries: arr(grp((b) => b.country)), regions: arr(grp((b) => b.region)),
         producers: arr(grp((b) => b.producer)), grapes: arr(grp((b) => b.grapes || [])), vintages: vint,
-        regionsOf, byTypeVal: arr(byTypeVal), valBy: { producer: arr(vb.producer), country: arr(vb.country), region: arr(vb.region), vintage: arr(vb.vintage) },
+        regionsOf, priceBands: pb, byTypeVal: arr(byTypeVal), valBy: { producer: arr(vb.producer), country: arr(vb.country), region: arr(vb.region), vintage: arr(vb.vintage) },
         oldest: vint.size ? Math.min(...Array.from(vint.keys()).map(Number)) : null,
       };
       this._statC = { d, v };
@@ -1345,12 +1357,14 @@
         case 'value': {
           const fmt = this._money(S.currency);
           const tab = (this._stat && this._stat.vtab) || 'wine';
-          const tabs = ['wine', 'producer', 'country', 'region', 'vintage', 'types'];
+          const tabs = ['wine', 'producer', 'country', 'region', 'vintage', 'price', 'types'];
           const lim = 10;
           let sec;
           if (tab === 'wine') {
             const list = Array.from(S.wines.values()).filter((w) => w.value > 0).sort((a, b) => b.value - a.value);
             sec = { rows: top(list, lim).map((w) => ({ label: w.name, sub: w.producer, n: w.value, text: fmt(w.value), filter: ['q', w.name] })), total: list.length, limit: lim };
+          } else if (tab === 'price') {
+            sec = { rows: PRICE.filter(([k]) => S.priceBands.has(k)).map(([k, l]) => ({ label: l, sub: t('stat.nBottles', { n: S.priceBands.get(k).n }), n: S.priceBands.get(k).v, text: fmt(S.priceBands.get(k).v), filter: ['price', k] })), total: 0, limit: 99 };
           } else if (tab === 'types') {
             sec = { rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['types', k] })), total: 0, limit: 99 };
           } else {

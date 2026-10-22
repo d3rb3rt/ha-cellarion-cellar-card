@@ -234,5 +234,15 @@
  "stat.vt.country": "Land",
  "stat.vt.region": "Region",
  "stat.vt.vintage": "Jahrgang",
- "stat.vt.types": "Typ"
+ "stat.vt.types": "Typ",
+ "filter.price": "Preis",
+ "price.p10": "bis 10 €",
+ "price.p20": "10–20 €",
+ "price.p30": "20–30 €",
+ "price.p50": "30–50 €",
+ "price.p75": "50–75 €",
+ "price.p100": "75–100 €",
+ "price.pmax": "über 100 €",
+ "stat.vt.price": "Preis",
+ "stat.nBottles": "{n} Fl."
 }

@@ -1817,7 +1817,20 @@
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       return `<div class="d2hero">${img}${main}</div>${maturity}${about}${noteHtml}${botsSec}${actBar}`;
     }
-    _renderDlg() { this._renderDlg0(); this._hsync(); }
+    _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
+    // Phone: the popup starts below the dashboard header (the navigation stays visible)
+    _dlgTop() {
+      const el = this._dlg;
+      if (!el || el.hidden) return;
+      let top = 0;
+      try {
+        if (window.matchMedia('(max-width: 600px)').matches) {
+          const r = this.getBoundingClientRect();
+          top = r.top > 0 && r.top < 140 ? Math.round(r.top) : 0;
+        }
+      } catch (e) { top = 0; }
+      el.style.top = top ? top + 'px' : '';
+    }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
     _hdepth() {
       return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._fdel ? 1 : 0) + (this._cfm ? 1 : 0);

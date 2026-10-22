@@ -271,7 +271,7 @@
     .loc b { font-weight: 600; margin-left: 4px; }
     .loc.none { color: var(--cb-sub); }
     .vwin { color: var(--cb-sub); font-size: .86em; }
-    .vcnt { display: none; }
+    .vcnt, .vprl { display: none; }
     .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }
     .frow { border-bottom: 1px solid var(--cb-line); }
     .fyear { font-weight: 700; min-width: 3.2em; }
@@ -456,6 +456,7 @@
       .pl2 .vrow .vwin { display: none; }
       .pl2 .vrow .vpr { display: none; }
       .pl2 .vrow .vcnt { display: inline; }
+      .pl2 .vrow .vprl { display: inline; }
       .pl2 .vrow .loc b { display: none; }
       .pl2 .vlist { display: flex; flex-direction: column-reverse; }
       .pl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
@@ -1290,8 +1291,10 @@
         `<span class="wright"><span class="wvint multi">${vints}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
         `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
+        const pset = new Set(g.entries.map((e) => this._priceTxt(e.bottles)));
+        const diff = pset.size > 1;
         html += `<div class="vlist">` + g.entries.map((e) =>
-          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
+          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>${diff && this._priceTxt(e.bottles) ? `<span class="wprice vprl">${esc(this._priceTxt(e.bottles))}</span>` : ''}<span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
           `<span class="vwin">${esc(this._winText(e))}</span></span>` +
           (this._priceTxt(e.bottles) ? `<span class="wprice vpr">${esc(this._priceTxt(e.bottles))}</span>` : '') +
           `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span>` +

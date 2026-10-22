@@ -249,7 +249,10 @@
     .fbtn.open.on { box-shadow: 0 0 0 2px var(--cb-on-text) inset; }
     .fwrap { display: flex; flex-direction: column; gap: 8px; }
     .fwrap:not(.fopen) { display: none; }
-    .wvint { color: var(--cb-sub); white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
+    .wprice { color: var(--cb-sub); font-size: .94em; white-space: nowrap; flex: none; }
+    .wpm { display: none; }
+    .vpr { align-self: center; margin-right: 8px; }
+    .wvint { font-weight: 700; color: inherit; white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
     .wloc { color: var(--cb-sub); font-size: .9em; justify-content: flex-end; text-align: right; max-width: 30%; }
     .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
     .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
@@ -261,7 +264,7 @@
       display: flex; align-items: center; gap: 10px; min-height: var(--cb-row-h, 44px); padding: 4px 12px 4px 0;
       border-top: 1px dashed var(--cb-line);
     }
-    .vyear { font-weight: 600; min-width: 3.2em; }
+    .vyear { font-weight: 700; min-width: 3.2em; }
     .vmid { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .locs { display: flex; flex-wrap: wrap; gap: 2px 12px; }
     .loc b { font-weight: 600; margin-left: 4px; }
@@ -269,7 +272,7 @@
     .vwin { color: var(--cb-sub); font-size: .86em; }
     .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }
     .frow { border-bottom: 1px solid var(--cb-line); }
-    .fyear { font-weight: 600; min-width: 3.2em; }
+    .fyear { font-weight: 700; min-width: 3.2em; }
     .fmid { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .msg { padding: 28px 16px; text-align: center; color: var(--cb-sub); }
     .msg button { margin-top: 12px; }
@@ -426,6 +429,8 @@
       .wrow .wmain { flex: 1 1 0; min-width: 0; }
       .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
       .wrow .wsep { display: none; }
+      .wrow .wpd { display: none; }
+      .wrow .wpm { display: block; flex: none; margin-top: 2px; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
       .wrow .winfo { display: block; }
       .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }
@@ -1202,6 +1207,18 @@
       return this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
     }
     _sub(b) { return b.region || ''; }
+    // Price of the bottles (EUR): one value or from-to; empty if none is known
+    _priceTxt(bottles) {
+      const v = (bottles || []).filter((b) => typeof b.price === 'number' && b.price > 0 && (!b.currency || b.currency === 'EUR')).map((b) => b.price);
+      if (!v.length) return '';
+      const f = (x) => new Intl.NumberFormat(I18N.lang || 'de', { maximumFractionDigits: Number.isInteger(x) ? 0 : 2, minimumFractionDigits: Number.isInteger(x) ? 0 : 2 }).format(x);
+      const lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
+      return (lo === hi ? f(lo) : f(lo) + '–' + f(hi)) + '\u00a0€';
+    }
+    _priceSpans(bottles) {
+      const p = this._priceTxt(bottles);
+      return p ? { d: `<span class="wsep wpd">|</span><span class="wreg wprice wpd">${esc(p)}</span>`, m: `<span class="wprice wpm">${esc(p)}</span>` } : { d: '', m: '' };
+    }
     // With sorting "producer A-Z" and a maintained sort word: its first letter in bold (H for "Fritz Haag")
     _prodHtml(name) {
       const i = this._sortMap && this._sortMap[name];
@@ -1210,9 +1227,10 @@
       return w.map((x, k) => (k === i ? `<b class="wsl">${esc(x.charAt(0))}</b>${esc(x.slice(1))}` : esc(x))).join(' ');
     }
     // Wine name | producer in one line
-    _title(b) {
+    _title(b, pr) {
+      pr = pr || '';
       const reg = (b._cls && b._cls.length ? `<span class="wsep">|</span><span class="wreg">${this._hl(b._cls.join(', '))}</span>` : '') +
-        (b.region ? `<span class="wsep">|</span><span class="wreg">${this._hl(b.region)}</span>` : '');
+        (b.region ? `<span class="wsep">|</span><span class="wreg">${this._hl(b.region)}</span>` : '') + pr;
       if (this._sort === 'producer' && b.producer) {
         return `<span class="wtitle swap"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">|</span><span class="wname">${this._hl(b.name)}</span>${reg}</span>`;
       }
@@ -1228,22 +1246,25 @@
         // Only one vintage: the details are right in the wine row, tapping opens the details.
         const e = g.entries[0];
         const win = this._winText(e);
+        const ps = this._priceSpans(e.bottles);
         return `<div class="wine"><button class="wrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
           this._typeDot(g.b) +
-          `<span class="wmain">${this._title(g.b)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
+          `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>${ps.m}` +
           `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">|</span>` +
           `<span class="wvint">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
       }
+      const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
       let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
         this._typeDot(g.b) +
-        `<span class="wmain">${this._title(g.b)}</span>` +
+        `<span class="wmain">${this._title(g.b, ps.d)}</span>${ps.m}` +
         `<span class="wright"><span class="wvint multi">${esc(vints)}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
         `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
         html += `<div class="vlist">` + g.entries.map((e) =>
           `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear">${esc(e.vintage)}</span><span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
           `<span class="vwin">${esc(this._winText(e))}</span></span>` +
+          (this._priceTxt(e.bottles) ? `<span class="wprice vpr">${esc(this._priceTxt(e.bottles))}</span>` : '') +
           `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`).join('') + `</div>`;
       }
       return html + `</div>`;
@@ -1251,7 +1272,7 @@
 
     _flatRow(e) {
       return `<div class="frow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(e.b)}<span class="fyear">${esc(e.vintage)}</span>` +
-        `<span class="fmid">${this._title(e.b)}` +
+        `<span class="fmid">${this._title(e.b, this._priceSpans(e.bottles).d)}` +
         `<span class="locs">${this._locsHtml(e.bottles)}</span></span>` +
         `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`;
     }

@@ -244,7 +244,5 @@
  "price.p100": "€75–100",
  "price.pmax": "over €100",
  "stat.vt.price": "Price",
- "stat.nBottles": "{n} btl.",
- "flag.phoneList": "Phone list: two lines",
- "flag.phoneListSub": "Name on the first line, producer · region · price on the second (phone view only, test)"
+ "stat.nBottles": "{n} btl."
 }

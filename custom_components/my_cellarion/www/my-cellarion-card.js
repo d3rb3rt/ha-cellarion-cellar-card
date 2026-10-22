@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'phoneList' }] : [];
+  const FLAGS = [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -251,7 +251,6 @@
     .fwrap { display: flex; flex-direction: column; gap: 8px; }
     .fwrap:not(.fopen) { display: none; }
     .wprice { color: var(--cb-sub); font-size: .94em; white-space: nowrap; flex: none; }
-    .wpm { display: none; }
     .vpr { align-self: center; margin-right: 8px; }
     .wvint { font-weight: 700; color: inherit; white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
     .wloc { color: var(--cb-sub); font-size: .9em; justify-content: flex-end; text-align: right; max-width: 30%; }
@@ -414,7 +413,6 @@
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
-      .vlist { padding-left: 12px; }
       .top .title, .top .rl { display: none; }
       .top { flex-wrap: nowrap; }
       .fbtn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--cb-chip-h, 40px); padding: 0; }
@@ -439,47 +437,44 @@
       .wrow { flex-wrap: wrap; align-items: flex-start; row-gap: 2px; padding: 8px 12px; }
       .wrow .tdot, .wrow .tsp { margin-top: 5px; }
       .wrow .wmain { flex: 1 1 0; min-width: 0; }
-      .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
-      .wrow .wsep { display: none; }
+      .wrow .wtitle { flex-wrap: wrap; gap: 0 6px; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
       .wrow .winfo { display: none; }
-      .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }
+      .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 32px; box-sizing: border-box; }
       .wright .wsep { display: none; }
       .wright .wloc { flex: 1 1 auto; justify-content: flex-start; text-align: left; max-width: none; min-width: 0; }
       .wright .wvint { flex: 0 0 auto; max-width: none; }
       .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
       .wright .chev { margin-left: 0; }
-      .pl2 .wrow .wtitle .wsep { display: inline; font-size: 0; }
-      .pl2 .wrow .wtitle .wsep::before { content: '·'; font-size: 1rem; }
-      .pl2 .wrow .wtitle > :first-child { flex: 0 0 100%; }
-      .pl2 .wrow .wtitle > :first-child + .wsep { display: none; }
-      .pl2 .wrow .wtitle { column-gap: 6px; }
-      .pl2 .yv { color: var(--yc); font-weight: 700; }
-      .pl2 .wright .sdots { display: none; }
-      .pl2 .wright { padding-left: 32px; }
+      .wrow .wtitle .wsep { display: inline; font-size: 0; }
+      .wrow .wtitle .wsep::before { content: '·'; font-size: 1rem; }
+      .wrow .wtitle > :first-child { flex: 0 0 100%; }
+      .wrow .wtitle > :first-child + .wsep { display: none; }
+      .yv { color: var(--yc); font-weight: 700; }
+      .wright .sdots { display: none; }
       .fwrap .more.open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
       .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
       .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
       .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
-      .pl2 .vlist { padding-left: 44px; }
-      .pl2 .vrow { padding-left: 0; }
-      .pl2 .vrow .vyear { min-width: 0; flex: 0 0 auto; }
-      .pl2 .vrow .vmid { align-items: flex-end; text-align: right; }
-      .pl2 .vrow .locs { justify-content: flex-end; }
-      .pl2 .vrow .vstat { display: none; }
-      .pl2 .vrow .vwin { display: none; }
-      .pl2 .vrow .vpr { display: none; }
-      .pl2 .vrow .vcnt { display: inline; }
-      .pl2 .vrow .vprl { display: inline; }
-      .pl2 .vrow .loc b { display: none; }
-      .pl2 .vlist { display: flex; flex-direction: column-reverse; }
-      .pl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
-      .pl2 .vrow .locs { color: var(--cb-sub); font-size: .9em; }
-      .pl2 .wright .wvint { color: var(--cb-sub); font-weight: 400; }
-      .pl2 .wright .wvint.yv { color: var(--yc); font-weight: 700; }
-      .pl2 .wright .wvint { order: -2; }
-      .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
-      .pl2 .wright .wvint.multi { flex: 1 1 auto; }
+      .vlist { padding-left: 44px; }
+      .vrow { padding-left: 0; }
+      .vrow .vyear { min-width: 0; flex: 0 0 auto; }
+      .vrow .vmid { align-items: flex-end; text-align: right; }
+      .vrow .locs { justify-content: flex-end; }
+      .vrow .vstat { display: none; }
+      .vrow .vwin { display: none; }
+      .vrow .vpr { display: none; }
+      .vrow .vcnt { display: inline; }
+      .vrow .vprl { display: inline; }
+      .vrow .loc b { display: none; }
+      .vlist { display: flex; flex-direction: column-reverse; }
+      .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
+      .vrow .locs { color: var(--cb-sub); font-size: .9em; }
+      .wright .wvint { color: var(--cb-sub); font-weight: 400; }
+      .wright .wvint.yv { color: var(--yc); font-weight: 700; }
+      .wright .wvint { order: -2; }
+      .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
+      .wright .wvint.multi { flex: 1 1 auto; }
       .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; }
       .dtop { gap: 10px; }
       .dimg { width: 84px; max-height: 150px; }
@@ -1170,7 +1165,6 @@
       }
       if (!bottles.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
       el.innerHTML = html;
-      el.classList.toggle('pl2', this._flag('phoneList'));
       el.scrollTop = top;
       this._renderAz();
       const f = this._f;
@@ -1263,7 +1257,7 @@
     }
     _priceSpans(bottles) {
       const p = this._priceTxt(bottles);
-      return p ? { d: `<span class="wsep wpd">|</span><span class="wreg wprice wpd">${esc(p)}</span>`, m: `<span class="wprice wpm">${esc(p)}</span>` } : { d: '', m: '' };
+      return p ? { d: `<span class="wsep wpd">|</span><span class="wreg wprice wpd">${esc(p)}</span>` } : { d: '' };
     }
     // With sorting "producer A-Z" and a maintained sort word: its first letter in bold (H for "Fritz Haag")
     _prodHtml(name) {
@@ -1295,7 +1289,7 @@
         const ps = this._priceSpans(e.bottles);
         return `<div class="wine"><button class="wrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
           this._typeDot(g.b) +
-          `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>${ps.m}` +
+          `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
           `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">|</span>` +
           `<span class="wvint yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
@@ -1303,7 +1297,7 @@
       const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
       let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
         this._typeDot(g.b) +
-        `<span class="wmain">${this._title(g.b, ps.d)}</span>${ps.m}` +
+        `<span class="wmain">${this._title(g.b, ps.d)}</span>` +
         `<span class="wright"><span class="wvint multi">${vints}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
         `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {

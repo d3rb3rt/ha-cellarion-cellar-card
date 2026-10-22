@@ -1274,8 +1274,11 @@
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
       if (!this._flag('webList') || bar.hidden) { list.style.maxWidth = ''; return; }
-      const bs = Array.from(bar.children);
+      let bs = Array.from(bar.children);
       if (!bs.length) { list.style.maxWidth = ''; return; }
+      // Only up to the letter R (the whole alphabet is too wide)
+      const ri = bs.findIndex((b) => b.dataset.k === 'R');
+      if (ri >= 0) bs = bs.slice(0, ri + 1);
       const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;
       list.style.maxWidth = w > 0 ? w + 'px' : '';
       this._azw = w > 0 ? w : 0;

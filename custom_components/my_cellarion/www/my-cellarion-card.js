@@ -428,7 +428,11 @@
       .wrow .tdot, .wrow .tsp { margin-top: 5px; }
       .wrow .wmain { flex: 1 1 0; min-width: 0; }
       .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
-      .wrow .wsep { display: none; }
+      .wrow .wsep { display: inline; font-size: 0; }
+      .wrow .wsep::before { content: '·'; font-size: 1rem; }
+      .wrow .wtitle > :first-child { flex: 0 0 100%; }
+      .wrow .wtitle > :first-child + .wsep { display: none; }
+      .wrow .wtitle { column-gap: 6px; row-gap: 0; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
       .wrow .winfo { display: none; }
       .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 21px; box-sizing: border-box; }

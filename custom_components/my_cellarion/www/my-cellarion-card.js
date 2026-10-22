@@ -454,6 +454,7 @@
       .pl2 .vrow .vstat { display: none; }
       .pl2 .vrow .vwin { display: none; }
       .pl2 .vrow .vpr { display: none; }
+      .pl2 .vlist { display: flex; flex-direction: column-reverse; }
       .pl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
       .pl2 .vrow .locs { color: var(--cb-sub); font-size: .9em; }
       .pl2 .vrow .loc b { color: var(--primary-text-color, #fff); }

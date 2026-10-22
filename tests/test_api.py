@@ -52,7 +52,7 @@ def test_slim_drops_empty_and_keeps_place():
     out = api.slim(b, w, ("Cabinet · Fach 1", {"rack": "Cabinet"}))
     assert out["vintage"] == "NV" and out["grapes"] == ["Riesling"] and out["country"] == "Germany"
     assert out["drinkFrom"] == 2024 and out["peakUntil"] == 2030 and "drinkTo" not in out
-    assert out["location"] == "Cabinet · Fach 1" and "producer" not in out and out["reserved"] is False
+    assert out["location"] == "Cabinet · Fach 1" and "producer" not in out and "reserved" not in out
 
 
 def test_personal_bottle_entry_wins_over_wine_entry():

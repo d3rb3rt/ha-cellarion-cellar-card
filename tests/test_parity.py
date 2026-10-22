@@ -47,7 +47,7 @@ INVENTORY = {
     },
     "bottles": [
         {"id": "a" * 24, "wine": "w1", "cellar": "c1", "vintage": "2019", "price": 24.5, "currency": "EUR", "purchaseLocation": "Lobenberg",
-         "window": {"drinkFrom": 2024, "drinkTo": 2032, "peakFrom": 2026, "peakUntil": 2029}, "reservation": {"x": 1},
+         "window": {"drinkFrom": 2024, "drinkTo": 2032, "peakFrom": 2026, "peakUntil": 2029},
          "location": {"rack": "r1", "rackName": "R", "position": 1, "shelf": 1, "row": 1, "col": 1},
          "personal": [{"key": "Stil", "value": "Sekt", "level": "wine"}, {"key": "Lage", "value": "Grosse Lage", "level": "wine"},
                       {"key": "Lage", "value": "Erste Lage", "level": "bottle"}, {"key": "Leer", "value": "", "level": "wine"}]},
@@ -55,7 +55,7 @@ INVENTORY = {
          "location": {"rack": "r1", "rackName": "R", "position": 15, "shelf": 2, "row": 2, "col": 3}, "personal": []},
         {"id": "c" * 24, "wine": "w3", "cellar": "c1", "vintage": "2015", "window": {"drinkFrom": 2020},
          "location": {"rack": "r2", "rackName": "S", "position": 9, "shelf": 2, "row": 1, "col": 1}, "personal": []},
-        {"id": "d" * 24, "wine": "w5", "cellar": "c1", "vintage": "2020", "reserved": True, "window": {}, "location": None, "place": None, "personal": []},
+        {"id": "d" * 24, "wine": "w5", "cellar": "c1", "vintage": "2020", "window": {}, "location": None, "place": None, "personal": []},
         {"id": "e" * 24, "wine": "w1", "cellar": "c2", "vintage": "2018", "window": {}, "location": None, "personal": []},  # shared cellar: left out
         {"id": "f" * 24, "wine": "w3", "cellar": "c1", "vintage": "2010", "window": {},
          "location": {"rack": "r2", "rackName": "S", "position": 99, "shelf": None, "row": None, "col": None}, "personal": []},

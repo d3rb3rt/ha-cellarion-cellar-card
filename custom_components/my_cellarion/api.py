@@ -94,7 +94,6 @@ def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | No
         "peakUntil": win.get("peakUntil"),
         "price": bottle.get("price"),
         "currency": bottle.get("currency"),
-        "reserved": bool(bottle.get("reservation") or bottle.get("reserved")),  # not in the inventory (yet): then always False
         "shop": bottle.get("purchaseLocation"),
     }
     if plc:
@@ -143,7 +142,7 @@ def profile_from_get_bottle(g: JsonDict) -> JsonDict:
 
 BOTTLE_DETAIL_KEYS = (
     "notes", "price", "currency", "purchaseDate", "purchaseLocation", "bottleSize",
-    "rating", "ratingScale", "openedAt", "reservation", "reserved",
+    "rating", "ratingScale", "openedAt",
 )
 
 

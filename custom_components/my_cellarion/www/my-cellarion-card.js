@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'webList' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -410,6 +410,44 @@
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
     .dask { font-size: 1.1em; font-weight: 600; }
+    /* Feature flag webList: the phone list layout for wide screens, too */
+    .wl2 .wrow { flex-wrap: wrap; align-items: flex-start; row-gap: 2px; padding: 8px 12px; }
+    .wl2 .wrow .tdot, .wl2 .wrow .tsp { margin-top: 5px; }
+    .wl2 .wrow .wmain { flex: 1 1 0; min-width: 0; }
+    .wl2 .wrow .wtitle { flex-wrap: wrap; gap: 0 6px; }
+    .wl2 .wrow .wname, .wl2 .wrow .wprod, .wl2 .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
+    .wl2 .wrow .winfo { display: none; }
+    .wl2 .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 32px; box-sizing: border-box; }
+    .wl2 .wright .wsep { display: none; }
+    .wl2 .wright .wloc { flex: 1 1 auto; justify-content: flex-start; text-align: left; max-width: none; min-width: 0; }
+    .wl2 .wright .wvint { flex: 0 0 auto; max-width: none; }
+    .wl2 .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
+    .wl2 .wright .chev { margin-left: 0; }
+    .wl2 .wrow .wtitle .wsep { display: inline; font-size: 0; }
+    .wl2 .wrow .wtitle .wsep::before { content: '·'; font-size: 1rem; }
+    .wl2 .wrow .wtitle > :first-child { flex: 0 0 100%; }
+    .wl2 .wrow .wtitle > :first-child + .wsep { display: none; }
+    .wl2 .yv { color: var(--yc); font-weight: 700; }
+    .wl2 .wright .sdots { display: none; }
+    .wl2 .vlist { padding-left: 44px; }
+    .wl2 .vrow { padding-left: 0; }
+    .wl2 .vrow .vyear { min-width: 0; flex: 0 0 auto; }
+    .wl2 .vrow .vmid { align-items: flex-end; text-align: right; }
+    .wl2 .vrow .locs { justify-content: flex-end; }
+    .wl2 .vrow .vstat { display: none; }
+    .wl2 .vrow .vwin { display: none; }
+    .wl2 .vrow .vpr { display: none; }
+    .wl2 .vrow .vcnt { display: inline; }
+    .wl2 .vrow .vprl { display: inline; }
+    .wl2 .vrow .loc b { display: none; }
+    .wl2 .vlist { display: flex; flex-direction: column-reverse; }
+    .wl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
+    .wl2 .vrow .locs { color: var(--cb-sub); font-size: .9em; }
+    .wl2 .wright .wvint { color: var(--cb-sub); font-weight: 400; }
+    .wl2 .wright .wvint.yv { color: var(--yc); font-weight: 700; }
+    .wl2 .wright .wvint { order: -2; }
+    .wl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
+    .wl2 .wright .wvint.multi { flex: 1 1 auto; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
@@ -1165,6 +1203,7 @@
       }
       if (!bottles.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
       el.innerHTML = html;
+      el.classList.toggle('wl2', this._flag('webList'));
       el.scrollTop = top;
       this._renderAz();
       const f = this._f;

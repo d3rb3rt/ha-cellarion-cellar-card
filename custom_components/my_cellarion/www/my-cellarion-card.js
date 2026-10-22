@@ -323,6 +323,9 @@
     .sbt { height: 8px; border-radius: 4px; background: var(--cb-chip); overflow: hidden; }
     .sbf { display: block; height: 100%; border-radius: 4px; background: var(--cb-on); }
     .sbc { text-align: right; font-variant-numeric: tabular-nums; color: var(--cb-sub); }
+    .stabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+    .stab { flex: none; min-height: 34px; padding: 0 14px; border: 1px solid var(--cb-line); border-radius: 18px; background: transparent; color: var(--cb-text); font: inherit; cursor: pointer; white-space: nowrap; }
+    .stab.on { background: var(--cb-on); border-color: var(--cb-on); color: var(--cb-card); font-weight: 600; }
     .shead { margin-top: 6px; font-weight: 600; }
     .shint { text-align: center; opacity: .7; }
     .dlg { position: fixed; inset: 0; z-index: 5; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.5); }
@@ -1291,6 +1294,7 @@
       const currency = (arr(cur)[0] || [''])[0];
       let value = 0;
       const byTypeVal = new Map();
+      const vb = { producer: new Map(), country: new Map(), region: new Map(), vintage: new Map() };
       bs.forEach((b) => {
         let w = wines.get(b.wine);
         if (!w) { w = { name: b.name, producer: b.producer, n: 0, value: 0 }; wines.set(b.wine, w); }
@@ -1298,6 +1302,9 @@
         if (typeof b.price === 'number' && b.currency === currency) {
           value += b.price; w.value += b.price;
           byTypeVal.set(b._type, (byTypeVal.get(b._type) || 0) + b.price);
+          const add = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + b.price); };
+          add(vb.producer, b.producer); add(vb.country, b.country); add(vb.region, b.region);
+          add(vb.vintage, /^\d{4}$/.test(String(b.vintage)) ? String(b.vintage) : '');
         }
       });
       const vint = grp((b) => (/^\d{4}$/.test(String(b.vintage)) ? String(b.vintage) : ''));
@@ -1312,7 +1319,7 @@
         total: bs.length, wines, currency, value,
         types: arr(grp((b) => b._type)), countries: arr(grp((b) => b.country)), regions: arr(grp((b) => b.region)),
         producers: arr(grp((b) => b.producer)), grapes: arr(grp((b) => b.grapes || [])), vintages: vint,
-        regionsOf, byTypeVal: arr(byTypeVal),
+        regionsOf, byTypeVal: arr(byTypeVal), valBy: { producer: arr(vb.producer), country: arr(vb.country), region: arr(vb.region), vintage: arr(vb.vintage) },
         oldest: vint.size ? Math.min(...Array.from(vint.keys()).map(Number)) : null,
       };
       this._statC = { d, v };
@@ -1335,12 +1342,22 @@
         }
         case 'value': {
           const fmt = this._money(S.currency);
-          const list = Array.from(S.wines.values()).filter((w) => w.value > 0).sort((a, b) => b.value - a.value);
-          const l = top(list, 10);
-          return { title: t('stat.value'), sections: [
-            { head: t('stat.valueByType'), rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['types', k] })), total: 0, limit: 99 },
-            { head: t('stat.valueTop'), rows: l.map((w) => ({ label: w.name, sub: w.producer, n: w.value, text: fmt(w.value), filter: ['q', w.name] })), total: list.length, limit: 10 },
-          ] };
+          const tab = (this._stat && this._stat.vtab) || 'wine';
+          const tabs = ['wine', 'producer', 'country', 'region', 'vintage', 'types'];
+          const lim = 10;
+          let sec;
+          if (tab === 'wine') {
+            const list = Array.from(S.wines.values()).filter((w) => w.value > 0).sort((a, b) => b.value - a.value);
+            sec = { rows: top(list, lim).map((w) => ({ label: w.name, sub: w.producer, n: w.value, text: fmt(w.value), filter: ['q', w.name] })), total: list.length, limit: lim };
+          } else if (tab === 'types') {
+            sec = { rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['types', k] })), total: 0, limit: 99 };
+          } else {
+            const g = { producer: 'producer', country: null, region: 'region', vintage: 'vintage' }[tab];
+            let list = S.valBy[tab];
+            if (tab === 'vintage') list = list.slice().sort((a, b) => b[0] - a[0]);
+            sec = { rows: top(list, lim).map(([k, v]) => ({ label: k, n: v, text: fmt(v), [g ? 'filter' : 'go']: g ? [g, k] : 'country:' + k })), total: list.length, limit: lim };
+          }
+          return { title: t('stat.value'), tabs: tabs.map((k) => [k, t('stat.vt.' + k)]), tab, sections: [sec] };
         }
         default:
           if (key.startsWith('country:')) {
@@ -1379,7 +1396,7 @@
           `${mini('regions', t('stat.topRegion'), (S.regions[0] || [])[0])}${mini('grapes', t('stat.topGrape'), (S.grapes[0] || [])[0])}</div>`;
       } else {
         const pg = this._statPage(key, S, st.all);
-        html = nav(pg.title) + pg.sections.map((sec) => {
+        html = nav(pg.title) + (pg.tabs ? `<div class="stabs">${pg.tabs.map(([k, l]) => `<button class="stab${k === pg.tab ? ' on' : ''}" data-act="stattab" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '') + pg.sections.map((sec) => {
           const mx = Math.max(1, ...sec.rows.map((r) => r.n));
           const more = sec.total > sec.limit && sec.limit !== 99;
           return (sec.head ? `<div class="wsub shead">${esc(sec.head)}</div>` : '') + (sec.hint ? `<div class="wsub">${esc(sec.hint)}</div>` : '') +
@@ -1877,6 +1894,8 @@
         this._stat = null; this._renderDlg();
       } else if (act === 'statback') {
         if (this._stat) { this._stat.path.pop(); this._stat.all = false; this._renderDlg(); }
+      } else if (act === 'stattab') {
+        if (this._stat) { this._stat.vtab = t.dataset.t; this._stat.all = false; this._renderDlg(); }
       } else if (act === 'statall') {
         if (this._stat) { this._stat.all = !this._stat.all; this._renderDlg(); }
       } else if (act === 'statgo') {

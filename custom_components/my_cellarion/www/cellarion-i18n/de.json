@@ -228,5 +228,11 @@
  "stat.all": "Alle {n} anzeigen",
  "stat.less": "Nur Top anzeigen",
  "stat.hintCountry": "Land antippen, um die Regionen zu sehen",
- "stat.tapHint": "Eintrag antippen, um die Liste danach zu filtern"
+ "stat.tapHint": "Eintrag antippen, um die Liste danach zu filtern",
+ "stat.vt.wine": "Weine",
+ "stat.vt.producer": "Winzer",
+ "stat.vt.country": "Land",
+ "stat.vt.region": "Region",
+ "stat.vt.vintage": "Jahrgang",
+ "stat.vt.types": "Typ"
 }

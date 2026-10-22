@@ -228,5 +228,11 @@
  "stat.all": "Show all {n}",
  "stat.less": "Show top only",
  "stat.hintCountry": "Tap a country to see its regions",
- "stat.tapHint": "Tap an entry to filter the list by it"
+ "stat.tapHint": "Tap an entry to filter the list by it",
+ "stat.vt.wine": "Wines",
+ "stat.vt.producer": "Producers",
+ "stat.vt.country": "Country",
+ "stat.vt.region": "Region",
+ "stat.vt.vintage": "Vintage",
+ "stat.vt.types": "Type"
 }

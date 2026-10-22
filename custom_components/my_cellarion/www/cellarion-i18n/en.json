@@ -246,7 +246,5 @@
  "stat.vt.price": "Price",
  "stat.nBottles": "{n} btl.",
  "flag.phoneList": "Phone list: two lines",
- "flag.phoneListSub": "Name on the first line, producer · region · price on the second (phone view only, test)",
- "flag.backClose": "Back button closes popups",
- "flag.backCloseSub": "The Android back button only closes the top popup or goes one level back (test)"
+ "flag.phoneListSub": "Name on the first line, producer · region · price on the second (phone view only, test)"
 }

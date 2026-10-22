@@ -246,7 +246,5 @@
  "stat.vt.price": "Preis",
  "stat.nBottles": "{n} Fl.",
  "flag.phoneList": "Handy-Liste: zwei Zeilen",
- "flag.phoneListSub": "Name in der ersten Zeile, Winzer · Region · Preis in der zweiten (nur Handy-Ansicht, Test)",
- "flag.backClose": "Zurück-Taste schließt Popups",
- "flag.backCloseSub": "Die Android-Zurück-Taste schließt nur das oberste Popup bzw. geht eine Ebene zurück (Test)"
+ "flag.phoneListSub": "Name in der ersten Zeile, Winzer · Region · Preis in der zweiten (nur Handy-Ansicht, Test)"
 }

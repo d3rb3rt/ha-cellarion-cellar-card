@@ -443,6 +443,11 @@
       .pl2 .wrow .wtitle > :first-child { flex: 0 0 100%; }
       .pl2 .wrow .wtitle > :first-child + .wsep { display: none; }
       .pl2 .wrow .wtitle { column-gap: 6px; }
+      .pl2 .yv { color: var(--yc); font-weight: 700; }
+      .pl2 .wright .sdots { display: none; }
+      .pl2 .wright .wvint { order: -2; }
+      .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
+      .pl2 .wright .wvint.multi { flex: 1 1 auto; }
       .dtop { gap: 10px; }
       .dimg { width: 84px; max-height: 150px; }
     }
@@ -1249,7 +1254,7 @@
     _groupRow(g) {
       const open = this._open.has(g.id);
       const asc = g.entries.slice().reverse();
-      const vints = asc.map((e) => e.vintage).join(' · ');
+      const vints = asc.map((e) => `<span class="yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>`).join(' · ');
       if (g.entries.length === 1) {
         // Only one vintage: the details are right in the wine row, tapping opens the details.
         const e = g.entries[0];
@@ -1259,18 +1264,18 @@
           this._typeDot(g.b) +
           `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>${ps.m}` +
           `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">|</span>` +
-          `<span class="wvint">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
+          `<span class="wvint yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
       }
       const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
       let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
         this._typeDot(g.b) +
         `<span class="wmain">${this._title(g.b, ps.d)}</span>${ps.m}` +
-        `<span class="wright"><span class="wvint multi">${esc(vints)}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
+        `<span class="wright"><span class="wvint multi">${vints}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
         `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
         html += `<div class="vlist">` + g.entries.map((e) =>
-          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear">${esc(e.vintage)}</span><span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
+          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
           `<span class="vwin">${esc(this._winText(e))}</span></span>` +
           (this._priceTxt(e.bottles) ? `<span class="wprice vpr">${esc(this._priceTxt(e.bottles))}</span>` : '') +
           `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`).join('') + `</div>`;

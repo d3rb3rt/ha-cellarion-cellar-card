@@ -1753,6 +1753,8 @@
       } else if (act === 'az') {
         const a = this._listEl.querySelector(`.azanc[data-az="${t.dataset.k}"]`);
         if (a) this._listEl.scrollTo({ top: this._listEl.scrollTop + a.getBoundingClientRect().top - this._listEl.getBoundingClientRect().top, behavior: 'auto' });
+        // The jump is not a touch/wheel scroll: fold the filters like a normal scroll so the way back up re-opens them
+        if (a && this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
       } else if (act === 'toggle') {
         const id = t.dataset.id;
         if (this._open.has(id)) this._open.delete(id); else this._open = new Set([id]);

@@ -272,6 +272,7 @@
     .loc.none { color: var(--cb-sub); }
     .vwin { color: var(--cb-sub); font-size: .86em; }
     .vcnt, .vprl { display: none; }
+    .fend { display: contents; }
     .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }
     .frow { border-bottom: 1px solid var(--cb-line); }
     .fyear { font-weight: 700; min-width: 3.2em; }
@@ -447,6 +448,10 @@
       .pl2 .yv { color: var(--yc); font-weight: 700; }
       .pl2 .wright .sdots { display: none; }
       .pl2 .wright { padding-left: 32px; }
+      .fwrap .more.open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+      .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
+      .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
+      .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
       .pl2 .vlist { padding-left: 44px; }
       .pl2 .vrow { padding-left: 0; }
       .pl2 .vrow .vyear { min-width: 0; flex: 0 0 auto; }
@@ -1067,8 +1072,8 @@
             const items = d.defs ? this._optsK(d.defs, m, set) : this._opts(m, set, d.sort || by);
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint') };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-          }).join('') + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
-          `<button class="btn round sm${active ? ' on' : ''}" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' disabled'}>↺</button>` + `</div></div>`;
+          }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
+          `<button class="btn round sm${active ? ' on' : ''}" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' disabled'}>↺</button>` + `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
         const pills = defs.map((d) => Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;

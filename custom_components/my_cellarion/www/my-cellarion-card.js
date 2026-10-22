@@ -448,6 +448,12 @@
     .wl2 .wright .wvint { order: -2; }
     .wl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
     .wl2 .wright .wvint.multi { flex: 1 1 auto; }
+    /* wide screens: line 2 (producer, region, price) sits next to the name instead of below it */
+    @media (min-width: 601px) {
+      .wl2 .wrow .wtitle > :first-child { flex: 0 0 auto; }
+      .wl2 .wrow .wtitle > :first-child + .wsep { display: inline; }
+      .wl2 .wrow .wtitle { gap: 0 8px; }
+    }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }

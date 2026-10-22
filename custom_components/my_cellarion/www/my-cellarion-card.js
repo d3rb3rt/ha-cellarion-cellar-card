@@ -448,8 +448,10 @@
     .wl2 .wright .wvint { order: -2; }
     .wl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
     .wl2 .wright .wvint.multi { flex: 1 1 auto; }
-    /* wide screens: line 2 (producer, region, price) sits next to the name instead of below it */
+    /* wide screens: line 2 (producer, region, price) sits next to the name instead of below it; popups like on the phone, as wide as the alphabet bar */
     @media (min-width: 601px) {
+      .dlg.wl2 { align-items: flex-start; justify-content: flex-start; }
+      .dlg.wl2 .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; max-width: var(--cb-azw, 560px); }
       .wl2 .wrow .wtitle > :first-child { flex: 0 0 auto; }
       .wl2 .wrow .wtitle > :first-child + .wsep { display: inline; }
       .wl2 .wrow .wtitle { gap: 0 8px; }
@@ -1276,6 +1278,7 @@
       if (!bs.length) { list.style.maxWidth = ''; return; }
       const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;
       list.style.maxWidth = w > 0 ? w + 'px' : '';
+      this._azw = w > 0 ? w : 0;
     }
 
     // Highlight search terms in the text (ignoring case and accents, like the search itself)
@@ -1874,12 +1877,14 @@
       if (!el || el.hidden) return;
       let top = 0;
       try {
-        if (window.matchMedia('(max-width: 600px)').matches) {
+        if (window.matchMedia('(max-width: 600px)').matches || this._flag('webList')) {
           const r = this.getBoundingClientRect();
           top = r.top > 0 && r.top < 140 ? Math.round(r.top) : 0;
         }
       } catch (e) { top = 0; }
       el.style.top = top ? top + 'px' : '';
+      el.classList.toggle('wl2', this._flag('webList'));
+      if (this._azw) el.style.setProperty('--cb-azw', this._azw + 'px');
     }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
     _hdepth() {

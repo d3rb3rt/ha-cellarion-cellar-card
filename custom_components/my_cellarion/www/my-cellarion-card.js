@@ -1875,14 +1875,17 @@
     _dlgTop() {
       const el = this._dlg;
       if (!el || el.hidden) return;
-      let top = 0;
+      let top = 0, left = 0;
       try {
         if (window.matchMedia('(max-width: 600px)').matches || this._flag('webList')) {
           const r = this.getBoundingClientRect();
           top = r.top > 0 && r.top < 140 ? Math.round(r.top) : 0;
+          // wide screens: start at the left edge of the card (the dashboard sidebar stays uncovered)
+          if (!window.matchMedia('(max-width: 600px)').matches && r.left > 0 && r.left < 400) left = Math.round(r.left);
         }
       } catch (e) { top = 0; }
       el.style.top = top ? top + 'px' : '';
+      el.style.left = left ? left + 'px' : '';
       el.classList.toggle('wl2', this._flag('webList'));
       if (this._azw) el.style.setProperty('--cb-azw', this._azw + 'px');
     }

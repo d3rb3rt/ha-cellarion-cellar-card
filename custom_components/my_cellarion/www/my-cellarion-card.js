@@ -450,7 +450,9 @@
     .wl2 .wright .wvint.multi { flex: 1 1 auto; }
     /* wide screens: line 2 (producer, region, price) sits next to the name instead of below it; popups like on the phone, as wide as the alphabet bar */
     @media (min-width: 601px) {
-      .dlg.wl2 { align-items: flex-start; justify-content: flex-start; }
+      .dlg.wl2 { align-items: flex-start; justify-content: center; }
+      .list.wl2 { margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box; }
+      .az.wl2 { justify-content: center; }
       .dlg.wl2 .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; max-width: var(--cb-azw, 560px); }
       .wl2 .wrow .wtitle > :first-child { flex: 0 0 auto; }
       .wl2 .wrow .wtitle > :first-child + .wsep { display: inline; }
@@ -1273,6 +1275,7 @@
     _azWidth() {
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
+      bar.classList.toggle('wl2', this._flag('webList'));
       if (!this._flag('webList') || bar.hidden) { list.style.maxWidth = ''; return; }
       let bs = Array.from(bar.children);
       if (!bs.length) { list.style.maxWidth = ''; return; }

@@ -1259,6 +1259,17 @@
       bar.innerHTML = L.map((k) => `<button data-act="az" data-k="${k}"${this._az.has(k) ? '' : ' disabled'}>${k}</button>`).join('');
       this._azCur = null;
       this._azUpdate();
+      this._azWidth();
+    }
+    // Flag webList: on wide screens the list is only as wide as the alphabet bar (better readable)
+    _azWidth() {
+      const list = this._listEl, bar = this._azEl;
+      if (!list || !bar) return;
+      if (!this._flag('webList') || bar.hidden) { list.style.maxWidth = ''; return; }
+      const bs = Array.from(bar.children);
+      if (!bs.length) { list.style.maxWidth = ''; return; }
+      const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;
+      list.style.maxWidth = w > 0 ? w + 'px' : '';
     }
 
     // Highlight search terms in the text (ignoring case and accents, like the search itself)

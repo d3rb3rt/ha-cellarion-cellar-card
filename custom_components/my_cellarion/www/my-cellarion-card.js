@@ -452,6 +452,7 @@
       .pl2 .vrow .vmid { align-items: flex-end; text-align: right; }
       .pl2 .vrow .locs { justify-content: flex-end; }
       .pl2 .vrow .vstat { display: none; }
+      .pl2 .vrow .vwin { display: none; }
       .pl2 .wright .wvint { order: -2; }
       .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
       .pl2 .wright .wvint.multi { flex: 1 1 auto; }

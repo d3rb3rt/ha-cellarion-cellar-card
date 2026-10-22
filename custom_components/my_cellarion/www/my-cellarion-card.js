@@ -271,6 +271,7 @@
     .loc b { font-weight: 600; margin-left: 4px; }
     .loc.none { color: var(--cb-sub); }
     .vwin { color: var(--cb-sub); font-size: .86em; }
+    .vcnt { display: none; }
     .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }
     .frow { border-bottom: 1px solid var(--cb-line); }
     .fyear { font-weight: 700; min-width: 3.2em; }
@@ -454,10 +455,11 @@
       .pl2 .vrow .vstat { display: none; }
       .pl2 .vrow .vwin { display: none; }
       .pl2 .vrow .vpr { display: none; }
+      .pl2 .vrow .vcnt { display: inline; }
+      .pl2 .vrow .loc b { display: none; }
       .pl2 .vlist { display: flex; flex-direction: column-reverse; }
       .pl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
       .pl2 .vrow .locs { color: var(--cb-sub); font-size: .9em; }
-      .pl2 .vrow .loc b { color: var(--primary-text-color, #fff); }
       .pl2 .wright .wvint { color: var(--cb-sub); font-weight: 400; }
       .pl2 .wright .wvint { order: -2; }
       .pl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
@@ -1292,7 +1294,8 @@
           `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
           `<span class="vwin">${esc(this._winText(e))}</span></span>` +
           (this._priceTxt(e.bottles) ? `<span class="wprice vpr">${esc(this._priceTxt(e.bottles))}</span>` : '') +
-          `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`).join('') + `</div>`;
+          `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span>` +
+          `<span class="wcount vcnt">${esc(t('count.bottlesShort', { n: e.bottles.length })).replace(/ /g, '&nbsp;')}</span><span class="chev vcnt">›</span></div>`).join('') + `</div>`;
       }
       return html + `</div>`;
     }

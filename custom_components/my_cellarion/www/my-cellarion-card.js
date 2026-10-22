@@ -408,16 +408,11 @@
       const st = this._loadState();
       this._view = this._cfg.view === 'flat' ? 'flat' : 'wine';
       this._local = st.local && typeof st.local === 'object' ? st.local : {};
-      const keep = !!this._local.keepState;
-      this._sort = keep ? (st.sort || 'name') : 'name';
+      this._sort = 'name';
       this._scale = this._clampScale(st.scale != null ? st.scale : this._cfg.font_scale);
       this._f = { q: '' };
-      if (keep && st.f && typeof st.f === 'object') {
-        for (const k of Object.keys(st.f)) {
-          if (k === 'q') this._f.q = String(st.f.q || '');
-          else if (Array.isArray(st.f[k]) && st.f[k].length) this._f[k] = new Set(st.f[k]);
-        }
-      }
+      this._st = st; this._restored = false;
+      if (this._local.keepState !== undefined) this._restore(); // central value only known after the first load
       this._shared = {};
       this._applyEff();
       this._open = new Set();
@@ -531,13 +526,32 @@
       }
       return `<span style="display:flex;gap:6px;flex:none">${b('all', t('set.scopeAll'), !dev)}${b('device', t('set.scopeDevice'), dev)}</span>`;
     }
+    // Beim Neuladen Filter/Sortierung behalten: Geraet (local) vor zentral (shared); Standard: frisch starten
+    _keep() {
+      const L = this._local || {}, S = this._shared || {};
+      return L.keepState !== undefined ? !!L.keepState : !!S.keepState;
+    }
+    // Sortierung und Filter vom letzten Aufruf wiederherstellen, wenn "behalten" gilt
+    _restore() {
+      this._restored = true;
+      const st = this._st || {};
+      if (!this._keep()) return;
+      this._sort = st.sort || 'name';
+      if (st.f && typeof st.f === 'object') {
+        for (const k of Object.keys(st.f)) {
+          if (k === 'q') this._f.q = String(st.f.q || '');
+          else if (Array.isArray(st.f[k]) && st.f[k].length) this._f[k] = new Set(st.f[k]);
+        }
+      }
+    }
     _saveState() {
       try { let f;
-        if (this._local && this._local.keepState && this._f) {
+        if (!this._restored) f = (this._st || {}).f; // noch nicht wiederhergestellt: gespeicherten Stand nicht ueberschreiben
+        else if (this._keep() && this._f) {
           f = { q: this._f.q || '' };
           for (const k of Object.keys(this._f)) if (k !== 'q' && this._f[k] && this._f[k].size) f[k] = Array.from(this._f[k]);
         }
-        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._sort, scale: this._scale, local: this._local, f })); } catch (e) { /* ohne Speicher weiter */ }
+        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._restored ? this._sort : ((this._st || {}).sort || this._sort), scale: this._scale, local: this._local, f })); } catch (e) { /* ohne Speicher weiter */ }
     }
 
     // ---------- Data ----------
@@ -600,6 +614,7 @@
         const es = data.einstellungen || {};
         this._shared = es;
         this._applyEff();
+        if (!this._restored) this._restore();
         if ((this._langSel || '') !== this._langUsed) await this._initLang();
         this._ingest(data);
         this._error = null;
@@ -856,7 +871,7 @@
 
     _renderAll() {
       if (!this._built) return;
-      if (this._local && this._local.keepState) this._saveState();
+      if (this._keep()) this._saveState();
       this._renderHead();
       this._renderList();
     }
@@ -1254,8 +1269,8 @@
           }).join('') + `</div>` : '') +
         `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
         `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
-        `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw(null, 'device')) +
-        `<div class="scalechips">` + [['on', t('set.keepOn')], ['off', t('set.keepOff')]].map(([v, n]) => `<button class="chip${(v === 'on') === !!this._local.keepState ? ' on' : ''}" data-act="keepst" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
+        `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw('keepState')) +
+        `<div class="scalechips">` + [['on', t('set.keepOn')], ['off', t('set.keepOff')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._keep() ? ' on' : ''}" data-act="keepst" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
         `<div class="sblk">` + hd(t('set.filters'), t('set.filtersSub'), this._scopeSw('filters')) + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
         this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
           `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
@@ -1273,8 +1288,8 @@
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x)).join(',') : '-');
       try {
         await this._call('settings',
-          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))) },
-          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {} });
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0') },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }) });
         this._setErr = '';
       } catch (e) {
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
@@ -1727,7 +1742,10 @@
       } else if (act === 'rack') {
         this._setRack(t.dataset.n, t.dataset.k, t.dataset.v);
       } else if (act === 'keepst') {
-        this._local.keepState = t.dataset.v === 'on'; this._saveState(); this._renderSet();
+        const on = t.dataset.v === 'on';
+        if (this._local.keepState !== undefined) { this._local.keepState = on; this._saveState(); }
+        else { this._shared.keepState = on; this._saveSettings(); }
+        this._renderSet();
       } else if (act === 'lang') {
         this._setLang(t.dataset.v || '');
         this._initLang().then(() => {
@@ -1736,7 +1754,7 @@
         });
       } else if (act === 'scope') {
         const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
-        if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+        if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
         else if (t.dataset.v === 'all' && dev) delete L[k];
         this._saveState();
         this._applyEff();

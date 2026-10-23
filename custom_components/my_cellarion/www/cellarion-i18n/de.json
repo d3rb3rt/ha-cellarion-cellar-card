@@ -250,5 +250,8 @@
  "cls.top": "Grosse Lage / Grand Cru",
  "cls.first": "Erste Lage / Premier Cru",
  "cls.gg": "Grosses Gewächs (VDP)",
- "cls.1g": "Erstes Gewächs (VDP)"
+ "cls.1g": "Erstes Gewächs (VDP)",
+ "cls.gl": "VDP.Grosse Lage",
+ "cls.el": "VDP.Erste Lage",
+ "cls.ow": "VDP.Ortswein"
 }

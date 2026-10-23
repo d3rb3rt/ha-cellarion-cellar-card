@@ -799,6 +799,8 @@
         o._rack = o.where && o.where.rack ? o.where.rack : NO_LOC;
         o._type = o.type || '';
         o._cls = String(o.classification || '').split(',').map((x) => x.trim()).filter(Boolean);
+        // Predicates (Kabinett, Spätlese ...) before the vineyard rank
+        { const pr = (x) => (/kabinett|sp[aä]tlese|auslese|eiswein|qualit[aä]tswein|landwein/i.test(x) ? 0 : 1); o._cls = o._cls.map((x, i) => [x, i]).sort((a, b) => pr(a[0]) - pr(b[0]) || a[1] - b[1]).map((x) => x[0]); }
         o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
           (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type]].join(' '));
         return o;
@@ -1306,13 +1308,14 @@
       const c = ((b._cls || []).join(' ') + ' ' + (b.classification || '')).toLowerCase();
       const gg = /gro(ss|ß)es\s*gew[aä]chs|\bgg\b/.test(c);
       const g1 = !gg && /erstes\s*gew[aä]chs|\b1g\b/.test(c);
-      const top = !gg && !g1 && /gro(ss|ß)e?s?\s*lage|grand cru|cru class/.test(c);
-      const first = !gg && !g1 && !top && /erste\s*lage|1er cru|premier cru|first growth|\b1\.?\s*lage/.test(c);
-      if (!gg && !g1 && !top && !first) return g;
-      const title = t(gg ? 'cls.gg' : g1 ? 'cls.1g' : top ? 'cls.top' : 'cls.first');
+      const tier = gg || g1 ? 0 : /gro(ss|ß)e?s?\s*lage/.test(c) ? 1 : /erste\s*lage|\b1\.?\s*lage/.test(c) ? 2 : /ortswein/.test(c) ? 3 : 0;
+      if (!gg && !g1 && !tier) return g;
+      const title = t(gg ? 'cls.gg' : g1 ? 'cls.1g' : ['', 'cls.gl', 'cls.el', 'cls.ow'][tier]);
       if (gg || g1) return `<span class="tcol">${g}<span class="cbadge" role="img" aria-label="${esc(title)}" title="${esc(title)}">${gg ? 'GG' : '1G'}</span></span>`;
-      const star = 'M6 .9l1.5 3.2 3.4.4-2.5 2.3.7 3.4L6 8.5 2.9 10.2l.7-3.4L1.1 4.5l3.4-.4z';
-      return `<span class="tcol">${g}<svg class="cstar" viewBox="0 0 12 12" width="12" height="12" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title><path d="${star}" fill="${top ? '#e0b040' : 'none'}" stroke="#e0b040" stroke-width="1" stroke-linejoin="round"/></svg></span>`;
+      // Own small pyramid (top = Grosse Lage, middle = Erste Lage, bottom = Ortswein), the tier of the wine is lit
+      const P = ['M6 1L4.3 4h3.4z', 'M3.9 4.7h4.2l1.2 2.7H2.7z', 'M2.4 8.1h7.2l1.2 2.9H1.2z'];
+      return `<span class="tcol">${g}<svg class="cstar" viewBox="0 0 12 12" width="14" height="14" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>` +
+        P.map((d, i) => `<path d="${d}" fill="${i + 1 === tier ? '#e0b040' : 'none'}" stroke="#e0b040" stroke-opacity="${i + 1 === tier ? 1 : .45}" stroke-width=".8" stroke-linejoin="round"/>`).join('') + `</svg></span>`;
     }
     _sub(b) { return b.region || ''; }
     // Price of the bottles (EUR): one value or from-to; empty if none is known

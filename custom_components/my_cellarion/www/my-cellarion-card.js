@@ -250,6 +250,10 @@
     :host([data-wi]) .vrow .vyear { order: 2; margin-right: 0; }
     :host([data-wi]) .vrow .wcount.vcnt { order: 3; }
     :host([data-wi]) .vrow .chev.vcnt { order: 4; }
+    /* Hairline separators between location | price | vintage | count (the middle dot is already used inside the location) */
+    :host([data-wi]) .wrow .wright .wpm, :host([data-wi]) .wrow .wright .wvint, :host([data-wi]) .wrow .wright .wcount,
+    :host([data-wi]) .vrow .vprl, :host([data-wi]) .vrow .vyear, :host([data-wi]) .vrow .wcount.vcnt { border-left: 1px solid color-mix(in srgb, var(--cb-sub) 55%, transparent); padding-left: 10px; }
+    :host([data-wi]) .wrow .wright .wvint.multi { border-left: 0; padding-left: 0; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }

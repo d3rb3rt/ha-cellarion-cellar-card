@@ -1965,6 +1965,7 @@
       if (id === 'hdr') return 'c'; // the new header layout (c) is the standard; the earlier test variants a/b are no longer selectable
       const L = (this._local && this._local.flags) || {};
       const def = FLAGS.find((x) => x.id === id);
+      if (!def) return false; // flags that are not listed in FLAGS (the integration build has none) cannot be switched on, not even by the card config
       let v = L[id] !== undefined ? L[id] : (this._cfg.flags || {})[id];
       if (v === undefined && id === 'hdr') v = L.hdr2 ? 'a' : undefined; // earlier boolean flag hdr2
       if (def && def.opts) return def.opts.includes(v) ? v : (v === true ? def.opts[1] : 'off');

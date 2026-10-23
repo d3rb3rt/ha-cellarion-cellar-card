@@ -498,6 +498,7 @@
       /* Flag: price of a one-vintage wine sits left, next to the vintage, in the bottom line */
       :host([data-wi]) .wrow .wl2 > .wpw { display: none; }
       :host([data-wi]) .wrow .wright .wpm { display: inline; order: -2; color: var(--cb-sub); white-space: nowrap; }
+      :host([data-wi]) .wrow .wright .wpm::before { content: '·'; margin-right: 10px; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }

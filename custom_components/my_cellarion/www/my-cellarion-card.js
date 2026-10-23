@@ -261,6 +261,13 @@
     .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
     .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
     .wcount { font-weight: 600; min-width: 2.4em; text-align: right; white-space: nowrap; }
+    /* Wide screens, one vintage: the title gets the whole width, location / vintage / count sit on a second line */
+    @media (min-width: 601px) {
+      .wrow.single { flex-wrap: wrap; row-gap: 2px; }
+      .wrow.single .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1 1 100%; padding-left: 32px; box-sizing: border-box; }
+      .wrow.single .wright .wsep { display: none; }
+      .wrow.single .wright .wloc { max-width: none; }
+    }
     .sdots { gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
     .chev { color: var(--cb-sub); width: 14px; text-align: center; flex: none; }
     .vlist { padding: 0 0 6px 33px; }
@@ -1331,7 +1338,7 @@
         const e = g.entries[0];
         const win = this._winText(e);
         const ps = this._priceSpans(e.bottles);
-        return `<div class="wine"><button class="wrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
+        return `<div class="wine"><button class="wrow single" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
           this._typeDot(g.b) +
           `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
           `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">|</span>` +

@@ -214,7 +214,11 @@
     .az[hidden] { display: none; }
     .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
     .az button:disabled { opacity: .28; }
-    .list { scrollbar-width: thin; scrollbar-color: var(--cb-sub) transparent; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior-y: contain; }
+    .list::-webkit-scrollbar { width: 3px; }
+    .list::-webkit-scrollbar-track { background: transparent; }
+    .list::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--cb-sub) 55%, transparent); border-radius: 2px; }
+    @supports not selector(::-webkit-scrollbar) { .list { scrollbar-width: thin; scrollbar-color: var(--cb-sub) transparent; } }
+    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior-y: contain; }
     .tdot {
       display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none;
       box-shadow: 0 0 0 1.5px var(--cb-ring); background: var(--cb-ring);

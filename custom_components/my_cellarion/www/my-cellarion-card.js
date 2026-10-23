@@ -226,6 +226,7 @@
     .wsl { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
     .wsep { color: var(--cb-sub); flex: none; }
     .wl1, .wl2 { display: contents; }
+    .wpm { display: none; }
     :host([data-wi]) .wrow .wit.e::after { display: none; }
     /* Line 1 flows as text: a long wine name wraps by itself and the producer follows its last fragment */
     :host([data-wi]) .wrow .wl1 > .wit { display: inline; }
@@ -494,6 +495,9 @@
       :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; }
       :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
       :host([data-wi]) .wit.d::after { margin-left: 6px; }
+      /* Flag: price of a one-vintage wine sits left, next to the vintage, in the bottom line */
+      :host([data-wi]) .wrow .wl2 > .wpw { display: none; }
+      :host([data-wi]) .wrow .wright .wpm { display: inline; order: -2; color: var(--cb-sub); white-space: nowrap; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }
@@ -660,19 +664,21 @@
       this._is = new Set(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']);
     }
     _infoDefs() {
-      const std = [['cls', t('filter.cls')], ['region', t('filter.region')], ['price', t('filter.price')], ['grape', t('filter.grape')]]
+      const std = [['cls', t('filter.cls')], ['region', t('filter.region')], ['grape', t('filter.grape')]]
         .map(([id, label]) => ({ id, label }));
       const pers = ((this._data && this._data.fields) || []).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       const all = std.concat(pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
-      return all.slice().sort((a, b) => pos(a) - pos(b));
+      // The price is special (bottle data, not wine data): always last, not sortable
+      return all.slice().sort((a, b) => pos(a) - pos(b)).concat([{ id: 'price', label: t('filter.price'), fixed: true }]);
     }
+    _priceOnly(pr) { const m = String(pr || '').match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
     _setInfo(order, show) {
       this._local.info = { order, show };
       this._saveState(); this._applyEff();
     }
     _imove(id, dir) {
-      const ids = this._infoDefs().map((d) => d.id);
+      const ids = this._infoDefs().filter((d) => !d.fixed).map((d) => d.id);
       const i = ids.indexOf(id), j = i + dir;
       if (i < 0 || j < 0 || j >= ids.length) return;
       ids.splice(j, 0, ids.splice(i, 1)[0]);
@@ -1375,7 +1381,7 @@
       return w.map((x, k) => (k === i ? `<b class="wsl">${esc(x.charAt(0))}</b>${esc(x.slice(1))}` : esc(x))).join(' ');
     }
     // Wine name | producer in one line
-    _title(b, pr) {
+    _title(b, pr, single) {
       pr = pr || '';
       const seg = (txt) => `<span class="wsep">·</span><span class="wreg">${txt}</span>`;
       const reg = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => {
@@ -1389,7 +1395,7 @@
       if (this._flag('webInfo')) {
         // Every item is one unit with its own trailing dot, so a line break falls between the items (no dot at the start of a line)
         const txt = (d) => {
-          if (d.id === 'price') { const m = pr.match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
+          if (d.id === 'price') return this._priceOnly(pr);
           if (d.id === 'cls') return b._cls && b._cls.length ? this._hl(b._cls.join(', ')) : '';
           if (d.id === 'region') return b.region ? this._hl(b.region) : '';
           if (d.id === 'grape') return b.grapes && b.grapes.length ? esc(b.grapes.join(', ')) : '';
@@ -1399,7 +1405,7 @@
         const swap = this._sort === 'producer' && b.producer;
         const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
           : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
-        const infos = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
+        const infos = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => [d.id === 'price' && single ? 'wreg wpw' : 'wreg', txt(d)]).filter((x) => x[1]);
         const all = head.concat(infos);
         const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
         return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
@@ -1422,9 +1428,10 @@
         const ps = this._priceSpans(e.bottles);
         return `<div class="wine"><button class="wrow single" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
           this._typeDot(g.b) +
-          `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
+          `<span class="wmain">${this._title(g.b, ps.d, true)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
           `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">·</span>` +
           `<span class="wvint yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
+          (this._flag('webInfo') && this._is.has('price') && this._priceOnly(ps.d) ? `<span class="wpm">${this._priceOnly(ps.d)}</span>` : '') +
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
       }
       const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
@@ -1664,8 +1671,8 @@
         this._infoDefs().map((d, i, arr) => `<div class="frow${this._is.has(d.id) ? '' : ' off'}">` +
           `<button class="btn round" data-act="ivis" data-id="${esc(d.id)}" aria-pressed="${this._is.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._is.has(d.id) ? '●' : '○'}</button>` +
           `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
-          `<button class="btn round" data-act="iup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
-          `<button class="btn round" data-act="idn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
+          (d.fixed ? '' : `<button class="btn round" data-act="iup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
+          `<button class="btn round" data-act="idn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 2 ? ' disabled' : ''}>▼</button>`) + `</div>`).join('') +
         `</div><div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
@@ -2169,7 +2176,7 @@
         this._delField();
       } else if (act === 'ivis') {
         const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
-        this._setInfo(this._infoDefs().map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
+        this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
       } else if (act === 'iup' || act === 'idn') {
         this._imove(t.dataset.id, act === 'iup' ? -1 : 1);
       } else if (act === 'fup' || act === 'fdn') {

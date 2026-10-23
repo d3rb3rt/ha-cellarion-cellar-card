@@ -1313,8 +1313,8 @@
     _azWidth() {
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
-      const top = this.shadowRoot.querySelector('.top');
-      const set = (v) => { list.style.maxWidth = v; if (top) top.style.maxWidth = v; };
+      const others = this.shadowRoot.querySelectorAll('.top, .fwrap, .fpills, .sumline');
+      const set = (v) => { list.style.maxWidth = v; others.forEach((e) => { e.style.maxWidth = v; }); };
       if (bar.hidden) { set(''); return; }
       const bs = Array.from(bar.children);
       if (!bs.length) { set(''); return; }

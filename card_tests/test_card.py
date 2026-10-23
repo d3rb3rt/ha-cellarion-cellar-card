@@ -172,3 +172,13 @@ def test_feature_flags_cannot_be_switched_on_in_the_integration(card):
     page = card()
     page.evaluate("() => { c._cfg.flags = { sinv: true }; c._local.flags = { sinv: true }; c._renderAll(); }")
     assert page.evaluate("c.hasAttribute('data-sinv')") is False
+
+
+def test_appearance_setting_per_device(card):
+    page = card()
+    assert page.evaluate("c.hasAttribute('data-mode')") is False  # Auto follows the HA theme
+    page.evaluate("() => { c._set = true; c._renderDlg(); }")
+    click(page, "[data-act=mode][data-v=light]")
+    assert page.evaluate("c.getAttribute('data-mode')") == "light"
+    click(page, "[data-act=mode][data-v=auto]")
+    assert page.evaluate("c.hasAttribute('data-mode')") is False

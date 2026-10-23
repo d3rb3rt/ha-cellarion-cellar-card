@@ -245,13 +245,6 @@
  "price.pmax": "über 100 €",
  "stat.vt.price": "Preis",
  "stat.nBottles": "{n} Fl.",
- "flag.clsIcon": "Lagen-Symbol unter dem Glas",
- "flag.clsIconSub": "Stern für Grosse Lage / GG / Grand Cru, Umriss-Stern für Erste Lage / Premier Cru.",
- "cls.top": "Grosse Lage / Grand Cru",
- "cls.first": "Erste Lage / Premier Cru",
- "cls.gg": "Grosses Gewächs (VDP)",
- "cls.1g": "Erstes Gewächs (VDP)",
- "cls.gl": "VDP.Grosse Lage",
- "cls.el": "VDP.Erste Lage",
- "cls.ow": "VDP.Ortswein"
+ "set.info": "Infos in der Liste",
+ "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)"
 }

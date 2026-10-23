@@ -245,13 +245,6 @@
  "price.pmax": "over €100",
  "stat.vt.price": "Price",
  "stat.nBottles": "{n} btl.",
- "flag.clsIcon": "Vineyard-rank symbol below the glass",
- "flag.clsIconSub": "Filled star for Grosse Lage / GG / Grand Cru, outline star for Erste Lage / Premier Cru.",
- "cls.top": "Grosse Lage / Grand Cru",
- "cls.first": "Erste Lage / Premier Cru",
- "cls.gg": "Grosses Gewächs (VDP)",
- "cls.1g": "Erstes Gewächs (VDP)",
- "cls.gl": "VDP.Grosse Lage",
- "cls.el": "VDP.Erste Lage",
- "cls.ow": "VDP.Ortswein"
+ "set.info": "Info in the list",
+ "set.infoSub": "What follows the wine name and in which order (this device only)"
 }

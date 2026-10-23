@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'clsIcon' }] : [];
+  const FLAGS = [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -241,9 +241,6 @@
     .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .fpill .x { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; opacity: .65; font-size: 11px; }
     mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
-    .tcol { flex: none; width: 22px; display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
-    .cstar { display: block; }
-    .cbadge { box-sizing: border-box; font: 700 7.5px/1 var(--cb-font, inherit); letter-spacing: .02em; color: #e0b040; border: 1px solid #e0b040; border-radius: 3px; padding: 1px 1px; white-space: nowrap; }
     .tsp { flex: none; display: inline-block; vertical-align: middle; width: 22px; height: 22px; }
     .azanc { display: block; height: 0; }
     .az button.cur { background: var(--cb-on); color: var(--cb-on-text); }
@@ -630,6 +627,30 @@
       const F = L.filters || S;
       this._fo = Array.isArray(F.filterOrder) ? F.filterOrder.slice() : [];
       this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
+      // Info behind the wine name in the list: order + what is shown (this device only)
+      const I = L.info || {};
+      this._io = Array.isArray(I.order) ? I.order.slice() : [];
+      this._is = new Set(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']);
+    }
+    _infoDefs() {
+      const std = [['cls', t('filter.cls')], ['region', t('filter.region')], ['price', t('filter.price')], ['grape', t('filter.grape')]]
+        .map(([id, label]) => ({ id, label }));
+      const pers = ((this._data && this._data.fields) || []).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
+      const all = std.concat(pers);
+      const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
+      return all.slice().sort((a, b) => pos(a) - pos(b));
+    }
+    _setInfo(order, show) {
+      this._local.info = { order, show };
+      this._saveState(); this._applyEff();
+    }
+    _imove(id, dir) {
+      const ids = this._infoDefs().map((d) => d.id);
+      const i = ids.indexOf(id), j = i + dir;
+      if (i < 0 || j < 0 || j >= ids.length) return;
+      ids.splice(j, 0, ids.splice(i, 1)[0]);
+      this._setInfo(ids, Array.from(this._is));
+      this._renderSet(); this._renderAll();
     }
     _setLang(v) {
       if (this._local.language !== undefined) { this._local.language = v; this._saveState(); }
@@ -1303,19 +1324,7 @@
       return out + (open ? '</mark>' : '');
     }
     _typeDot(b) {
-      const g = this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
-      if (!this._flag('clsIcon')) return g;
-      const c = ((b._cls || []).join(' ') + ' ' + (b.classification || '')).toLowerCase();
-      const gg = /gro(ss|ß)es\s*gew[aä]chs|\bgg\b/.test(c);
-      const g1 = !gg && /erstes\s*gew[aä]chs|\b1g\b/.test(c);
-      const tier = gg || g1 ? 0 : /gro(ss|ß)e?s?\s*lage/.test(c) ? 1 : /erste\s*lage|\b1\.?\s*lage/.test(c) ? 2 : /ortswein/.test(c) ? 3 : 0;
-      if (!gg && !g1 && !tier) return g;
-      const title = t(gg ? 'cls.gg' : g1 ? 'cls.1g' : ['', 'cls.gl', 'cls.el', 'cls.ow'][tier]);
-      if (gg || g1) return `<span class="tcol">${g}<span class="cbadge" role="img" aria-label="${esc(title)}" title="${esc(title)}">${gg ? 'GG' : '1G'}</span></span>`;
-      // Own small pyramid (top = Grosse Lage, middle = Erste Lage, bottom = Ortswein), the tier of the wine is lit
-      const P = ['M6 1L4.3 4h3.4z', 'M3.9 4.7h4.2l1.2 2.7H2.7z', 'M2.4 8.1h7.2l1.2 2.9H1.2z'];
-      return `<span class="tcol">${g}<svg class="cstar" viewBox="0 0 12 12" width="14" height="14" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>` +
-        P.map((d, i) => `<path d="${d}" fill="${i + 1 === tier ? '#e0b040' : 'none'}" stroke="#e0b040" stroke-opacity="${i + 1 === tier ? 1 : .45}" stroke-width=".8" stroke-linejoin="round"/>`).join('') + `</svg></span>`;
+      return this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
     }
     _sub(b) { return b.region || ''; }
     // Price of the bottles (EUR): one value or from-to; empty if none is known
@@ -1340,8 +1349,15 @@
     // Wine name | producer in one line
     _title(b, pr) {
       pr = pr || '';
-      const reg = (b._cls && b._cls.length ? `<span class="wsep">|</span><span class="wreg">${this._hl(b._cls.join(', '))}</span>` : '') +
-        (b.region ? `<span class="wsep">|</span><span class="wreg">${this._hl(b.region)}</span>` : '') + pr;
+      const seg = (txt) => `<span class="wsep">|</span><span class="wreg">${txt}</span>`;
+      const reg = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => {
+        if (d.id === 'price') return pr;
+        if (d.id === 'cls') return b._cls && b._cls.length ? seg(this._hl(b._cls.join(', '))) : '';
+        if (d.id === 'region') return b.region ? seg(this._hl(b.region)) : '';
+        if (d.id === 'grape') return b.grapes && b.grapes.length ? seg(esc(b.grapes.join(', '))) : '';
+        const v = b.p && b.p[d.label];
+        return v ? seg(esc([].concat(v).map((x) => this._fmtVal(x)).join(', '))) : '';
+      }).join('');
       if (this._sort === 'producer' && b.producer) {
         return `<span class="wtitle swap"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">|</span><span class="wname">${this._hl(b.name)}</span>${reg}</span>`;
       }
@@ -1597,6 +1613,13 @@
           (d.personal && !this._integ() ? `<button class="btn round" data-act="fdelask" data-id="${esc(d.id)}" aria-label="${esc(t('set.deleteForever', { label: d.label }))}" title="${esc(t('set.deleteTitle'))}">🗑</button>` : '') +
           `<button class="btn round" data-act="fup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
           `<button class="btn round" data-act="fdn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
+        `</div>` +
+        `<div class="sblk">` + hd(t('set.info'), t('set.infoSub'), this._scopeSw(null, 'device')) +
+        this._infoDefs().map((d, i, arr) => `<div class="frow${this._is.has(d.id) ? '' : ' off'}">` +
+          `<button class="btn round" data-act="ivis" data-id="${esc(d.id)}" aria-pressed="${this._is.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._is.has(d.id) ? '●' : '○'}</button>` +
+          `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
+          `<button class="btn round" data-act="iup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
+          `<button class="btn round" data-act="idn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
         `</div><div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
@@ -2098,6 +2121,11 @@
         this._fdel = null; this._renderDlg();
       } else if (act === 'fdelyes') {
         this._delField();
+      } else if (act === 'ivis') {
+        const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
+        this._setInfo(this._infoDefs().map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
+      } else if (act === 'iup' || act === 'idn') {
+        this._imove(t.dataset.id, act === 'iup' ? -1 : 1);
       } else if (act === 'fup' || act === 'fdn') {
         this._fmove(t.dataset.id, act === 'fup' ? -1 : 1);
       } else if (act === 'rack') {

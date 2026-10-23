@@ -1179,6 +1179,7 @@
       const hadFocus = input && this.shadowRoot.activeElement === input;
       const pos = hadFocus ? input.selectionStart : 0;
       this._head.innerHTML = html;
+      this._azWidth();
       if (hadFocus) {
         const ni = this._head.querySelector('input[type=search]');
         if (ni) { ni.focus(); try { ni.setSelectionRange(pos, pos); } catch (e) { /* egal */ } }

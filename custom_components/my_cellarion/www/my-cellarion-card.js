@@ -458,9 +458,12 @@
       :host([data-hdr2]) .top .title { display: none; }
       :host([data-hdr2]) .top > * { margin-left: 0; }
       /* filter chips in equal-width cells, like on the phone (6 per row) */
-      :host([data-hdr2]) .fwrap .more.open { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+      :host([data-hdr2]) .fwrap .more.open { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
       :host([data-hdr2]) .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
-      :host([data-hdr2]) .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
+      :host([data-hdr2]) .fwrap .more.open > .fend { display: flex; gap: 8px; min-width: 0; }
+      /* same height and gap as the controls on the right (two rows of the same size), and outlined so filters and tools are told apart */
+      :host([data-hdr2]) .fwrap .more.open > .sel.fs, :host([data-hdr2]) .fwrap .more.open > .fend > .sel.fs { min-height: var(--cb-chip-h, 40px); height: var(--cb-chip-h, 40px); font-size: var(--cb-chip-font, 14px); border-radius: 20px; background: transparent; }
+      :host([data-hdr2]) .head > .top { border-left: 1px solid var(--cb-line); padding-left: 14px; }
       :host([data-hdr2]) .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
       :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }

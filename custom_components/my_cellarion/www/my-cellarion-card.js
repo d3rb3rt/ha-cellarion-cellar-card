@@ -227,6 +227,10 @@
     .wsep { color: var(--cb-sub); flex: none; }
     .wl1, .wl2 { display: contents; }
     :host([data-wi]) .wrow .wit.e::after { display: none; }
+    /* Line 1 flows as text: a long wine name wraps by itself and the producer follows its last fragment */
+    :host([data-wi]) .wrow .wl1 > .wit { display: inline; }
+    :host([data-wi]) .wrow .wl1 > .wprod { display: inline-block; max-width: 100%; vertical-align: baseline; }
+    :host([data-wi]) .wrow .wl1 > .wit.d::after { margin-right: 6px; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -277,7 +281,7 @@
       :host([data-wi]) .wrow { flex-wrap: wrap; row-gap: 2px; }
       :host([data-wi]) .wrow .wmain, :host([data-wi]) .wrow .wtitle { display: contents; }
       :host([data-wi]) .wrow .winfo { display: none; }
-      :host([data-wi]) .wrow .wl1 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 calc(100% - 32px); min-width: 0; }
+      :host([data-wi]) .wrow .wl1 { display: block; flex: 1 1 calc(100% - 32px); min-width: 0; }
       :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
       :host([data-wi]) .wrow .wl1, :host([data-wi]) .wrow .wl2 { align-items: baseline; }
       :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
@@ -481,7 +485,8 @@
       .wright .chev { margin-left: 0; }
       .wrow .wtitle .wl1 > :first-child { flex: 0 0 100%; }
       :host([data-wi]) .wrow .wtitle { display: block; }
-      :host([data-wi]) .wrow .wtitle .wl1, :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; }
+      :host([data-wi]) .wrow .wtitle .wl1 { display: block; }
+      :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; }
       :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
       :host([data-wi]) .wit.d::after { margin-left: 6px; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }

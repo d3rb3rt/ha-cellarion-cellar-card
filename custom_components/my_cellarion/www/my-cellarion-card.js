@@ -267,6 +267,7 @@
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wsub { color: var(--cb-sub); font-size: .86em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wright { display: contents; }
+    @media (min-width: 601px) { .top .fbtn { display: none; } } /* wide: the filters fold and unfold by scrolling, no button needed */
     .fbtn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--cb-chip-h, 40px); padding: 0; position: relative; }
     .fwrap:not(.fopen) { display: none; }
     .fcnt { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 8px;
@@ -591,7 +592,7 @@
       const max = list.scrollHeight - list.clientHeight;
       if ((e.deltaY < 0 && list.scrollTop <= 0) || (e.deltaY > 0 && list.scrollTop >= max - 1)) return;
       list.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-      if (this._more && list.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
+      if (e.deltaY > 0 && this._more && list.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
       e.preventDefault();
     }
 
@@ -1007,13 +1008,25 @@
         if (this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
       };
       this._listEl.addEventListener('scroll', () => {
+        // Scroll direction: upward travel is summed up (small steps of a touchpad count too)
+        const st = this._listEl.scrollTop, settling = Date.now() - (this._hdrAt || 0) < 250;
+        if (settling || st > (this._lastTop || 0)) this._upAcc = 0; else this._upAcc = (this._upAcc || 0) + ((this._lastTop || 0) - st);
+        this._lastTop = st;
         if (!this._azRaf) this._azRaf = requestAnimationFrame(() => { this._azRaf = 0; this._azUpdate(); });
         // collapsed by hand: once the list was left, the rule "at the top -> expand" applies again
         if (this._manual && !this._more && this._listEl.scrollTop > 40) { this._manual = false; this._autoFolded = true; }
         if (this._autoFolded && this._listEl.scrollTop <= 2) { this._autoFolded = false; this._more = true; this._renderHead(); }
+        // Scrolling up anywhere in the list brings the filters back (about 24 px of travel, so small jitter does not trigger it)
+        else if (this._autoFolded && !this._more && this._upAcc >= 24) { this._autoFolded = false; this._more = true; this._upAcc = 0; this._renderHead(); }
       }, { passive: true });
-      this._listEl.addEventListener('touchmove', fold, { passive: true });
-      this._listEl.addEventListener('wheel', fold, { passive: true });
+      // Only moving down the list folds the filters (finger up / wheel down); moving up unfolds them again (see the scroll listener)
+      this._listEl.addEventListener('touchstart', (e) => { this._ty = e.touches[0].clientY; }, { passive: true });
+      this._listEl.addEventListener('touchmove', (e) => {
+        const y = e.touches[0].clientY;
+        if (this._ty !== undefined && y < this._ty - 4) fold();
+        this._ty = y;
+      }, { passive: true });
+      this._listEl.addEventListener('wheel', (e) => { if (e.deltaY > 0) fold(); }, { passive: true });
       // Phone: pulling down at the top of the list = reload (with confirmation)
       const mob = () => window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
       let y0 = null, pull = 0;
@@ -1113,6 +1126,7 @@
     }
 
     _renderHead() {
+      this._hdrAt = Date.now(); // layout changes of the header must not count as scrolling
       if (!this._head) return;
       const d = this._data, f = this._f, c = this._cfg;
       this._ddItems = {};

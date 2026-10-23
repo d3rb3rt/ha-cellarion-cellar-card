@@ -237,6 +237,19 @@
     :host([data-wi]) .wrow .wl2 > .wit { position: relative; }
     :host([data-wi]) .wrow .wl2 > .wit::before { content: '·'; position: absolute; left: -9px; top: 0; color: var(--cb-sub); }
     :host([data-wi]) .wrow .wl2 > .wit.d::after { display: none; }
+    /* Flag, all widths: right side of a row = location, price, vintage, count, arrow (price is vintage info; the same for expanded vintages) */
+    :host([data-wi]) .wrow .wright .wpm { display: inline; color: var(--cb-sub); white-space: nowrap; }
+    :host([data-wi]) .wrow .wright .wloc { order: 0; }
+    :host([data-wi]) .wrow .wright .wpm { order: 1; }
+    :host([data-wi]) .wrow .wright .wvint { order: 2; }
+    :host([data-wi]) .wrow .wright .wcount { order: 3; }
+    :host([data-wi]) .wrow .wright .chev { order: 4; }
+    :host([data-wi]) .wrow .wright .wvint.multi { text-align: right; }
+    :host([data-wi]) .vrow .vmid { order: 0; flex: 1 1 auto; margin-right: 10px; }
+    :host([data-wi]) .vrow .vprl { order: 1; margin-right: 10px; }
+    :host([data-wi]) .vrow .vyear { order: 2; margin-right: 0; }
+    :host([data-wi]) .vrow .wcount.vcnt { order: 3; }
+    :host([data-wi]) .vrow .chev.vcnt { order: 4; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -301,12 +314,6 @@
       :host([data-wi]) .vrow .locs { justify-content: flex-end; color: var(--cb-sub); font-size: .9em; }
       :host([data-wi]) .vrow .vstat, :host([data-wi]) .vrow .vwin, :host([data-wi]) .vrow .vpr, :host([data-wi]) .vrow .loc b { display: none; }
       :host([data-wi]) .vrow .vcnt, :host([data-wi]) .vrow .vprl { display: inline; }
-      /* wide: location, vintage, count like in a one-vintage row; price stays left, without dot */
-      :host([data-wi]) .vrow .vprl::before { content: none; }
-      :host([data-wi]) .vrow .vprl { order: -1; margin-right: 10px; }
-      :host([data-wi]) .vrow .vmid { order: 0; flex: 1 1 auto; margin-right: 10px; }
-      :host([data-wi]) .vrow .vyear { order: 1; margin-right: 0; }
-      :host([data-wi]) .vrow .vcnt { order: 2; }
       :host([data-wi]) .wrow .wright { min-width: 0; }
       :host([data-wi]) .wrow .wright .wvint { max-width: none; }
     }
@@ -509,11 +516,6 @@
       :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; }
       :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
       :host([data-wi]) .wit.d::after { margin-left: 6px; }
-      /* Flag: price of a one-vintage wine sits left, next to the vintage, in the bottom line */
-      :host([data-wi]) .wrow .wl2 > .wpw { display: none; }
-      :host([data-wi]) .wrow .wright .wpm { display: inline; order: -2; color: var(--cb-sub); white-space: nowrap; }
-      :host([data-wi]) .vrow .vprl::before { content: '·'; margin: 0 8px 0 2px; }
-      :host([data-wi]) .wrow .wright .wpm::before { content: '·'; margin-right: 10px; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }
@@ -1421,7 +1423,7 @@
         const swap = this._sort === 'producer' && b.producer;
         const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
           : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
-        const infos = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => [d.id === 'price' && single ? 'wreg wpw' : 'wreg', txt(d)]).filter((x) => x[1]);
+        const infos = this._infoDefs().filter((d) => this._is.has(d.id) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
         const all = head.concat(infos);
         const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
         return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;

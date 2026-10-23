@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'jgFirst' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -255,6 +255,15 @@
     .vrow .vyear { order: 2; margin-right: 0; min-width: 0; flex: 0 0 auto; }
     .vrow .wcount.vcnt { order: 3; }
     .vrow .chev.vcnt { order: 4; }
+    /* Flag jgFirst: vintage, price, location, count (phone: vintage and price left, location and count right) */
+    :host([data-jf]) .wrow .wright .wvint { order: 0; }
+    :host([data-jf]) .wrow .wright .wpm { order: 1; }
+    :host([data-jf]) .wrow .wright .wloc { order: 2; }
+    :host([data-jf]) .wrow .wright .wpm::before, :host([data-jf]) .vrow .vprl::before { content: none; }
+    :host([data-jf]) .wrow .wright .wloc::before { content: '·'; color: var(--cb-sub); }
+    :host([data-jf]) .vrow .vyear { order: 0; }
+    :host([data-jf]) .vrow .vprl { order: 1; }
+    :host([data-jf]) .vrow .vmid { order: 2; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -483,6 +492,11 @@
       .wrow .wright .wpm::before, .vrow .vprl::before { content: none; }
       .vrow .vmid { align-items: flex-start; text-align: left; }
       .vrow .locs { justify-content: flex-start; }
+      :host([data-jf]) .wrow .wright .wloc { justify-content: flex-end; text-align: right; }
+      :host([data-jf]) .wrow .wright .wloc::before { content: none; }
+      :host([data-jf]) .wrow .wright .wvint.multi { text-align: left; }
+      :host([data-jf]) .vrow .vmid { align-items: flex-end; text-align: right; }
+      :host([data-jf]) .vrow .locs { justify-content: flex-end; }
       .wright .chev { margin-left: 0; }
       .yv { color: var(--yc); font-weight: 700; }
       .fwrap .more.open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
@@ -1024,6 +1038,7 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
+      this.toggleAttribute('data-jf', this._flag('jgFirst'));
       this._renderHead();
       this._renderList();
     }

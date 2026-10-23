@@ -246,5 +246,7 @@
  "stat.vt.price": "Preis",
  "stat.nBottles": "{n} Fl.",
  "set.info": "Infos in der Liste",
- "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)"
+ "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)",
+ "flag.jgFirst": "Zeile rechts: Jahrgang zuerst",
+ "flag.jgFirstSub": "Reihenfolge Jahrgang, Preis, Lagerort, Flaschen. Auf dem Handy stehen Jahrgang und Preis links."
 }

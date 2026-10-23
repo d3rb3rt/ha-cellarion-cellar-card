@@ -253,11 +253,15 @@
     .wprice { color: var(--cb-sub); font-size: .94em; white-space: nowrap; flex: none; }
     .vpr { align-self: center; margin-right: 8px; }
     .wvint { font-weight: 700; color: inherit; white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
+    /* Vintage in the color of its maturity instead of a status dot */
+    .yv { color: var(--yc); font-weight: 700; }
+    .wvint.multi { color: var(--cb-sub); font-weight: 400; }
+    .sdots, .vstat .sdot { display: none; }
     .wloc { color: var(--cb-sub); font-size: .9em; justify-content: flex-end; text-align: right; max-width: 30%; }
     .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
     .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
     .wcount { font-weight: 600; min-width: 2.4em; text-align: right; white-space: nowrap; }
-    .sdots { display: inline-flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
+    .sdots { gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
     .chev { color: var(--cb-sub); width: 14px; text-align: center; flex: none; }
     .vlist { padding: 0 0 6px 33px; }
     .vrow {
@@ -1329,7 +1333,7 @@
     }
 
     _flatRow(e) {
-      return `<div class="frow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(e.b)}<span class="fyear">${esc(e.vintage)}</span>` +
+      return `<div class="frow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(e.b)}<span class="fyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
         `<span class="fmid">${this._title(e.b, this._priceSpans(e.bottles).d)}` +
         `<span class="locs">${this._locsHtml(e.bottles)}</span></span>` +
         `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span></div>`;

@@ -1782,7 +1782,8 @@
           `<div class="d2yrs"><span>${df}</span>${pf && pu ? `<span>${esc(t('win.peak', { from: pf, to: pu }))}</span>` : ''}<span>${dt}</span></div>`;
       }
       const st = sel._status;
-      const maturity = `<div class="dsec">${esc(t('det.drinkWindow'))}</div><div>${this._sdot(st)} ${esc(STATUS_LABEL[st])}</div>${bar}`;
+      // The bar shows the status by its color; without a bar the status text stays as a fallback
+      const maturity = bar || `<div>${this._sdot(st)} ${esc(STATUS_LABEL[st])}</div>`;
       const pr = info && info.profile;
       const lab = (v) => { const key = 'prof.' + v; const x = t(key); return x === key ? String(v) : x; };
       let about = '';
@@ -1790,10 +1791,8 @@
         const chips = ['body', 'acidity', 'sweetness', 'tannin'].filter((k) => pr[k]).map((k) => `<span><em>${esc(t('prof.' + k))}</em>${esc(lab(pr[k]))}</span>`).join('');
         const fl = (pr.flavors || []).map((x) => `<span>${esc(x)}</span>`).join('');
         const fp = (pr.foodPairings || []).map((x) => `<span>${esc(x)}</span>`).join('');
-        about = `<div class="dsec">${esc(t(pr.verified ? 'det.registryVerified' : 'det.registry'))}</div>` +
-          (chips ? `<div class="d2chips">${chips}</div>` : '') +
-          (fl ? `<div class="dsec">${esc(t('det.flavors'))}</div><div class="d2chips">${fl}</div>` : '') +
-          (fp ? `<div class="dsec">${esc(t('det.food'))}</div><div class="d2chips">${fp}</div>` : '') +
+        const all = chips + fl + fp;
+        about = (all ? `<div class="d2chips">${all}</div>` : '') +
           (pr.description ? `<div class="d2txt" style="margin-top:8px">${esc(pr.description)}</div>` : '');
       }
       // My data at vintage level: same for all bottles -> value, otherwise range and hint

@@ -1313,11 +1313,13 @@
     _azWidth() {
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
-      if (bar.hidden) { list.style.maxWidth = ''; return; }
+      const top = this.shadowRoot.querySelector('.top');
+      const set = (v) => { list.style.maxWidth = v; if (top) top.style.maxWidth = v; };
+      if (bar.hidden) { set(''); return; }
       const bs = Array.from(bar.children);
-      if (!bs.length) { list.style.maxWidth = ''; return; }
+      if (!bs.length) { set(''); return; }
       const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;
-      list.style.maxWidth = w > 0 ? w + 'px' : '';
+      set(w > 0 ? w + 'px' : '');
     }
 
     // Highlight search terms in the text (ignoring case and accents, like the search itself)

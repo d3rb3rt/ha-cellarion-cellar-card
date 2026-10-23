@@ -545,6 +545,8 @@
       window.addEventListener('resize', this._onResize);
       this._onPop = this._onPop || (() => this._hpop());
       window.addEventListener('popstate', this._onPop);
+      this._onWheel = this._onWheel || ((e) => this._wheelAnywhere(e));
+      window.addEventListener('wheel', this._onWheel, { passive: false });
       if (this._hass && this._cfg) {
         this._startTimer();
         if (this._built) { this._fit(); this._openSync(); }
@@ -555,6 +557,29 @@
       document.removeEventListener('visibilitychange', this._onVis);
       window.removeEventListener('resize', this._onResize);
       window.removeEventListener('popstate', this._onPop);
+      window.removeEventListener('wheel', this._onWheel);
+    }
+
+    // Mouse wheel / touchpad anywhere on the dashboard scrolls the list (not only when hovering over it).
+    _wheelAnywhere(e) {
+      const list = this._listEl;
+      if (!list || e.defaultPrevented || e.ctrlKey || e.deltaY === 0) return;
+      if (this._dlg && !this._dlg.hidden) return;
+      if (!list.getClientRects().length) return;
+      const path = e.composedPath();
+      if (path.includes(list)) return;
+      const isAnc = (el) => { for (let n = this; n; n = n.getRootNode && n.getRootNode().host) { if (el === n || el.contains(n)) return true; } return false; };
+      for (const el of path) {
+        if (!(el instanceof Element) || isAnc(el)) continue;
+        const cs = getComputedStyle(el);
+        if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) return;
+        if (el.matches && el.matches('input,textarea,select,ha-dialog,ha-more-info-dialog')) return;
+      }
+      const max = list.scrollHeight - list.clientHeight;
+      if ((e.deltaY < 0 && list.scrollTop <= 0) || (e.deltaY > 0 && list.scrollTop >= max - 1)) return;
+      list.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      if (this._more && list.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
+      e.preventDefault();
     }
 
     // Fetch fresh data from Cellarion when the page opens (and when the tab becomes visible again), at most once a minute.

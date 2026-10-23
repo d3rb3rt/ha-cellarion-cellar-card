@@ -109,6 +109,11 @@
   const CSS = `
     :host { display: block; }
     ha-card { position: relative; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; overflow: hidden; }
+    /* Appearance per device: Auto follows the HA theme, light/dark fix the card colours */
+    :host([data-mode="dark"]) ha-card { background: #1c1c1c; color: #e6e6e6; }
+    :host([data-mode="light"]) ha-card { background: #ffffff; color: #1f1f1f; }
+    :host([data-mode="dark"]) .wrap { --cb-text: #e6e6e6; --cb-sub: #a0a0a0; --cb-line: rgba(255,255,255,.14); --cb-chip: rgba(255,255,255,.14); --cb-seg: rgba(255,255,255,.14); --cb-ring: rgba(255,255,255,.45); --cb-card: #1c1c1c; --cb-on: #03a9f4; --cb-on-text: #fff; }
+    :host([data-mode="light"]) .wrap { --cb-text: #1f1f1f; --cb-sub: #666666; --cb-line: rgba(0,0,0,.14); --cb-chip: rgba(0,0,0,.08); --cb-seg: rgba(0,0,0,.08); --cb-ring: rgba(0,0,0,.4); --cb-card: #ffffff; --cb-on: #0288d1; --cb-on-text: #fff; --w-white: #b3a23a; --w-sparkling: #a38f2c; }
     ha-card.flush { background: none; box-shadow: none; border: 0; border-radius: 0; }
     .wrap {
       /* Colours: all overridable via --cellarion-* (e.g. in the HA theme), otherwise derived from the standard variables of the active theme */
@@ -711,6 +716,8 @@
       v = Number(v);
       return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
     }
+    _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
+    _applyMode() { const m = this._mode(); if (m === 'auto') this.removeAttribute('data-mode'); else this.setAttribute('data-mode', m); }
     _applyScale() {
       const w = this.shadowRoot && this.shadowRoot.querySelector('.wrap');
       if (w) w.style.zoom = this._scale === 1 ? '' : String(this._scale);
@@ -1173,6 +1180,7 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
+      this._applyMode();
       this.toggleAttribute('data-sinv', this._flag('sinv'));
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
@@ -1789,6 +1797,8 @@
           }).join('') + `</div>` : '') +
         `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
         `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
+        `<div class="sblk">` + hd(t('set.mode'), t('set.modeSub'), this._scopeSw(null, 'device')) +
+        `<div class="scalechips">` + [['auto', t('set.modeAuto')], ['light', t('set.modeLight')], ['dark', t('set.modeDark')]].map(([v, n]) => `<button class="chip${v === this._mode() ? ' on' : ''}" data-act="mode" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
         FLAGS.map((f) => `<div class="sblk">` + hd(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), this._scopeSw(null, 'device')) +
           `<div class="scalechips">` + (f.opts ? f.opts.map((v) => [v, v === 'off' ? t('set.off') : t('flag.' + f.id + '.' + v)]) : [['on', t('set.on')], ['off', t('set.off')]]).map(([v, n]) => `<button class="chip${(f.opts ? v === this._flagV(f.id) : (v === 'on') === this._flag(f.id)) ? ' on' : ''}" data-act="flag" data-id="${esc(f.id)}" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>`).join('') +
         `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw('keepState')) +
@@ -2383,6 +2393,7 @@
         this._renderAll(); this._renderSet();
       });
     },
+    mode(t) { this._local.mode = t.dataset.v; this._applyMode(); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg(); },
     scale(t) { this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg(); },
     wzopen() { this._wzOpen(); },
     chip(t) {

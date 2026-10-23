@@ -256,5 +256,10 @@
  "flag.hdrSub": "A: Filter links, Tools rechts. B: Suche, Sortierung, Statistik links, Filter Mitte, Reload und Einstellungen rechts (ab 1100 px Breite). C: Suche und Statistik links, Reload/Einstellungen als Icons rechts, Filter eine eigene Zeile, Sortierung rechts in der Zählzeile.",
  "flag.hdr.a": "A",
  "flag.hdr.b": "B",
- "flag.hdr.c": "C"
+ "flag.hdr.c": "C",
+ "set.mode": "Darstellung",
+ "set.modeSub": "Gilt nur für diesen Browser. Auto folgt dem Design von Home Assistant.",
+ "set.modeAuto": "Auto",
+ "set.modeLight": "Hell",
+ "set.modeDark": "Dunkel"
 }

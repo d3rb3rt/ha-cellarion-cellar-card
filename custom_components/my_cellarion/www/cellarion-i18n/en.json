@@ -256,5 +256,10 @@
  "flag.hdrSub": "A: filters left, tools right. B: search, sort, stats left, filters middle, reload and settings right (from 1100 px width). C: search and stats left, reload/settings as icons right, filters in their own row, sort at the right of the count line.",
  "flag.hdr.a": "A",
  "flag.hdr.b": "B",
- "flag.hdr.c": "C"
+ "flag.hdr.c": "C",
+ "set.mode": "Appearance",
+ "set.modeSub": "Applies to this browser only. Auto follows the Home Assistant theme.",
+ "set.modeAuto": "Auto",
+ "set.modeLight": "Light",
+ "set.modeDark": "Dark"
 }

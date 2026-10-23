@@ -166,3 +166,9 @@ def test_no_filter_button_on_any_screen(card):
     for width in (1000, 420):
         page = card(width)
         assert page.evaluate("c.shadowRoot.querySelector('.fbtn')") is None
+
+
+def test_feature_flags_cannot_be_switched_on_in_the_integration(card):
+    page = card()
+    page.evaluate("() => { c._cfg.flags = { sinv: true }; c._local.flags = { sinv: true }; c._renderAll(); }")
+    assert page.evaluate("c.hasAttribute('data-sinv')") is False

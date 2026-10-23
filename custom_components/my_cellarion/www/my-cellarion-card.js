@@ -496,7 +496,8 @@
       :host([data-hdr2][data-hdrv="c"]) .top .search { grid-column: 1; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 3; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .rl { grid-column: 4; grid-row: 1; }
-      :host([data-hdr2][data-hdrv="c"]) .top > .gear { grid-column: 5; grid-row: 1; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .gear { grid-column: 5; grid-row: 1; margin-right: -5px; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { width: 30px; }
       :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fwrap { grid-column: 1 / -1; grid-row: 2; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1084,7 +1085,7 @@
           const th = Math.max(24, l.clientHeight * l.clientHeight / l.scrollHeight);
           sbi.style.top = (l.offsetTop + (l.scrollTop / ov) * (l.clientHeight - th)) + 'px';
           sbi.style.height = th + 'px';
-          sbi.style.left = (l.offsetLeft + l.offsetWidth - 5) + 'px';
+          const h = this._head; sbi.style.left = ((h && h.offsetWidth ? h.offsetLeft + h.offsetWidth - 15 : l.offsetLeft + l.offsetWidth - 5)) + 'px'; // same right edge as the header content
           sbi.style.opacity = '1';
         };
         l.addEventListener('scroll', this._sbiUpd, { passive: true });

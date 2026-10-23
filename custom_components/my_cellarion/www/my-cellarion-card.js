@@ -528,7 +528,9 @@
     }
     @media (max-width: 600px) {
       :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; width: 32px; }
-      :host([data-hdr2][data-hdrv="c"]) .top > .gear { margin-right: -4px; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .gear { margin-right: -4px; margin-left: 0; }
+      :host([data-hdr2][data-hdrv="c"]) .top .search { flex: 0 0 calc(50% - 4px); width: calc(50% - 4px); min-width: 0; } /* as wide as two filter pills */
+      :host([data-hdr2][data-hdrv="c"]) .top > .st { margin-left: auto; }
       :host([data-hdr2][data-hdrv="c"]) .sumline .grow { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     }
     @media (max-width: 600px) {

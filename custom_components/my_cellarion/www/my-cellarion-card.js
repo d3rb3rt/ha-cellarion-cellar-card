@@ -452,16 +452,17 @@
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     /* Flag hdr2 (wide only): filters left in two rows; tools (sort, stats, reload, settings) above the search on the right */
     @media (min-width: 601px) {
-      :host([data-hdr2]) .head { display: grid; grid-template-columns: minmax(0, 1fr) 280px; column-gap: 12px; row-gap: 6px; align-items: start; }
+      :host([data-hdr2]) .head { display: grid; grid-template-columns: minmax(0, 1fr) max-content; column-gap: 12px; row-gap: 6px; align-items: start; }
       :host([data-hdr2]) .head > .fwrap { grid-column: 1; grid-row: 1; }
-      :host([data-hdr2]) .head > .top { grid-column: 2; grid-row: 1; justify-content: flex-end; }
+      :host([data-hdr2]) .head > .top { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: repeat(4, auto); gap: 8px; justify-content: end; }
+      :host([data-hdr2]) .top .title { display: none; }
       :host([data-hdr2]) .top > * { margin-left: 0; }
       /* filter chips in equal-width cells, like on the phone (6 per row) */
       :host([data-hdr2]) .fwrap .more.open { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
       :host([data-hdr2]) .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
       :host([data-hdr2]) .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
       :host([data-hdr2]) .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
-      :host([data-hdr2]) .top .search { order: 2; flex: 1 1 100%; min-width: 0; }
+      :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
     }
     @media (max-width: 600px) {

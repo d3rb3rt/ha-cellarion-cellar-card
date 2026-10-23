@@ -264,7 +264,10 @@
     /* Wide screens, one vintage: the title gets the whole width, location / vintage / count sit on a second line */
     @media (min-width: 601px) {
       .wrow.single { flex-wrap: wrap; row-gap: 2px; }
-      .wrow.single .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1 1 100%; padding-left: 32px; box-sizing: border-box; }
+      .wrow.single .wmain { display: contents; }
+      .wrow.single .wtitle { flex: 1 1 calc(100% - 32px); min-width: 0; }
+      .wrow.single .winfo { flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
+      .wrow.single .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; box-sizing: border-box; }
       .wrow.single .wright .wsep { display: none; }
       .wrow.single .wright .wloc { max-width: none; }
     }

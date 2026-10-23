@@ -1179,7 +1179,7 @@
       const hadFocus = input && this.shadowRoot.activeElement === input;
       const pos = hadFocus ? input.selectionStart : 0;
       this._head.innerHTML = html;
-      this._azWidth();
+      this._azWidth(true);
       if (hadFocus) {
         const ni = this._head.querySelector('input[type=search]');
         if (ni) { ni.focus(); try { ni.setSelectionRange(pos, pos); } catch (e) { /* egal */ } }
@@ -1312,16 +1312,22 @@
       this._azWidth();
     }
     // On wide screens the list is at most as wide as the alphabet bar (up to Z), better readable
-    _azWidth() {
+    _azWidth(pre) {
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
       const others = this.shadowRoot.querySelectorAll('.top, .fwrap, .fpills, .sumline');
       const set = (v) => { list.style.maxWidth = v; others.forEach((e) => { e.style.maxWidth = v; }); };
+      let cached = '';
+      try { cached = localStorage.getItem('cellarion-azw') || ''; } catch (e) { /* egal */ }
+      const alpha = this._sort === 'name' || this._sort === 'producer';
+      // Before the alphabet bar exists (first render) use the last known width, so nothing jumps
+      if (pre && !bar.children.length) { set(alpha && cached ? cached : ''); return; }
       if (bar.hidden) { set(''); return; }
       const bs = Array.from(bar.children);
       if (!bs.length) { set(''); return; }
       const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;
       set(w > 0 ? w + 'px' : '');
+      try { if (w > 0 && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches)) localStorage.setItem('cellarion-azw', w + 'px'); } catch (e) { /* egal */ }
     }
 
     // Highlight search terms in the text (ignoring case and accents, like the search itself)

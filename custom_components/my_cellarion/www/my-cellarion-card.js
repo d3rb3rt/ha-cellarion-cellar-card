@@ -301,7 +301,12 @@
       :host([data-wi]) .vrow .locs { justify-content: flex-end; color: var(--cb-sub); font-size: .9em; }
       :host([data-wi]) .vrow .vstat, :host([data-wi]) .vrow .vwin, :host([data-wi]) .vrow .vpr, :host([data-wi]) .vrow .loc b { display: none; }
       :host([data-wi]) .vrow .vcnt, :host([data-wi]) .vrow .vprl { display: inline; }
-      :host([data-wi]) .vrow .vprl::before { content: '·'; margin: 0 8px 0 2px; }
+      /* wide: location, vintage, count like in a one-vintage row; price stays left, without dot */
+      :host([data-wi]) .vrow .vprl::before { content: none; }
+      :host([data-wi]) .vrow .vprl { order: -1; margin-right: 10px; }
+      :host([data-wi]) .vrow .vmid { order: 0; flex: 1 1 auto; margin-right: 10px; }
+      :host([data-wi]) .vrow .vyear { order: 1; margin-right: 0; }
+      :host([data-wi]) .vrow .vcnt { order: 2; }
       :host([data-wi]) .wrow .wright { min-width: 0; }
       :host([data-wi]) .wrow .wright .wvint { max-width: none; }
     }

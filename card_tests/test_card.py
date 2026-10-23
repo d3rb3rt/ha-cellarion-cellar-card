@@ -135,8 +135,7 @@ def test_filters_fold_on_scroll_down_and_return_on_scroll_up(card):
     assert page.evaluate("c._listEl.scrollTop") > 100
 
 
-def test_wide_has_no_filter_button_but_phone_does(card):
-    wide = card(1000)
-    assert wide.evaluate("getComputedStyle(c.shadowRoot.querySelector('.fbtn')).display") == "none"
-    phone = card(420)
-    assert phone.evaluate("getComputedStyle(c.shadowRoot.querySelector('.fbtn')).display") != "none"
+def test_no_filter_button_on_any_screen(card):
+    for width in (1000, 420):
+        page = card(width)
+        assert page.evaluate("c.shadowRoot.querySelector('.fbtn')") is None

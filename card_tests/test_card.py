@@ -42,10 +42,13 @@ def test_search_narrows_and_reset_button_follows(card):
     reset = "c.shadowRoot.querySelector('[data-reset]').hidden"
     assert q(page, reset) is True
     total = count(page, ".wrow")
-    q(page, "() => { c._f.q = 'Egon'; c._renderAll(); }") if False else page.evaluate("() => { c._f.q = 'Egon'; c._renderAll(); }")
+    page.evaluate("() => { c._f.q = 'Egon'; c._renderAll(); }")
     page.wait_for_timeout(150)
     assert 0 < count(page, ".wrow") < total
-    assert q(page, reset) is False
+    assert q(page, reset) is True  # search alone has its own cross
+    page.evaluate("() => { const k = Object.keys(c._f).find((x) => x !== 'q'); c._f[k].add('x'); c._renderAll(); }")
+    page.wait_for_timeout(150)
+    assert q(page, reset) is False  # two things set: reset shows
     click(page, "[data-act=reset]")
     assert count(page, ".wrow") == total
     assert q(page, reset) is True
@@ -113,9 +116,19 @@ def test_statistics_and_settings_open_and_close(card):
     assert page.errors == []
 
 
-def test_filters_fold_on_scroll_down_and_return_on_scroll_up(card):
+def test_wide_filters_stay_open_while_scrolling(card):
     page = card()
     page.mouse.move(500, 450)
+    for _ in range(10):
+        page.mouse.wheel(0, 40)
+        page.wait_for_timeout(40)
+    page.wait_for_timeout(300)
+    assert page.evaluate("c._more") is True
+
+
+def test_phone_filters_fold_on_scroll_down_and_return_on_scroll_up(card):
+    page = card(420)
+    page.mouse.move(200, 450)
     assert page.evaluate("c._more") is True
     for _ in range(10):
         page.mouse.wheel(0, 40)

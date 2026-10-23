@@ -244,9 +244,5 @@
  "price.p100": "75–100 €",
  "price.pmax": "über 100 €",
  "stat.vt.price": "Preis",
- "stat.nBottles": "{n} Fl.",
- "flag.webList": "Web-Liste wie Handy",
- "flag.webListSub": "Die Liste auf großen Bildschirmen im Aufbau der Handy-Ansicht (Test)",
- "flag.chipIcons": "Detail: Symbole und Trennlinien",
- "flag.chipIconsSub": "Chip-Gruppen im Detail mit Symbol und dünner Trennlinie (Test)"
+ "stat.nBottles": "{n} Fl."
 }

@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'webList' }, { id: 'chipIcons' }] : [];
+  const FLAGS = [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -414,54 +414,6 @@
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
     .dask { font-size: 1.1em; font-weight: 600; }
-    /* Feature flag webList: the phone list layout for wide screens, too */
-    .wl2 .wrow { flex-wrap: wrap; align-items: flex-start; row-gap: 2px; padding: 8px 12px; }
-    .wl2 .wrow .tdot, .wl2 .wrow .tsp { margin-top: 5px; }
-    .wl2 .wrow .wmain { flex: 1 1 0; min-width: 0; }
-    .wl2 .wrow .wtitle { flex-wrap: wrap; gap: 0 6px; }
-    .wl2 .wrow .wname, .wl2 .wrow .wprod, .wl2 .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
-    .wl2 .wrow .winfo { display: none; }
-    .wl2 .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 32px; box-sizing: border-box; }
-    .wl2 .wright .wsep { display: none; }
-    .wl2 .wright .wloc { flex: 1 1 auto; justify-content: flex-start; text-align: left; max-width: none; min-width: 0; }
-    .wl2 .wright .wvint { flex: 0 0 auto; max-width: none; }
-    .wl2 .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
-    .wl2 .wright .chev { margin-left: 0; }
-    .wl2 .wrow .wtitle .wsep { display: inline; font-size: 0; }
-    .wl2 .wrow .wtitle .wsep::before { content: '·'; font-size: 1rem; }
-    .wl2 .wrow .wtitle > :first-child { flex: 0 0 100%; }
-    .wl2 .wrow .wtitle > :first-child + .wsep { display: none; }
-    .wl2 .yv { color: var(--yc); font-weight: 700; }
-    .wl2 .wright .sdots { display: none; }
-    .wl2 .vlist { padding-left: 44px; }
-    .wl2 .vrow { padding-left: 0; }
-    .wl2 .vrow .vyear { min-width: 0; flex: 0 0 auto; }
-    .wl2 .vrow .vmid { align-items: flex-end; text-align: right; }
-    .wl2 .vrow .locs { justify-content: flex-end; }
-    .wl2 .vrow .vstat { display: none; }
-    .wl2 .vrow .vwin { display: none; }
-    .wl2 .vrow .vpr { display: none; }
-    .wl2 .vrow .vcnt { display: inline; }
-    .wl2 .vrow .vprl { display: inline; }
-    .wl2 .vrow .loc b { display: none; }
-    .wl2 .vlist { display: flex; flex-direction: column-reverse; }
-    .wl2 .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
-    .wl2 .vrow .locs { color: var(--cb-sub); font-size: .9em; }
-    .wl2 .wright .wvint { color: var(--cb-sub); font-weight: 400; }
-    .wl2 .wright .wvint.yv { color: var(--yc); font-weight: 700; }
-    .wl2 .wright .wvint { order: -2; }
-    .wl2 .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
-    .wl2 .wright .wvint.multi { flex: 1 1 auto; }
-    /* wide screens: line 2 (producer, region, price) sits next to the name instead of below it; popups like on the phone, as wide as the alphabet bar */
-    @media (min-width: 601px) {
-      .dlg.wl2 { align-items: flex-start; justify-content: center; }
-      .list.wl2 { margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box; }
-      .az.wl2 { justify-content: center; }
-      .dlg.wl2 .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; max-width: var(--cb-azw, 560px); }
-      .wl2 .wrow .wtitle > :first-child { flex: 0 0 auto; }
-      .wl2 .wrow .wtitle > :first-child + .wsep { display: inline; }
-      .wl2 .wrow .wtitle { gap: 0 8px; }
-    }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
@@ -1217,7 +1169,6 @@
       }
       if (!bottles.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
       el.innerHTML = html;
-      el.classList.toggle('wl2', this._flag('webList'));
       el.scrollTop = top;
       this._renderAz();
       const f = this._f;
@@ -1275,20 +1226,15 @@
       this._azUpdate();
       this._azWidth();
     }
-    // Flag webList: on wide screens the list is only as wide as the alphabet bar (better readable)
+    // On wide screens the list is at most as wide as the alphabet bar (up to Z), better readable
     _azWidth() {
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
-      bar.classList.toggle('wl2', this._flag('webList'));
-      if (!this._flag('webList') || bar.hidden) { list.style.maxWidth = ''; return; }
-      let bs = Array.from(bar.children);
+      if (bar.hidden) { list.style.maxWidth = ''; return; }
+      const bs = Array.from(bar.children);
       if (!bs.length) { list.style.maxWidth = ''; return; }
-      // Only up to the letter R (the whole alphabet is too wide)
-      const ri = bs.findIndex((b) => b.dataset.k === 'R');
-      if (ri >= 0) bs = bs.slice(0, ri + 1);
       const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;
       list.style.maxWidth = w > 0 ? w + 'px' : '';
-      this._azw = w > 0 ? w : 0;
     }
 
     // Highlight search terms in the text (ignoring case and accents, like the search itself)
@@ -1795,9 +1741,9 @@
         const chips = ['body', 'acidity', 'sweetness', 'tannin'].filter((k) => pr[k]).map((k) => `<span><em>${esc(t('prof.' + k))}</em>${esc(lab(pr[k]))}</span>`).join('');
         const fl = (pr.flavors || []).map((x) => `<span>${esc(x)}</span>`).join('');
         const fp = (pr.foodPairings || []).map((x) => `<span>${esc(x)}</span>`).join('');
-        // Flag chipIcons: thin separator line and an icon in front of each chip group instead of headings
+        // Thin separator line and an icon in front of each chip group instead of headings
         const ic = (d) => `<svg class="d2gic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-        const grp = (html, icon) => (!html ? '' : this._flag('chipIcons') ? `<div class="d2grp">${ic(icon)}<div class="d2chips">${html}</div></div>` : `<div class="d2chips">${html}</div>`);
+        const grp = (html, icon) => (!html ? '' : `<div class="d2grp">${ic(icon)}<div class="d2chips">${html}</div></div>`);
         about = grp(chips, '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>') +
           grp(fl, '<path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14zM5 19l8-8"/>') +
           grp(fp, '<path d="M6 3v7a2 2 0 0 0 2 2v9M10 3v7a2 2 0 0 1-2 2M18 3c-2.5 2-3 6-1 9h1v9"/>') +
@@ -1888,19 +1834,14 @@
     _dlgTop() {
       const el = this._dlg;
       if (!el || el.hidden) return;
-      let top = 0, left = 0;
+      let top = 0;
       try {
-        if (window.matchMedia('(max-width: 600px)').matches || this._flag('webList')) {
+        if (window.matchMedia('(max-width: 600px)').matches) {
           const r = this.getBoundingClientRect();
           top = r.top > 0 && r.top < 140 ? Math.round(r.top) : 0;
-          // wide screens: start at the left edge of the card (the dashboard sidebar stays uncovered)
-          if (!window.matchMedia('(max-width: 600px)').matches && r.left > 0 && r.left < 400) left = Math.round(r.left);
         }
       } catch (e) { top = 0; }
       el.style.top = top ? top + 'px' : '';
-      el.style.left = left ? left + 'px' : '';
-      el.classList.toggle('wl2', this._flag('webList'));
-      if (this._azw) el.style.setProperty('--cb-azw', this._azw + 'px');
     }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
     _hdepth() {

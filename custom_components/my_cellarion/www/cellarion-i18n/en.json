@@ -251,5 +251,7 @@
  "sort.priceDesc": "Price, high to low",
  "det.editIn": "Edit in Cellarion",
  "flag.hdr2": "Wide: two-column header",
- "flag.hdr2Sub": "Filters on the left in two rows, tools above the search on the right. The filters no longer fold when scrolling."
+ "flag.hdr2Sub": "Filters on the left in two rows, tools above the search on the right. The filters no longer fold when scrolling.",
+ "flag.sinv": "Inverted search",
+ "flag.sinvSub": "Light search field with dark text (only together with the two-column header)."
 }

@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr2' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr2' }, { id: 'sinv' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -174,6 +174,11 @@
     }
     :host([data-hdr2]) .search input::placeholder { color: color-mix(in srgb, var(--cb-text) 62%, transparent); }
     :host([data-hdr2]) .search input:focus { border-color: var(--cb-on); }
+    /* flag sinv (with hdr2): inverted search, light field with dark text */
+    :host([data-hdr2][data-sinv]) .search input { background: color-mix(in srgb, var(--cb-text) 90%, var(--cb-card)); color: var(--cb-card); border-color: transparent; }
+    :host([data-hdr2][data-sinv]) .search input::placeholder { color: color-mix(in srgb, var(--cb-card) 60%, transparent); }
+    :host([data-hdr2][data-sinv]) .search::before { background: color-mix(in srgb, var(--cb-card) 75%, transparent); }
+    :host([data-hdr2][data-sinv]) .search .x { color: var(--cb-card); }
     :host([data-hdr2]) .search.has input { border-color: var(--cb-on); box-shadow: 0 0 0 1px var(--cb-on) inset; } /* active search: ring like an active filter, also without focus */
     .search .x {
       position: absolute; right: 2px; top: 0; width: var(--cb-chip-h, 40px); height: var(--cb-chip-h, 40px);
@@ -1091,6 +1096,7 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
+      this.toggleAttribute('data-sinv', this._flag('sinv'));
       this.toggleAttribute('data-hdr2', this._flag('hdr2')); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();

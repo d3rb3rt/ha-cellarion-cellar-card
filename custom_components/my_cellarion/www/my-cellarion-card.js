@@ -164,6 +164,10 @@
       font-size: var(--cb-chip-font, 14px); outline: none;
     }
     .search input:focus { border-color: var(--cb-on); }
+    /* flag hdr2: the search stands out (lighter fill, stronger border); color-mix follows the theme text color, so it also works in light themes */
+    :host([data-hdr2]) .search input { background: color-mix(in srgb, var(--cb-text) 13%, var(--cb-card)); border-color: color-mix(in srgb, var(--cb-text) 38%, transparent); }
+    :host([data-hdr2]) .search input::placeholder { color: color-mix(in srgb, var(--cb-text) 62%, transparent); }
+    :host([data-hdr2]) .search input:focus { border-color: var(--cb-on); }
     .search .x {
       position: absolute; right: 2px; top: 0; width: var(--cb-chip-h, 40px); height: var(--cb-chip-h, 40px);
       display: none; align-items: center; justify-content: center; color: var(--cb-sub); font-size: 18px;

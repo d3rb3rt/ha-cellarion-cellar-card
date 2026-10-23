@@ -456,6 +456,11 @@
       :host([data-hdr2]) .head > .fwrap { grid-column: 1; grid-row: 1; }
       :host([data-hdr2]) .head > .top { grid-column: 2; grid-row: 1; justify-content: flex-end; }
       :host([data-hdr2]) .top > * { margin-left: 0; }
+      /* filter chips in equal-width cells, like on the phone (6 per row) */
+      :host([data-hdr2]) .fwrap .more.open { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+      :host([data-hdr2]) .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
+      :host([data-hdr2]) .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
+      :host([data-hdr2]) .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
       :host([data-hdr2]) .top .search { order: 2; flex: 1 1 100%; min-width: 0; }
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
     }

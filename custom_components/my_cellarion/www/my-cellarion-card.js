@@ -182,8 +182,7 @@
     .dlg.dd { align-items: center; padding: 0 24px; box-sizing: border-box; }
     .dlg.dd .dsheet { border-radius: 16px; }
     .dsheet > .ddlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-    .ddsheet .dh { flex: none; }
-    .ddsheet .dh { padding-bottom: 8px; }
+    .ddsheet .dh { flex: none; padding-bottom: 8px; }
     .ddi { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 0; border-top: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
     .ddi:active { background: var(--cb-chip); }
     .ddi.cur { font-weight: 600; color: var(--cb-on); }
@@ -199,7 +198,7 @@
     .az[hidden] { display: none; }
     .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
     .az button:disabled { opacity: .28; }
-    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior-y: contain; }
     .tdot {
       display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none;
       box-shadow: 0 0 0 1.5px var(--cb-ring); background: var(--cb-ring);
@@ -213,14 +212,12 @@
     .wmain { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .wtitle { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
     .wprod { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
-    .wtitle.swap .wprod { font-weight: 600; }
-    .wtitle.swap .wname { font-weight: 500; }
+    .wtitle.swap .wprod { font-weight: 600; font-size: 1.12em; }
+    .wtitle.swap .wname { font-weight: 500; font-size: .94em; }
     .wtitle .wname { font-size: 1.12em; }
     .wtitle .wprod { font-size: .94em; }
     .wreg { color: var(--cb-sub); font-size: .94em; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 0 1 auto; }
     .dh .wreg { white-space: normal; }
-    .wtitle.swap .wprod { font-size: 1.12em; }
-    .wtitle.swap .wname { font-size: .94em; }
     .shead { position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; gap: 10px; padding: 8px 12px 6px; background: var(--cb-card); border-bottom: 1px solid var(--cb-line); font-weight: 700; font-size: 1.05em; }
     .shead .shn { color: var(--cb-sub); font-weight: 400; font-size: .86em; }
     .wsl { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
@@ -261,12 +258,10 @@
       .wrow .wright .wpm { order: 1; }
       .wrow .wright .wloc { order: 2; }
       .wrow .wright .wpm::before, .vrow .vprl::before { content: none; }
-      .wrow .wright .wloc::before { content: '·'; color: var(--cb-sub); }
       .vrow .vyear { order: 0; }
       .vrow .vprl { order: 1; }
       .vrow .vmid { order: 2; }
     }
-    .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -289,11 +284,9 @@
     .azanc { display: block; height: 0; }
     .az button.cur { background: var(--cb-on); color: var(--cb-on-text); }
     .ptr { height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; color: var(--cb-sub); font-size: 12px; flex: none; }
-    .list { overscroll-behavior-y: contain; }
     .fbtn.open:not(.on) { box-shadow: 0 0 0 2px var(--cb-on) inset; }
     .fbtn.open.on { box-shadow: 0 0 0 2px var(--cb-on-text) inset; }
     .fwrap { display: flex; flex-direction: column; gap: 8px; }
-    .fwrap:not(.fopen) { display: none; }
     .wprice { color: var(--cb-sub); font-size: .94em; white-space: nowrap; flex: none; }
     .wvint { font-weight: 700; color: inherit; white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
     /* Vintage in the color of its maturity instead of a status dot */
@@ -492,11 +485,7 @@
       .wrow .wl2 { margin-left: 0; }
       .wit.d::after { margin-left: 6px; }
       /* Phone: location left, the rest (price, vintage, count) right */
-      .wrow .wright .wloc { justify-content: flex-start; text-align: left; flex: 1 1 auto; }
-      .wrow .wright .wpm::before, .vrow .vprl::before { content: none; }
-      .vrow .vmid { align-items: flex-start; text-align: left; }
-      .vrow .locs { justify-content: flex-start; }
-      .wrow .wright .wloc { justify-content: flex-end; text-align: right; }
+      .wrow .wright .wloc { justify-content: flex-end; text-align: right; flex: 1 1 auto; }
       .wrow .wright .wloc::before { content: none; }
       .wrow .wright .wvint.multi { text-align: left; }
       .vrow .vmid { align-items: flex-end; text-align: right; }
@@ -2101,153 +2090,36 @@
     }
 
     // ---------- Interaction ----------
+    // Click on the dark backdrop of a dialog: close the topmost open one
+    _backdropClick(e) {
+      const c = e.target.classList;
+      if (!c || !c.contains('dlg')) return false;
+      if (this._dd) { this._dd = null; this._renderDlg(); }
+      else if (this._fdel) { if (!this._fdel.busy) { this._fdel = null; this._renderDlg(); } }
+      else if (this._cfm) { this._cfm = false; this._renderDlg(); }
+      else if (this._stat) { this._stat = null; this._renderDlg(); }
+      else if (this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); }
+      else if (this._det && !this._det.busy) { this._det = null; this._renderDlg(); }
+      return true;
+    }
+    // Clicks: the element carries data-act; ACTIONS (below the class) maps each name to its handler.
+    // Prefix groups: wz* = winery wizard, d* = detail dialog (_onDlg).
     _onClick(e) {
-      if (e.target.classList && e.target.classList.contains('dlg') && this._dd) { this._dd = null; this._renderDlg(); return; }
-      if (e.target.classList && e.target.classList.contains('dlg') && this._fdel) { if (!this._fdel.busy) { this._fdel = null; this._renderDlg(); } return; }
-      if (e.target.classList && e.target.classList.contains('dlg') && this._cfm) { this._cfm = false; this._renderDlg(); return; }
-      if (e.target.classList && e.target.classList.contains('dlg') && this._stat) { this._stat = null; this._renderDlg(); return; }
-      if (e.target.classList && e.target.classList.contains('dlg') && this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); return; }
-      if (e.target.classList && e.target.classList.contains('dlg')) {
-        if (this._det && !this._det.busy) { this._det = null; this._renderDlg(); }
-        return;
-      }
+      if (this._backdropClick(e)) return;
       const t = e.target.closest && e.target.closest('[data-act]');
       if (!t) return;
       const act = t.dataset.act;
-      const f = this._f;
-      if (act === 'showhid') { this._showHid = !this._showHid; this._renderHead(); return; }
-      if (act === 'dd') { this._dd = t.dataset.id; this._renderDlg(); return; }
-      if (act === 'ddclose') { this._dd = null; this._renderDlg(); return; }
-      if (act === 'ddpick') {
-        const id = this._dd, v = t.dataset.v;
-        this._dd = null;
-        if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fs(id).add(v); }
-        this._renderDlg(); this._renderAll();
-        return;
-      }
-      if (act === 'detail') {
-        if (t.classList.contains('wrow') && this._open.size) { this._open = new Set(); this._renderList(); }
-        this._det = { wine: t.dataset.w, vintage: t.dataset.v, step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
-        this._renderDlg();
-      } else if (act === 'statopen') {
-        this._det = null; this._stat = { path: [], all: false }; this._renderDlg();
-      } else if (act === 'statclose') {
-        this._stat = null; this._renderDlg();
-      } else if (act === 'statback') {
-        if (this._stat) { this._stat.path.pop(); this._stat.all = false; this._renderDlg(); }
-      } else if (act === 'stattab') {
-        if (this._stat) { this._stat.vtab = t.dataset.t; this._stat.all = false; this._renderDlg(); }
-      } else if (act === 'statall') {
-        if (this._stat) { this._stat.all = !this._stat.all; this._renderDlg(); }
-      } else if (act === 'statgo') {
-        if (this._stat) { this._stat.path.push(t.dataset.to); this._stat.all = false; this._renderDlg(); }
-      } else if (act === 'statfilter') {
-        const g = t.dataset.g, v = t.dataset.v;
-        this._stat = null;
-        this._f = { q: '' }; // only the filter of the tap, earlier filters are cleared
-        if (g === 'q') this._f.q = v; else this._fs(g).add(v);
-        // A single wine and vintage as result: straight to its detail page
-        const keys = new Set(this._filtered().map((b) => (b.wine || b.name) + '|' + String(b.vintage || 'NV')));
-        if (keys.size === 1) {
-          const b = this._filtered()[0];
-          this._det = { wine: b.wine || b.name, vintage: String(b.vintage || 'NV'), step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
-        }
-        this._renderDlg(); this._renderAll();
-      } else if (act === 'setopen') {
-        this._det = null; this._set = true; this._renderDlg();
-      } else if (act === 'setclose') {
-        this._set = null; this._renderDlg();
-      } else if (act === 'fvis') {
-        const id = t.dataset.id;
-        const hid = new Set(this._fh);
-        if (hid.has(id)) hid.delete(id); else { hid.add(id); delete this._f[id]; }
-        this._setFilters(this._fo, Array.from(hid));
-        this._renderAll(); this._renderSet();
-      } else if (act === 'fdelask') {
-        const dd = this._allDefs().find((x) => x.id === t.dataset.id);
-        if (dd && dd.personal) { this._fdel = { id: dd.id, label: dd.label, n: this._data.bottles.filter((b) => b.p && b.p[dd.label]).length, busy: false }; this._renderDlg(); }
-      } else if (act === 'fdelno') {
-        this._fdel = null; this._renderDlg();
-      } else if (act === 'fdelyes') {
-        this._delField();
-      } else if (act === 'ivis') {
-        const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
-        this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
-      } else if (act === 'iup' || act === 'idn') {
-        this._imove(t.dataset.id, act === 'iup' ? -1 : 1);
-      } else if (act === 'fup' || act === 'fdn') {
-        this._fmove(t.dataset.id, act === 'fup' ? -1 : 1);
-      } else if (act === 'rack') {
-        this._setRack(t.dataset.n, t.dataset.k, t.dataset.v);
-      } else if (act === 'keepst') {
-        const on = t.dataset.v === 'on';
-        if (this._local.keepState !== undefined) { this._local.keepState = on; this._saveState(); }
-        else { this._shared.keepState = on; this._saveSettings(); }
-        this._renderSet();
-      } else if (act === 'flag') {
-        this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: t.dataset.v === 'on' }); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg();
-      } else if (act === 'lang') {
-        this._setLang(t.dataset.v || '');
-        this._initLang().then(() => {
-          if (this._raw) this._ingest(this._raw);
-          this._renderAll(); this._renderSet();
-        });
-      } else if (act === 'scope') {
-        const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
-        if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
-        else if (t.dataset.v === 'all' && dev) delete L[k];
-        this._saveState();
-        this._applyEff();
-        this._initLang().then(() => {
-          if (this._raw) this._ingest(this._raw);
-          this._renderAll(); this._renderSet();
-        });
-      } else if (act === 'scale') {
-        this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg();
-      } else if (act === 'wzopen') {
-        this._wzOpen();
-      } else if (act.startsWith('wz')) {
-        if (act === 'wzclose') { if (!this._wz.busy) { this._wz = null; this._renderDlg(); } }
-        else if (act === 'wzsave') this._wzSave();
-        else if (act === 'wzall') { this._wz.all = !this._wz.all; this._renderWz(); }
-        else if (act === 'wzw') this._wzTap(t.dataset.h, Number(t.dataset.i));
-        else if (act === 'wzdel') this._wzTap(t.dataset.h, -1);
-      } else if (act.startsWith('d')) {
-        this._onDlg(act, t);
-      } else if (act === 'chip') {
-        const set = f[t.dataset.g];
-        const v = t.dataset.v;
-        if (set.has(v)) set.delete(v); else set.add(v);
-        this._renderAll();
-      } else if (act === 'fdel') {
-        f[t.dataset.g].delete(t.dataset.v); this._renderAll();
-      } else if (act === 'pyes') {
-        this._cfm = false; this._renderDlg(); this._refreshNow();
-      } else if (act === 'pno') {
-        this._cfm = false; this._renderDlg();
-      } else if (act === 'az') {
-        const a = this._listEl.querySelector(`.azanc[data-az="${t.dataset.k}"]`);
-        if (a) this._listEl.scrollTo({ top: this._listEl.scrollTop + a.getBoundingClientRect().top - this._listEl.getBoundingClientRect().top, behavior: 'auto' });
-        // The jump is not a touch/wheel scroll: fold the filters like a normal scroll so the way back up re-opens them
-        if (a && this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
-      } else if (act === 'toggle') {
-        const id = t.dataset.id;
-        if (this._open.has(id)) this._open.delete(id); else this._open = new Set([id]);
-        this._renderList();
-      } else if (act === 'view') {
-        this._view = t.dataset.v; this._saveState(); this._renderAll();
-      } else if (act === 'more') {
-        this._more = !this._more; this._autoFolded = false; this._manual = !this._more; this._renderHead();
-      } else if (act === 'clearq') {
-        f.q = ''; this._renderAll();
-      } else if (act === 'reset') {
-        this._f = { q: '' };
-        this._renderAll();
-      } else if (act === 'reload') {
-        this._refreshNow();
-      } else if (act === 'reloadask') {
-        if (!this._busy) { this._cfm = true; this._renderDlg(); } // like pulling down on the phone: ask first
-      }
+      const h = ACTIONS[act];
+      if (h) h.call(this, t);
+      else if (act.startsWith('wz')) this._onWz(act, t);
+      else if (act.startsWith('d')) this._onDlg(act, t);
+    }
+    _onWz(act, t) {
+      if (act === 'wzclose') { if (!this._wz.busy) { this._wz = null; this._renderDlg(); } }
+      else if (act === 'wzsave') this._wzSave();
+      else if (act === 'wzall') { this._wz.all = !this._wz.all; this._renderWz(); }
+      else if (act === 'wzw') this._wzTap(t.dataset.h, Number(t.dataset.i));
+      else if (act === 'wzdel') this._wzTap(t.dataset.h, -1);
     }
     _onChange(e) {
       const s = e.target && e.target.dataset && e.target.dataset.sel;
@@ -2266,6 +2138,122 @@
       this._qTimer = setTimeout(() => this._renderAll(), 120);
     }
   }
+
+  // Handler per data-act; `this` is the card, `t` the clicked element
+  const ACTIONS = {
+    showhid() { this._showHid = !this._showHid; this._renderHead(); },
+    dd(t) { this._dd = t.dataset.id; this._renderDlg(); },
+    ddclose() { this._dd = null; this._renderDlg(); },
+    ddpick(t) {
+      const id = this._dd, v = t.dataset.v;
+      this._dd = null;
+      if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fs(id).add(v); }
+      this._renderDlg(); this._renderAll();
+    },
+    detail(t) {
+      if (t.classList.contains('wrow') && this._open.size) { this._open = new Set(); this._renderList(); }
+      this._det = { wine: t.dataset.w, vintage: t.dataset.v, step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
+      this._renderDlg();
+    },
+    statopen() { this._det = null; this._stat = { path: [], all: false }; this._renderDlg(); },
+    statclose() { this._stat = null; this._renderDlg(); },
+    statback() { if (this._stat) { this._stat.path.pop(); this._stat.all = false; this._renderDlg(); } },
+    stattab(t) { if (this._stat) { this._stat.vtab = t.dataset.t; this._stat.all = false; this._renderDlg(); } },
+    statall() { if (this._stat) { this._stat.all = !this._stat.all; this._renderDlg(); } },
+    statgo(t) { if (this._stat) { this._stat.path.push(t.dataset.to); this._stat.all = false; this._renderDlg(); } },
+    statfilter(t) {
+      const g = t.dataset.g, v = t.dataset.v;
+      this._stat = null;
+      this._f = { q: '' }; // only the filter of the tap, earlier filters are cleared
+      if (g === 'q') this._f.q = v; else this._fs(g).add(v);
+      // A single wine and vintage as result: straight to its detail page
+      const keys = new Set(this._filtered().map((b) => (b.wine || b.name) + '|' + String(b.vintage || 'NV')));
+      if (keys.size === 1) {
+        const b = this._filtered()[0];
+        this._det = { wine: b.wine || b.name, vintage: String(b.vintage || 'NV'), step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
+      }
+      this._renderDlg(); this._renderAll();
+    },
+    setopen() { this._det = null; this._set = true; this._renderDlg(); },
+    setclose() { this._set = null; this._renderDlg(); },
+    fvis(t) {
+      const id = t.dataset.id;
+      const hid = new Set(this._fh);
+      if (hid.has(id)) hid.delete(id); else { hid.add(id); delete this._f[id]; }
+      this._setFilters(this._fo, Array.from(hid));
+      this._renderAll(); this._renderSet();
+    },
+    fdelask(t) {
+      const dd = this._allDefs().find((x) => x.id === t.dataset.id);
+      if (dd && dd.personal) { this._fdel = { id: dd.id, label: dd.label, n: this._data.bottles.filter((b) => b.p && b.p[dd.label]).length, busy: false }; this._renderDlg(); }
+    },
+    fdelno() { this._fdel = null; this._renderDlg(); },
+    fdelyes() { this._delField(); },
+    ivis(t) {
+      const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
+      this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
+    },
+    iup(t) { this._imove(t.dataset.id, -1); },
+    idn(t) { this._imove(t.dataset.id, 1); },
+    fup(t) { this._fmove(t.dataset.id, -1); },
+    fdn(t) { this._fmove(t.dataset.id, 1); },
+    rack(t) { this._setRack(t.dataset.n, t.dataset.k, t.dataset.v); },
+    keepst(t) {
+      const on = t.dataset.v === 'on';
+      if (this._local.keepState !== undefined) { this._local.keepState = on; this._saveState(); }
+      else { this._shared.keepState = on; this._saveSettings(); }
+      this._renderSet();
+    },
+    flag(t) {
+      this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: t.dataset.v === 'on' }); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg();
+    },
+    lang(t) {
+      this._setLang(t.dataset.v || '');
+      this._initLang().then(() => {
+        if (this._raw) this._ingest(this._raw);
+        this._renderAll(); this._renderSet();
+      });
+    },
+    scope(t) {
+      const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
+      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+      else if (t.dataset.v === 'all' && dev) delete L[k];
+      this._saveState();
+      this._applyEff();
+      this._initLang().then(() => {
+        if (this._raw) this._ingest(this._raw);
+        this._renderAll(); this._renderSet();
+      });
+    },
+    scale(t) { this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg(); },
+    wzopen() { this._wzOpen(); },
+    chip(t) {
+      const set = this._f[t.dataset.g];
+      const v = t.dataset.v;
+      if (set.has(v)) set.delete(v); else set.add(v);
+      this._renderAll();
+    },
+    fdel(t) { this._f[t.dataset.g].delete(t.dataset.v); this._renderAll(); },
+    pyes() { this._cfm = false; this._renderDlg(); this._refreshNow(); },
+    pno() { this._cfm = false; this._renderDlg(); },
+    az(t) {
+      const a = this._listEl.querySelector(`.azanc[data-az="${t.dataset.k}"]`);
+      if (a) this._listEl.scrollTo({ top: this._listEl.scrollTop + a.getBoundingClientRect().top - this._listEl.getBoundingClientRect().top, behavior: 'auto' });
+      // The jump is not a touch/wheel scroll: fold the filters like a normal scroll so the way back up re-opens them
+      if (a && this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
+    },
+    toggle(t) {
+      const id = t.dataset.id;
+      if (this._open.has(id)) this._open.delete(id); else this._open = new Set([id]);
+      this._renderList();
+    },
+    view(t) { this._view = t.dataset.v; this._saveState(); this._renderAll(); },
+    more() { this._more = !this._more; this._autoFolded = false; this._manual = !this._more; this._renderHead(); },
+    clearq() { this._f.q = ''; this._renderAll(); },
+    reset() { this._f = { q: '' }; this._renderAll(); },
+    reload() { this._refreshNow(); },
+    reloadask() { if (!this._busy) { this._cfm = true; this._renderDlg(); } }, // like pulling down on the phone: ask first
+  };
 
   if (!customElements.get('my-cellarion-card')) customElements.define('my-cellarion-card', CellarionBestandCard);
   window.customCards = window.customCards || [];

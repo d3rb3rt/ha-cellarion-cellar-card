@@ -58,6 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
+  const SCROLL_FOLD = false;
   const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr', opts: ['off', 'a', 'b', 'c'] }, { id: 'sinv' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
@@ -489,6 +490,10 @@
       :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
     }
+    /* Flag hdr, option c: sort as a plain control at the right of the summary line (all widths) */
+    :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 28px; min-height: 28px; padding: 0 2px; gap: 6px; font-size: 13px; background: none; border: 0; border-radius: 6px; color: var(--cb-sub); justify-content: flex-start; }
+    :host([data-hdr2][data-hdrv="c"]) .sumline > .sel::before { content: ''; width: 16px; height: 16px; flex: none; background: currentColor; -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; }
+    :host([data-hdr2][data-hdrv="c"]) .sumline > .sel:hover { color: var(--cb-text); }
     /* Flag hdr, option c (wide): search + stats left, reload/settings as plain icons right, filters in their own row, sort at the right of the summary line */
     @media (min-width: 601px) {
       :host([data-hdr2][data-hdrv="c"]) .head { box-sizing: border-box; padding-right: 18px; /* content ends with the glyph of the last alphabet letter (Z) */ grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
@@ -507,9 +512,6 @@
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: auto; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills:not(:has(.fpill, [data-reset]:not([hidden]))) { display: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .sumline { grid-row: auto; }
-      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 28px; min-height: 28px; padding: 0 2px; gap: 6px; font-size: 13px; background: none; border: 0; border-radius: 6px; color: var(--cb-sub); justify-content: flex-start; }
-      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel::before { content: ''; width: 16px; height: 16px; flex: none; background: currentColor; -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; }
-      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel:hover { color: var(--cb-text); }
     }
     /* Flag hdr, option b (from 900px): three columns. 1 search + (sort, stats) below, 2 filters in two rows, 3 reload above settings */
     @media (min-width: 1100px) {
@@ -523,6 +525,11 @@
       :host([data-hdr2][data-hdrv="b"]) .top > .rl { grid-column: 4; grid-row: 1; margin-left: 14px; }
       :host([data-hdr2][data-hdrv="b"]) .top > .gear { grid-column: 4; grid-row: 2; margin-left: 14px; }
       :host([data-hdr2][data-hdrv="b"]) .head::before { content: ''; align-self: stretch; grid-column: 4; grid-row: 1 / 3; border-left: 1px solid var(--cb-line); pointer-events: none; }
+    }
+    @media (max-width: 600px) {
+      :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; width: 32px; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .gear { margin-right: -4px; }
+      :host([data-hdr2][data-hdrv="c"]) .sumline .grow { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
@@ -1158,7 +1165,8 @@
       this._renderList();
     }
     // Flag hdr2 (wide only): filters on the left in two rows, tools and search stacked on the right; filters never fold
-    _fixedHdr() { return this._hdr2() && this._flagV('hdr') !== 'c'; } // layouts a/b keep the filters always open; c folds on scroll down and re-opens on scroll up
+    // Filters stay open (folding on scroll down / re-opening on scroll up is switched off for now: set SCROLL_FOLD = true)
+    _fixedHdr() { return !SCROLL_FOLD || (this._hdr2() && this._flagV('hdr') !== 'c'); }
     _hdr2() { return this._flag('hdr') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
 
     _nAct() {
@@ -1262,7 +1270,7 @@
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
         })();
-        const sortInSum = this._flagV('hdr') === 'c' && this._hdr2();
+        const sortInSum = this._flagV('hdr') === 'c';
         html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
           `placeholder="${(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || this._hdr2() ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
           (sortInSum ? '' : sortBtn) +

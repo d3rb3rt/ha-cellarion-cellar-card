@@ -80,11 +80,25 @@ def test_alphabet_sort_has_bar_and_other_sorts_do_not(card):
 
 def test_header_is_limited_to_alphabet_width(card):
     page = card()
-    widths = page.evaluate("""() => ['.top', '.fwrap', '.list'].map(s => c.shadowRoot.querySelector(s).style.maxWidth)""")
-    assert widths[0] and widths[0] == widths[1] == widths[2] and widths[0].endswith("px")
+    widths = page.evaluate("""() => ['.head', '.list'].map(s => c.shadowRoot.querySelector(s).style.maxWidth)""")
+    assert widths[0] and widths[0] == widths[1] and widths[0].endswith("px")
     # still limited after sorting without alphabet bar
     page.evaluate("() => { c._sort = 'priceAsc'; c._renderAll(); }")
-    assert page.evaluate("c.shadowRoot.querySelector('.top').style.maxWidth") == widths[0]
+    assert page.evaluate("c.shadowRoot.querySelector('.head').style.maxWidth") == widths[0]
+
+
+def test_header_layout(card):
+    page = card()
+    # sort sits in the count line, cellar name in the top row (not in the count text)
+    assert page.evaluate("!!c.shadowRoot.querySelector('.sumline [data-id=sort]')")
+    assert page.evaluate("!c.shadowRoot.querySelector('.top [data-id=sort]')")
+    name = page.evaluate("c.shadowRoot.querySelector('.top .cname').textContent")
+    assert name
+    assert name not in page.evaluate("c.shadowRoot.querySelector('[data-sum]').textContent")
+    # the count line survives a header rebuild (e.g. filters re-opening)
+    before = page.evaluate("c.shadowRoot.querySelector('[data-sum]').textContent")
+    page.evaluate("() => c._renderHead()")
+    assert page.evaluate("c.shadowRoot.querySelector('[data-sum]').textContent") == before
 
 
 def test_detail_dialog_has_edit_link(card):

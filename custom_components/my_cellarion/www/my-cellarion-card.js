@@ -511,6 +511,7 @@
       .wright .chev { margin-left: 0; }
       .yv { color: var(--yc); font-weight: 700; }
       .fwrap .more.open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+      :host([data-hdr2]) .fwrap .more.open > .sel.fs { background: transparent; } /* flag hdr2: filters outlined, like on wide screens */
       .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
       .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
       .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
@@ -1079,7 +1080,7 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
-      this.toggleAttribute('data-hdr2', this._hdr2());
+      this.toggleAttribute('data-hdr2', this._flag('hdr2')); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();
     }

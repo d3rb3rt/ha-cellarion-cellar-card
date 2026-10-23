@@ -486,13 +486,13 @@
     }
     /* Flag hdr, option b (from 900px): three columns. 1 search + (sort, stats) below, 2 filters in two rows, 3 reload above settings */
     @media (min-width: 1100px) {
-      :host([data-hdr2][data-hdrv="b"]) .head { grid-template-columns: minmax(0, 220px) max-content minmax(0, 1fr) max-content; column-gap: 12px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="b"]) .head { grid-template-columns: minmax(0, 150px) max-content minmax(0, 1fr) max-content; grid-template-rows: var(--cb-chip-h, 40px) var(--cb-chip-h, 40px); column-gap: 12px; row-gap: 8px; }
       :host([data-hdr2][data-hdrv="b"]) .head > .top { display: contents; }
       :host([data-hdr2][data-hdrv="b"]) .top .search { grid-column: 1 / 3; grid-row: 1; width: 0; min-width: 100%; }
       :host([data-hdr2][data-hdrv="b"]) .top > [data-id="sort"] { grid-column: 1; grid-row: 2; width: 100%; min-width: 0; }
       :host([data-hdr2][data-hdrv="b"]) .top > .st { grid-column: 2; grid-row: 2; }
       :host([data-hdr2][data-hdrv="b"]) .head > .fwrap { grid-column: 3; grid-row: 1 / 3; }
-      :host([data-hdr2][data-hdrv="b"]) .fwrap .more.open { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      :host([data-hdr2][data-hdrv="b"]) .fwrap .more.open { grid-template-columns: repeat(var(--fcols, 5), minmax(0, 1fr)); grid-auto-rows: var(--cb-chip-h, 40px); }
       :host([data-hdr2][data-hdrv="b"]) .top > .rl { grid-column: 4; grid-row: 1; margin-left: 14px; }
       :host([data-hdr2][data-hdrv="b"]) .top > .gear { grid-column: 4; grid-row: 2; margin-left: 14px; }
       :host([data-hdr2][data-hdrv="b"]) .head::before { content: ''; align-self: stretch; grid-column: 4; grid-row: 1 / 3; border-left: 1px solid var(--cb-line); pointer-events: none; }
@@ -1226,7 +1226,8 @@
         const t3 = {};
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
         const by = (x, y) => de.compare(x[0], y[0]);
-        html += `<div class="fwrap${this._more || this._hdr2() ? ' fopen' : ''}"><div class="more open">` +
+        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size).length + (hid.length ? 1 : 0);
+        html += `<div class="fwrap${this._more || this._hdr2() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';

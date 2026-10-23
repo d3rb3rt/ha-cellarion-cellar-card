@@ -248,6 +248,7 @@ class Hub:
             changed = False
             if inv is not None:
                 self.data = await api.build_inventory(inv, self._get, self._cellar_id)
+                self.data["url"] = self.url  # base address of the Cellarion server, for the "edit in Cellarion" link
                 self._etag, self._geo_at = etag, time.time()
                 body = {k: v for k, v in self.data.items() if k != "generated"}
                 fp = hashlib.sha1(json.dumps(body, sort_keys=True, default=str).encode()).hexdigest()

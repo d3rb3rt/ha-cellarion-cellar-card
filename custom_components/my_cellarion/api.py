@@ -238,6 +238,7 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_id: str | None = None)
     return {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "cellar": cellar.get("name"),
+        "cellarId": cid,
         "total": len(bottles),
         "racks": [r["name"] for r in inv.get("racks") or [] if r.get("cellar") in (None, cid) and r.get("name")],
         "fields": sorted(labels, key=str.casefold),

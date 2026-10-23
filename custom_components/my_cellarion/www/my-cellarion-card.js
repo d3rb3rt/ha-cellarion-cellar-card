@@ -494,8 +494,9 @@
       :host([data-hdr2][data-hdrv="c"]) .top > .gear { grid-column: 5; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fwrap { grid-column: 1 / -1; grid-row: 2; }
-      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open { display: flex; flex-wrap: wrap; gap: 8px; }
-      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .sel.fs, :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .sel.fs { width: auto; flex: none; height: 30px; min-height: 30px; font-size: 13px; padding: 0 6px 0 10px; border-radius: 15px; text-align: left; justify-content: space-between; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open { display: flex; flex-wrap: wrap; gap: 6px; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .sel.fs, :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .sel.fs { width: auto; flex: none; height: 30px; min-height: 30px; font-size: 13px; padding: 0 4px 0 9px; gap: 3px; border-radius: 15px; text-align: left; justify-content: space-between; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .more-pill { padding: 0 5px 0 8px; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend { display: contents; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: auto; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills:not(:has(.fpill, [data-reset]:not([hidden]))) { display: none; }

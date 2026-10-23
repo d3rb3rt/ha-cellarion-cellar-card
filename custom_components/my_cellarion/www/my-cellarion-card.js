@@ -214,7 +214,7 @@
     .az[hidden] { display: none; }
     .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
     .az button:disabled { opacity: .28; }
-    .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior-y: contain; }
+    .list { scrollbar-width: thin; scrollbar-color: var(--cb-sub) transparent; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior-y: contain; }
     .tdot {
       display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none;
       box-shadow: 0 0 0 1.5px var(--cb-ring); background: var(--cb-ring);
@@ -486,18 +486,18 @@
     }
     /* Flag hdr, option c (wide): search + stats left, reload/settings as plain icons right, filters in their own row, sort at the right of the summary line */
     @media (min-width: 601px) {
-      :host([data-hdr2][data-hdrv="c"]) .head { grid-template-columns: minmax(0, 300px) max-content minmax(0, 1fr) max-content max-content; column-gap: 8px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="c"]) .head { grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
       :host([data-hdr2][data-hdrv="c"]) .head > .top { display: contents; border-left: 0; padding-left: 0; }
       :host([data-hdr2][data-hdrv="c"]) .top .search { grid-column: 1; grid-row: 1; }
-      :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 2; grid-row: 1; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 3; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .rl { grid-column: 4; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .gear { grid-column: 5; grid-row: 1; }
-      :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fwrap { grid-column: 1 / -1; grid-row: 2; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open { display: flex; flex-wrap: wrap; gap: 8px; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .sel.fs, :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .sel.fs { width: auto; flex: none; height: 30px; min-height: 30px; font-size: 13px; padding: 0 6px 0 10px; border-radius: 15px; text-align: left; justify-content: space-between; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend { display: contents; }
-      :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: 3; }
+      :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: auto; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills:not(:has(.fpill, [data-reset]:not([hidden]))) { display: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .sumline { grid-row: auto; }
       :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 30px; min-height: 30px; padding: 0 12px; font-size: 13px; }
@@ -657,7 +657,7 @@
       const max = list.scrollHeight - list.clientHeight;
       if ((e.deltaY < 0 && list.scrollTop <= 0) || (e.deltaY > 0 && list.scrollTop >= max - 1)) return;
       list.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-      if (e.deltaY > 0 && this._more && list.scrollTop > 2 && !this._hdr2()) { this._more = false; this._autoFolded = true; this._renderHead(); }
+      if (e.deltaY > 0 && this._more && list.scrollTop > 2 && !this._fixedHdr()) { this._more = false; this._autoFolded = true; this._renderHead(); }
       e.preventDefault();
     }
 
@@ -1070,7 +1070,7 @@
       this._dlg = this.shadowRoot.querySelector('.dlg');
       // Collapse open filters when the user scrolls the list (real touch/wheel input only, not layout scrolling)
       const fold = () => {
-        if (this._hdr2()) return;
+        if (this._fixedHdr()) return;
         if (this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
       };
       this._listEl.addEventListener('scroll', () => {
@@ -1083,7 +1083,7 @@
         if (this._manual && !this._more && this._listEl.scrollTop > 40) { this._manual = false; this._autoFolded = true; }
         if (this._autoFolded && this._listEl.scrollTop <= 2) { this._autoFolded = false; this._more = true; this._renderHead(); }
         // Scrolling up anywhere in the list brings the filters back (about 24 px of travel, so small jitter does not trigger it)
-        else if (this._autoFolded && !this._more && this._upAcc >= 24 && !this._hdr2()) { this._autoFolded = false; this._more = true; this._upAcc = 0; this._renderHead(); }
+        else if (this._autoFolded && !this._more && this._upAcc >= 24 && !this._fixedHdr()) { this._autoFolded = false; this._more = true; this._upAcc = 0; this._renderHead(); }
       }, { passive: true });
       // Only moving down the list folds the filters (finger up / wheel down); moving up unfolds them again (see the scroll listener)
       this._listEl.addEventListener('touchstart', (e) => { this._ty = e.touches[0].clientY; }, { passive: true });
@@ -1133,6 +1133,7 @@
       this._renderList();
     }
     // Flag hdr2 (wide only): filters on the left in two rows, tools and search stacked on the right; filters never fold
+    _fixedHdr() { return this._hdr2() && this._flagV('hdr') !== 'c'; } // layouts a/b keep the filters always open; c folds on scroll down and re-opens on scroll up
     _hdr2() { return this._flag('hdr') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
 
     _nAct() {
@@ -1247,7 +1248,7 @@
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
         const by = (x, y) => de.compare(x[0], y[0]);
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size).length + (hid.length ? 1 : 0);
-        html += `<div class="fwrap${this._more || this._hdr2() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
+        html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';

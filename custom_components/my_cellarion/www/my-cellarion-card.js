@@ -241,8 +241,9 @@
     .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .fpill .x { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; opacity: .65; font-size: 11px; }
     mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
-    .tcol { flex: none; display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
+    .tcol { flex: none; width: 22px; display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
     .cstar { display: block; }
+    .cbadge { box-sizing: border-box; font: 700 7.5px/1 var(--cb-font, inherit); letter-spacing: .02em; color: #e0b040; border: 1px solid #e0b040; border-radius: 3px; padding: 1px 1px; white-space: nowrap; }
     .tsp { flex: none; display: inline-block; vertical-align: middle; width: 22px; height: 22px; }
     .azanc { display: block; height: 0; }
     .az button.cur { background: var(--cb-on); color: var(--cb-on-text); }
@@ -1303,10 +1304,13 @@
       const g = this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
       if (!this._flag('clsIcon')) return g;
       const c = ((b._cls || []).join(' ') + ' ' + (b.classification || '')).toLowerCase();
-      const top = /gro(ss|ß)e?s?\s*(lage|gew[aä]chs)|\bgg\b|grand cru|cru class/.test(c);
-      const first = !top && /erste\s*lage|1er cru|premier cru|first growth|\b1\.?\s*lage/.test(c);
-      if (!top && !first) return g;
-      const title = t(top ? 'cls.top' : 'cls.first');
+      const gg = /gro(ss|ß)es\s*gew[aä]chs|\bgg\b/.test(c);
+      const g1 = !gg && /erstes\s*gew[aä]chs|\b1g\b/.test(c);
+      const top = !gg && !g1 && /gro(ss|ß)e?s?\s*lage|grand cru|cru class/.test(c);
+      const first = !gg && !g1 && !top && /erste\s*lage|1er cru|premier cru|first growth|\b1\.?\s*lage/.test(c);
+      if (!gg && !g1 && !top && !first) return g;
+      const title = t(gg ? 'cls.gg' : g1 ? 'cls.1g' : top ? 'cls.top' : 'cls.first');
+      if (gg || g1) return `<span class="tcol">${g}<span class="cbadge" role="img" aria-label="${esc(title)}" title="${esc(title)}">${gg ? 'GG' : '1G'}</span></span>`;
       const star = 'M6 .9l1.5 3.2 3.4.4-2.5 2.3.7 3.4L6 8.5 2.9 10.2l.7-3.4L1.1 4.5l3.4-.4z';
       return `<span class="tcol">${g}<svg class="cstar" viewBox="0 0 12 12" width="12" height="12" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title><path d="${star}" fill="${top ? '#e0b040' : 'none'}" stroke="#e0b040" stroke-width="1" stroke-linejoin="round"/></svg></span>`;
     }

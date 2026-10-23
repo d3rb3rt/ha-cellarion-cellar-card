@@ -1791,8 +1791,9 @@
         const chips = ['body', 'acidity', 'sweetness', 'tannin'].filter((k) => pr[k]).map((k) => `<span><em>${esc(t('prof.' + k))}</em>${esc(lab(pr[k]))}</span>`).join('');
         const fl = (pr.flavors || []).map((x) => `<span>${esc(x)}</span>`).join('');
         const fp = (pr.foodPairings || []).map((x) => `<span>${esc(x)}</span>`).join('');
-        const all = chips + fl + fp;
-        about = (all ? `<div class="d2chips">${all}</div>` : '') +
+        about = (chips ? `<div class="d2chips">${chips}</div>` : '') +
+          (fl ? `<div class="d2chips">${fl}</div>` : '') +
+          (fp ? `<div class="d2chips">${fp}</div>` : '') +
           (pr.description ? `<div class="d2txt" style="margin-top:8px">${esc(pr.description)}</div>` : '');
       }
       // My data at vintage level: same for all bottles -> value, otherwise range and hint

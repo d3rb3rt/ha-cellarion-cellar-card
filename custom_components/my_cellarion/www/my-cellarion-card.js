@@ -500,7 +500,7 @@
     :host([data-hdr2][data-hdrv="c"]) .sumline > .sel:hover { color: var(--cb-text); }
     /* Flag hdr, option c (wide): search + stats left, reload/settings as plain icons right, filters in their own row, sort at the right of the summary line */
     @media (min-width: 601px) {
-      :host([data-hdr2][data-hdrv="c"]) .head { box-sizing: border-box; padding-right: 36px; /* content ends with the glyph of the last alphabet letter (Z) */ grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="c"]) .head { box-sizing: border-box; padding-right: 16px; /* icons and sort end flush with the row arrows (the letters and the bottle count line up with Z) */ grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
       :host([data-hdr2][data-hdrv="c"]) .head > .top { display: contents; border-left: 0; padding-left: 0; }
       :host([data-hdr2][data-hdrv="c"]) .top .search { grid-column: 1; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 3; grid-row: 1; }

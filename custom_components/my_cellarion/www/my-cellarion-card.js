@@ -174,6 +174,7 @@
     }
     :host([data-hdr2]) .search input::placeholder { color: color-mix(in srgb, var(--cb-text) 62%, transparent); }
     :host([data-hdr2]) .search input:focus { border-color: var(--cb-on); }
+    :host([data-hdr2]) .search.has input { border-color: var(--cb-on); box-shadow: 0 0 0 1px var(--cb-on) inset; } /* active search: ring like an active filter, also without focus */
     .search .x {
       position: absolute; right: 2px; top: 0; width: var(--cb-chip-h, 40px); height: var(--cb-chip-h, 40px);
       display: none; align-items: center; justify-content: center; color: var(--cb-sub); font-size: 18px;

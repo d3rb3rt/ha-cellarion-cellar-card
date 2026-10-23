@@ -246,7 +246,5 @@
  "stat.vt.price": "Price",
  "stat.nBottles": "{n} btl.",
  "set.info": "Info in the list",
- "set.infoSub": "What follows the wine name and in which order (this device only)",
- "flag.cols": "Wide: fixed columns on the right",
- "flag.colsSub": "Vintage, price, location and bottles in fixed columns (wide view only, with the vintage-first order)."
+ "set.infoSub": "What follows the wine name and in which order (this device only)"
 }

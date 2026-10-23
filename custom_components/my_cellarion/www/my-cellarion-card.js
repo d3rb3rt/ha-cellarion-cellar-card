@@ -490,6 +490,9 @@
       :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
     }
+    /* Flag hdr, option c: cellar name centered in the first row */
+    :host([data-hdr2][data-hdrv="c"]) .top .cname { flex: 1 1 0; min-width: 0; text-align: center; font-weight: 600; font-size: 15px; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (min-width: 601px) { :host([data-hdr2][data-hdrv="c"]) .top .cname { grid-column: 2; grid-row: 1; align-self: center; } }
     /* Flag hdr, option c: sort as a plain control at the right of the summary line (all widths) */
     :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 28px; min-height: 28px; padding: 0 2px; gap: 6px; font-size: 13px; background: none; border: 0; border-radius: 6px; color: var(--cb-sub); justify-content: flex-start; }
     :host([data-hdr2][data-hdrv="c"]) .sumline > .sel::before { content: ''; width: 16px; height: 16px; flex: none; background: currentColor; -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; }
@@ -506,7 +509,7 @@
       :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fwrap { grid-column: 1 / -1; grid-row: 2; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open { display: flex; flex-wrap: wrap; gap: 6px; }
-      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .sel.fs, :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .sel.fs { width: auto; flex: none; height: 30px; min-height: 30px; font-size: 13px; padding: 0 4px 0 9px; gap: 3px; border-radius: 15px; text-align: left; justify-content: space-between; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .sel.fs, :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .sel.fs { width: auto; flex: none; height: 30px; min-height: 30px; font-size: 13px; padding: 0 4px 0 9px; gap: 5px; border-radius: 15px; text-align: left; justify-content: space-between; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .more-pill { padding: 0 5px 0 8px; }
       :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend { display: contents; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: auto; }
@@ -531,6 +534,8 @@
       :host([data-hdr2][data-hdrv="c"]) .top > .gear { margin-right: -4px; margin-left: 0; }
       :host([data-hdr2][data-hdrv="c"]) .top .search { flex: 0 0 calc(50% - 4px); width: calc(50% - 4px); min-width: 0; } /* as wide as two filter pills */
       :host([data-hdr2][data-hdrv="c"]) .top > .st { margin-left: auto; }
+      :host([data-hdr2][data-hdrv="c"]) .top .cname { order: 1; flex: 0 1 auto; text-align: left; margin-left: 6px; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .st, :host([data-hdr2][data-hdrv="c"]) .top > .gear { order: 2; }
       :host([data-hdr2][data-hdrv="c"]) .sumline .grow { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     }
     @media (max-width: 600px) {
@@ -1247,9 +1252,10 @@
       const stat = `<button class="btn round st" data-act="statopen" title="${esc(t('stat.title'))}" aria-label="${esc(t('stat.title'))}">` +
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
       const rlTxt = String(t('head.reload')).replace(/^\s*↻\s*/, '');
-      const reload = `<button class="btn round rl" data-act="reloadask" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '↻'}</button>`;
+      const reload = `<button class="btn round rl" data-act="reloadask" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>'}</button>`;
       const ttl = c.title || (c.header_cellar === false && this._data && this._data.cellar) || ''; // otherwise the cellar name is shown in the page header
-      let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}`;
+      const cname = this._flagV('hdr') === 'c' && this._data && this._data.cellar ? this._data.cellar : '';
+      let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}${cname ? `<span class="cname">${esc(cname)}</span>` : ''}`;
       if (!d) html += reload + gear + `</div>`;
       if (d) {
         // Count per group over the bottles that meet all other filters (and the search)
@@ -1400,7 +1406,7 @@
       const sum = this._head && this._head.querySelector('[data-sum]');
       if (sum) {
         const all = this._data.bottles.length;
-        sum.textContent = `${this._data.cellar ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: nWine })} · ${t('count.vintages', { n: entries.length })} · ${t('count.bottles', { n: bottles.length })}` + (bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
+        sum.textContent = `${this._data.cellar && this._flagV('hdr') !== 'c' ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: nWine })} · ${t('count.vintages', { n: entries.length })} · ${t('count.bottles', { n: bottles.length })}` + (bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
           (this._error ? ' · ' + t('count.loadError') : '');
         this._sumTxt = sum.textContent;
       }

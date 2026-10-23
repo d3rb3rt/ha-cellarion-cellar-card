@@ -271,9 +271,9 @@
     .loc.none { color: var(--cb-sub); }
     .vwin { color: var(--cb-sub); font-size: .86em; }
     .vcnt, .vprl { display: none; }
-    .d2grp { display: flex; align-items: flex-start; gap: 10px; padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--cb-line); }
-    .d2grp:first-of-type { }
-    .d2gic { flex: none; color: var(--cb-sub); margin-top: 6px; }
+    /* the sheet has a 12px gap between its children: the -6px margins cancel it so each line sits exactly between two chip rows */
+    .d2grp { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; margin: -6px 0; border-top: 1px solid var(--cb-line); }
+    .d2gic { flex: none; color: var(--cb-sub); margin-top: 7px; }
     .d2grp .d2chips { flex: 1 1 auto; min-width: 0; margin: 0; }
     .fend { display: contents; }
     .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }

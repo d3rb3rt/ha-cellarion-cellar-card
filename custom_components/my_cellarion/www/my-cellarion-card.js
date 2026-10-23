@@ -1334,10 +1334,10 @@
       const set = (v) => { list.style.maxWidth = v; others.forEach((e) => { e.style.maxWidth = v; }); };
       let cached = '';
       try { cached = localStorage.getItem('cellarion-azw') || ''; } catch (e) { /* egal */ }
-      const alpha = this._sort === 'name' || this._sort === 'producer';
       // Before the alphabet bar exists (first render) use the last known width, so nothing jumps
-      if (pre && !bar.children.length) { set(alpha && cached ? cached : ''); return; }
-      if (bar.hidden) { set(''); return; }
+      if (pre && !bar.children.length) { set(cached); return; }
+      // Sorting without an alphabet bar (price, vintage ...): keep the last known alphabet width, so the layout stays the same
+      if (bar.hidden) { set(cached); return; }
       const bs = Array.from(bar.children);
       if (!bs.length) { set(''); return; }
       const w = bs.reduce((a, b) => a + b.offsetWidth, 0) + (bs.length - 1) * 2 + 16;

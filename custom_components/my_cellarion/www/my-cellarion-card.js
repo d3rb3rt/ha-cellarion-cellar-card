@@ -491,7 +491,7 @@
     }
     /* Flag hdr, option c (wide): search + stats left, reload/settings as plain icons right, filters in their own row, sort at the right of the summary line */
     @media (min-width: 601px) {
-      :host([data-hdr2][data-hdrv="c"]) .head { grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="c"]) .head { box-sizing: border-box; padding-right: 18px; /* content ends with the glyph of the last alphabet letter (Z) */ grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
       :host([data-hdr2][data-hdrv="c"]) .head > .top { display: contents; border-left: 0; padding-left: 0; }
       :host([data-hdr2][data-hdrv="c"]) .top .search { grid-column: 1; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 3; grid-row: 1; }
@@ -1085,7 +1085,7 @@
           const th = Math.max(24, l.clientHeight * l.clientHeight / l.scrollHeight);
           sbi.style.top = (l.offsetTop + (l.scrollTop / ov) * (l.clientHeight - th)) + 'px';
           sbi.style.height = th + 'px';
-          const h = this._head; sbi.style.left = ((h && h.offsetWidth ? h.offsetLeft + h.offsetWidth - 15 : l.offsetLeft + l.offsetWidth - 5)) + 'px'; // same right edge as the header content
+          sbi.style.left = (l.offsetLeft + l.offsetWidth - 5) + 'px';
           sbi.style.opacity = '1';
         };
         l.addEventListener('scroll', this._sbiUpd, { passive: true });

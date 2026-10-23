@@ -214,10 +214,11 @@
     .az[hidden] { display: none; }
     .az button { min-width: 30px; height: 32px; padding: 0 4px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: var(--cb-chip-font, 14px); font-weight: 600; }
     .az button:disabled { opacity: .28; }
-    .list::-webkit-scrollbar { width: 3px; }
-    .list::-webkit-scrollbar-track { background: transparent; }
-    .list::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--cb-sub) 55%, transparent); border-radius: 2px; }
-    @supports not selector(::-webkit-scrollbar) { .list { scrollbar-width: thin; scrollbar-color: var(--cb-sub) transparent; } }
+    /* native scrollbar hidden: HA sets scrollbar-color/-width globally, so webkit styling is ignored; a thin indicator (.sbi) is drawn instead */
+    .list { scrollbar-width: none; }
+    .list::-webkit-scrollbar { display: none; }
+    .wrap { position: relative; }
+    .sbi { position: absolute; width: 3px; border-radius: 2px; background: color-mix(in srgb, var(--cb-sub) 55%, transparent); pointer-events: none; opacity: 0; transition: opacity .2s; }
     .list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior-y: contain; }
     .tdot {
       display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none;
@@ -1067,6 +1068,7 @@
             <div class="az" hidden></div>
             <div class="ptr"></div>
             <div class="list"></div>
+            <div class="sbi"></div>
             <div class="dlg" hidden></div>
           </div>
         </ha-card>`;
@@ -1074,6 +1076,21 @@
       this._listEl = this.shadowRoot.querySelector('.list');
       this._azEl = this.shadowRoot.querySelector('.az');
       this._ptr = this.shadowRoot.querySelector('.ptr');
+      { // scroll indicator for the list
+        const sbi = this.shadowRoot.querySelector('.sbi'), l = this._listEl;
+        this._sbiUpd = () => {
+          const ov = l.scrollHeight - l.clientHeight;
+          if (ov <= 2) { sbi.style.opacity = '0'; return; }
+          const th = Math.max(24, l.clientHeight * l.clientHeight / l.scrollHeight);
+          sbi.style.top = (l.offsetTop + (l.scrollTop / ov) * (l.clientHeight - th)) + 'px';
+          sbi.style.height = th + 'px';
+          sbi.style.left = (l.offsetLeft + l.offsetWidth - 5) + 'px';
+          sbi.style.opacity = '1';
+        };
+        l.addEventListener('scroll', this._sbiUpd, { passive: true });
+        if (window.ResizeObserver) new ResizeObserver(() => this._sbiUpd()).observe(l);
+        if (window.MutationObserver) new MutationObserver(() => this._sbiUpd()).observe(l, { childList: true });
+      }
       this._dlg = this.shadowRoot.querySelector('.dlg');
       // Collapse open filters when the user scrolls the list (real touch/wheel input only, not layout scrolling)
       const fold = () => {

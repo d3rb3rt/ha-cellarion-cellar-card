@@ -250,10 +250,10 @@
     :host([data-wi]) .vrow .vyear { order: 2; margin-right: 0; }
     :host([data-wi]) .vrow .wcount.vcnt { order: 3; }
     :host([data-wi]) .vrow .chev.vcnt { order: 4; }
-    /* Hairline separators between location | price | vintage | count (the middle dot is already used inside the location) */
-    :host([data-wi]) .wrow .wright .wpm, :host([data-wi]) .wrow .wright .wvint, :host([data-wi]) .wrow .wright .wcount,
-    :host([data-wi]) .vrow .vprl, :host([data-wi]) .vrow .vyear, :host([data-wi]) .vrow .wcount.vcnt { border-left: 1px solid color-mix(in srgb, var(--cb-sub) 55%, transparent); padding-left: 10px; }
-    :host([data-wi]) .wrow .wright .wvint.multi { border-left: 0; padding-left: 0; }
+    /* Middle dots between location, price, vintage and count */
+    :host([data-wi]) .wrow .wright .wpm::before, :host([data-wi]) .wrow .wright .wvint::before, :host([data-wi]) .wrow .wright .wcount::before,
+    :host([data-wi]) .vrow .vprl::before, :host([data-wi]) .vrow .vyear::before, :host([data-wi]) .vrow .wcount.vcnt::before { content: '·'; margin-right: 10px; color: var(--cb-sub); font-weight: 400; }
+    :host([data-wi]) .wrow .wright .wvint.multi::before { content: none; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -332,6 +332,7 @@
     .vmid { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .locs { display: flex; flex-wrap: wrap; gap: 2px 12px; }
     .loc b { font-weight: 600; margin-left: 4px; }
+    .lp { font-size: .7em; opacity: .7; margin: 0 .55em; vertical-align: .08em; }
     .loc.none { color: var(--cb-sub); }
     .vwin { color: var(--cb-sub); font-size: .86em; }
     .vcnt, .vprl { display: none; }
@@ -522,12 +523,12 @@
       :host([data-wi]) .wit.d::after { margin-left: 6px; }
       /* Phone: location left, the rest (price | vintage | count) right; the first item of the right group needs no separator */
       :host([data-wi]) .wrow .wright .wloc { justify-content: flex-start; text-align: left; flex: 1 1 auto; }
-      :host([data-wi]) .wrow .wright .wpm { border-left: 0; padding-left: 0; }
-      :host([data-wi]) .wrow .wright:not(:has(.wpm)) .wvint:not(.multi) { border-left: 0; padding-left: 0; }
+      :host([data-wi]) .wrow .wright .wpm::before { content: none; }
+      :host([data-wi]) .wrow .wright:not(:has(.wpm)) .wvint:not(.multi)::before { content: none; }
       :host([data-wi]) .vrow .vmid { align-items: flex-start; text-align: left; }
       :host([data-wi]) .vrow .locs { justify-content: flex-start; }
-      :host([data-wi]) .vrow .vprl { border-left: 0; padding-left: 0; }
-      :host([data-wi]) .vrow:not(:has(.vprl)) .vyear { border-left: 0; padding-left: 0; }
+      :host([data-wi]) .vrow .vprl::before { content: none; }
+      :host([data-wi]) .vrow:not(:has(.vprl)) .vyear::before { content: none; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }
@@ -1233,6 +1234,10 @@
       }
     }
 
+    // Flag: the parts of a place (rack, shelf, side) are separated by a tiny pipe; the dot separates the infos
+    _lt(l) {
+      return this._flag('webInfo') ? esc(l).split(' · ').join('<span class="lp">|</span>') : esc(l);
+    }
     _locsHtml(bottles, brief) {
       const m = new Map();
       bottles.forEach((b) => m.set(b._loc, (m.get(b._loc) || 0) + 1));
@@ -1243,10 +1248,10 @@
         const r = new Map();
         m.forEach((n, l) => { const k = l === NO_LOC ? NO_LOC : l.split(' · ')[0]; r.set(k, (r.get(k) || 0) + n); });
         return Array.from(r.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
-          .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}<b>×${n}</b></span>`).join('');
+          .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${this._lt(l === NO_LOC ? t('loc.noneShort') : l)}<b>×${n}</b></span>`).join('');
       }
       return Array.from(m.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
-        .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${esc(l === NO_LOC ? t('loc.noneShort') : l)}${!brief && (bottles.length > 1 || n > 1) ? `<b>×${n}</b>` : ''}</span>`).join('');
+        .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${this._lt(l === NO_LOC ? t('loc.noneShort') : l)}${!brief && (bottles.length > 1 || n > 1) ? `<b>×${n}</b>` : ''}</span>`).join('');
     }
     _winText(e) {
       const b = e.b;

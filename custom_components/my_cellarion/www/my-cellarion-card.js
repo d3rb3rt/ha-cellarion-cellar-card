@@ -933,12 +933,19 @@
       return Array.from(m.values());
     }
     _old(v) { const n = this._vint(v); return n > 0 ? n : 99999; } // for "oldest first": NV goes last
+    // Price of an entry (wine + vintage): the first bottle with a price; without price -1 (goes last in both directions)
+    _ep(e) { const b = (e.bottles || []).find((x) => typeof x.price === 'number' && x.price > 0); return b ? b.price : -1; }
     _vint(v) { return v === 'NV' ? -1 : Number(v) || -1; }
     _cmpEntries(a, b) {
       switch (this._sort) {
         case 'producer': return de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '') || this._vint(b.vintage) - this._vint(a.vintage);
         case 'drinkTo': return a.drinkTo - b.drinkTo || de.compare(a.b.name || '', b.b.name || '');
         case 'vintage': return this._vint(b.vintage) - this._vint(a.vintage) || de.compare(a.b.name || '', b.b.name || '');
+        case 'priceAsc': case 'priceDesc': {
+          const x = this._ep(a), y = this._ep(b);
+          if ((x < 0) !== (y < 0)) return x < 0 ? 1 : -1;
+          return (this._sort === 'priceAsc' ? x - y : y - x) || de.compare(a.b.name || '', b.b.name || '');
+        }
         case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(a.b.name || '', b.b.name || '');
         case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
         default: return de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || '') || this._vint(b.vintage) - this._vint(a.vintage);
@@ -961,12 +968,20 @@
       });
       const rt = new Map();
       groups.forEach((g) => rt.set(g.b.region || '', (rt.get(g.b.region || '') || 0) + g.count));
+      // Group price: cheapest (ascending) or most expensive (descending) entry; wines without price go last in both directions
+      const gp = (g, how) => {
+        const ps = g.entries.map((x) => this._ep(x)).filter((x) => x > 0);
+        if (!ps.length) return how === 'min' ? 1e12 : -1;
+        return how === 'min' ? Math.min.apply(null, ps) : Math.max.apply(null, ps);
+      };
       const cmp = {
         producer: (a, b) => de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         drinkTo: (a, b) => a.drinkTo - b.drinkTo || de.compare(a.b.name || '', b.b.name || ''),
         vintage: (a, b) => b.maxVint - a.maxVint || de.compare(a.b.name || '', b.b.name || ''),
         region: (a, b) => (rt.get(b.b.region || '') || 0) - (rt.get(a.b.region || '') || 0) || (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(a.b.name || '', b.b.name || ''),
         vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
+        priceAsc: (a, b) => gp(a, 'min') - gp(b, 'min') || de.compare(a.b.name || '', b.b.name || ''),
+        priceDesc: (a, b) => gp(b, 'max') - gp(a, 'max') || de.compare(a.b.name || '', b.b.name || ''),
       }[this._sort] || ((a, b) => de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || ''));
       return groups.sort(cmp);
     }
@@ -1143,7 +1158,7 @@
         html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
           `placeholder="${window.matchMedia && window.matchMedia('(max-width: 600px)').matches ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
           (() => {
-            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region'].map((v) => ({ v, t: t('sort.' + v) }));
+            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc'].map((v) => ({ v, t: t('sort.' + v) }));
             const cur = (so.find((o) => o.v === this._sort) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;

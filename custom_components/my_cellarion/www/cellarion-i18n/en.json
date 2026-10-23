@@ -246,5 +246,7 @@
  "stat.vt.price": "Price",
  "stat.nBottles": "{n} btl.",
  "set.info": "Info in the list",
- "set.infoSub": "What follows the wine name and in which order (this device only)"
+ "set.infoSub": "What follows the wine name and in which order (this device only)",
+ "sort.priceAsc": "Price, low to high",
+ "sort.priceDesc": "Price, high to low"
 }

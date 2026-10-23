@@ -246,5 +246,7 @@
  "stat.vt.price": "Preis",
  "stat.nBottles": "{n} Fl.",
  "set.info": "Infos in der Liste",
- "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)"
+ "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)",
+ "sort.priceAsc": "Preis aufsteigend",
+ "sort.priceDesc": "Preis absteigend"
 }

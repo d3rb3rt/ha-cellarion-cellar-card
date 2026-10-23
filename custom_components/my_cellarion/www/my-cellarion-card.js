@@ -165,7 +165,13 @@
     }
     .search input:focus { border-color: var(--cb-on); }
     /* flag hdr2: the search stands out (lighter fill, stronger border); color-mix follows the theme text color, so it also works in light themes */
-    :host([data-hdr2]) .search input { background: color-mix(in srgb, var(--cb-text) 13%, var(--cb-card)); border-color: color-mix(in srgb, var(--cb-text) 38%, transparent); }
+    :host([data-hdr2]) .search input { background: color-mix(in srgb, var(--cb-text) 22%, var(--cb-card)); border-color: color-mix(in srgb, var(--cb-text) 30%, transparent); padding-left: 40px; }
+    :host([data-hdr2]) .search::before {
+      content: ''; position: absolute; left: 14px; top: 50%; width: 17px; height: 17px; transform: translateY(-50%); pointer-events: none; z-index: 1;
+      background: color-mix(in srgb, var(--cb-text) 75%, transparent);
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5L21 21'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
     :host([data-hdr2]) .search input::placeholder { color: color-mix(in srgb, var(--cb-text) 62%, transparent); }
     :host([data-hdr2]) .search input:focus { border-color: var(--cb-on); }
     .search .x {

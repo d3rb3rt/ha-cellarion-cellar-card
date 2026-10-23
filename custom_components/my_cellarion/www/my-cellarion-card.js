@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'webInfo' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -225,6 +225,7 @@
     .shead .shn { color: var(--cb-sub); font-weight: 400; font-size: .86em; }
     .wsl { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
     .wsep { color: var(--cb-sub); flex: none; }
+    .wl1, .wl2 { display: contents; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -270,6 +271,18 @@
       .wrow.single .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; box-sizing: border-box; }
       .wrow.single .wright .wsep { display: none; }
       .wrow.single .wright .wloc { max-width: none; }
+      /* Flag webInfo: line 1 = wine + producer, line 2 = info next to location / vintage / count, no drink window */
+      :host([data-wi]) .wrow { flex-wrap: wrap; row-gap: 2px; }
+      :host([data-wi]) .wrow .wmain, :host([data-wi]) .wrow .wtitle { display: contents; }
+      :host([data-wi]) .wrow .winfo { display: none; }
+      :host([data-wi]) .wrow .wl1 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 calc(100% - 32px); min-width: 0; }
+      :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
+      :host([data-wi]) .wrow .wl2 > .wsep:first-child { display: none; }
+      :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
+      :host([data-wi]) .wrow .wright .wsep { display: none; }
+      :host([data-wi]) .wrow .wright .wloc { max-width: none; }
+      :host([data-wi]) .wrow .wright { min-width: 0; }
+      :host([data-wi]) .wrow .wright .wvint { max-width: none; }
     }
     .sdots { gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
     .chev { color: var(--cb-sub); width: 14px; text-align: center; flex: none; }
@@ -464,8 +477,8 @@
       .wright .wvint { flex: 0 0 auto; max-width: none; }
       .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
       .wright .chev { margin-left: 0; }
-      .wrow .wtitle > :first-child { flex: 0 0 100%; }
-      .wrow .wtitle > :first-child + .wsep { display: none; }
+      .wrow .wtitle .wl1 > :first-child { flex: 0 0 100%; }
+      .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }
       .fwrap .more.open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
@@ -1024,6 +1037,7 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
+      this.toggleAttribute('data-wi', this._flag('webInfo'));
       this._renderHead();
       this._renderList();
     }
@@ -1357,10 +1371,10 @@
         return v ? seg(esc([].concat(v).map((x) => this._fmtVal(x)).join(', '))) : '';
       }).join('');
       if (this._sort === 'producer' && b.producer) {
-        return `<span class="wtitle swap"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">·</span><span class="wname">${this._hl(b.name)}</span>${reg}</span>`;
+        return `<span class="wtitle swap"><span class="wl1"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">·</span><span class="wname">${this._hl(b.name)}</span></span><span class="wl2">${reg}</span></span>`;
       }
-      return `<span class="wtitle"><span class="wname">${this._hl(b.name)}</span>` +
-        (b.producer ? `<span class="wsep">·</span><span class="wprod">${this._prodHtml(b.producer)}</span>` : '') + reg + `</span>`;
+      return `<span class="wtitle"><span class="wl1"><span class="wname">${this._hl(b.name)}</span>` +
+        (b.producer ? `<span class="wsep">·</span><span class="wprod">${this._prodHtml(b.producer)}</span>` : '') + `</span><span class="wl2">${reg}</span></span>`;
     }
 
     _groupRow(g) {

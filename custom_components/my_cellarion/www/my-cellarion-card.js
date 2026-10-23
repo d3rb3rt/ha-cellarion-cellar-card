@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'jgFirst' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'jgFirst' }, { id: 'cols' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -453,6 +453,25 @@
     .derr { color: var(--s-over); }
     .dask { font-size: 1.1em; font-weight: 600; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
+    /* Flag cols (wide only): the right side as fixed columns vintage | price | location | count, the same in the expanded rows */
+    @media (min-width: 601px) {
+      :host([data-cols]) { --cj: 4.4em; --cp: 7.4em; --cl: 16em; --cc: 2.6em; }
+      :host([data-cols]) .wrow .wright { display: grid; grid-template-columns: var(--cj) var(--cp) var(--cl) var(--cc) 14px; column-gap: 10px; align-items: center; }
+      :host([data-cols]) .wrow .wright .wvint { grid-column: 1; text-align: left; }
+      :host([data-cols]) .wrow .wright .wvint.multi { grid-column: 1 / 4; text-align: left; white-space: nowrap; }
+      :host([data-cols]) .wrow .wright .wpm { grid-column: 2; text-align: right; font-variant-numeric: tabular-nums; }
+      :host([data-cols]) .wrow .wright .wloc { grid-column: 3; justify-content: flex-start; text-align: left; flex-wrap: nowrap; overflow: hidden; min-width: 0; white-space: nowrap; }
+      :host([data-cols]) .wrow .wright .wloc::before, :host([data-cols]) .wrow .wright .wpm::before { content: none; }
+      :host([data-cols]) .wrow .wright .wcount { grid-column: 4; }
+      :host([data-cols]) .wrow .wright .chev { grid-column: 5; }
+      :host([data-cols]) .vrow { display: grid; grid-template-columns: 1fr var(--cj) var(--cp) var(--cl) var(--cc) 14px; column-gap: 10px; }
+      :host([data-cols]) .vrow .vyear { grid-column: 2; }
+      :host([data-cols]) .vrow .vprl { grid-column: 3; text-align: right; font-variant-numeric: tabular-nums; margin-right: 0; }
+      :host([data-cols]) .vrow .vmid { grid-column: 4; align-items: flex-start; text-align: left; margin-right: 0; min-width: 0; overflow: hidden; }
+      :host([data-cols]) .vrow .locs { justify-content: flex-start; flex-wrap: nowrap; white-space: nowrap; }
+      :host([data-cols]) .vrow .wcount.vcnt { grid-column: 5; }
+      :host([data-cols]) .vrow .chev.vcnt { grid-column: 6; }
+    }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
       .top .title, .top .rl { display: none; }
@@ -1038,7 +1057,8 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
-      this.toggleAttribute('data-jf', this._flag('jgFirst'));
+      this.toggleAttribute('data-jf', this._flag('jgFirst') || this._flag('cols'));
+      this.toggleAttribute('data-cols', this._flag('cols'));
       this._renderHead();
       this._renderList();
     }

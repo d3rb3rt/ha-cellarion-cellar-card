@@ -278,6 +278,7 @@
       :host([data-wi]) .wrow .wl1 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 calc(100% - 32px); min-width: 0; }
       :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
       :host([data-wi]) .wrow .wl2 > .wsep:first-child { display: none; }
+      :host([data-wi]) .wrow .wl1, :host([data-wi]) .wrow .wl2 { align-items: baseline; }
       :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
       :host([data-wi]) .wrow .wright .wsep { display: none; }
       :host([data-wi]) .wrow .wright .wloc { max-width: none; }

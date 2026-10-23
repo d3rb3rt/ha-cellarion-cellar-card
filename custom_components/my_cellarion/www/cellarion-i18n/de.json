@@ -250,8 +250,10 @@
  "sort.priceAsc": "Preis aufsteigend",
  "sort.priceDesc": "Preis absteigend",
  "det.editIn": "In Cellarion bearbeiten",
- "flag.hdr2": "Breit: Kopf zweispaltig",
- "flag.hdr2Sub": "Filter links in zwei Zeilen, rechts Werkzeuge über der Suche. Die Filter klappen beim Scrollen nicht mehr zu.",
  "flag.sinv": "Suche invertiert",
- "flag.sinvSub": "Helles Suchfeld mit dunkler Schrift (nur zusammen mit „Kopf zweispaltig“)."
+ "flag.sinvSub": "Helles Suchfeld mit dunkler Schrift (nur zusammen mit dem Kopfbereich-Test).",
+ "flag.hdr": "Kopfbereich (Test)",
+ "flag.hdrSub": "A: Filter links, Tools rechts. B: Suche, Sortierung, Statistik links, Filter Mitte, Reload und Einstellungen rechts (ab 1100 px Breite).",
+ "flag.hdr.a": "A",
+ "flag.hdr.b": "B"
 }

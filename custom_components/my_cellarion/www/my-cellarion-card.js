@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr2' }, { id: 'sinv' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr', opts: ['off', 'a', 'b'] }, { id: 'sinv' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -483,6 +483,19 @@
       :host([data-hdr2]) .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
       :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
+    }
+    /* Flag hdr, option b (from 900px): three columns. 1 search + (sort, stats) below, 2 filters in two rows, 3 reload above settings */
+    @media (min-width: 1100px) {
+      :host([data-hdr2][data-hdrv="b"]) .head { grid-template-columns: minmax(0, 220px) max-content minmax(0, 1fr) max-content; column-gap: 12px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="b"]) .head > .top { display: contents; }
+      :host([data-hdr2][data-hdrv="b"]) .top .search { grid-column: 1 / 3; grid-row: 1; width: 0; min-width: 100%; }
+      :host([data-hdr2][data-hdrv="b"]) .top > [data-id="sort"] { grid-column: 1; grid-row: 2; width: 100%; min-width: 0; }
+      :host([data-hdr2][data-hdrv="b"]) .top > .st { grid-column: 2; grid-row: 2; }
+      :host([data-hdr2][data-hdrv="b"]) .head > .fwrap { grid-column: 3; grid-row: 1 / 3; }
+      :host([data-hdr2][data-hdrv="b"]) .fwrap .more.open { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      :host([data-hdr2][data-hdrv="b"]) .top > .rl { grid-column: 4; grid-row: 1; margin-left: 14px; }
+      :host([data-hdr2][data-hdrv="b"]) .top > .gear { grid-column: 4; grid-row: 2; margin-left: 14px; }
+      :host([data-hdr2][data-hdrv="b"]) .head::before { content: ''; align-self: stretch; grid-column: 4; grid-row: 1 / 3; border-left: 1px solid var(--cb-line); pointer-events: none; }
     }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
@@ -1097,12 +1110,12 @@
       if (!this._built) return;
       if (this._keep()) this._saveState();
       this.toggleAttribute('data-sinv', this._flag('sinv'));
-      this.toggleAttribute('data-hdr2', this._flag('hdr2')); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
+      this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();
     }
     // Flag hdr2 (wide only): filters on the left in two rows, tools and search stacked on the right; filters never fold
-    _hdr2() { return this._flag('hdr2') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
+    _hdr2() { return this._flag('hdr') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
 
     _nAct() {
       const f = this._f;
@@ -1696,7 +1709,7 @@
         `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
         `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
         FLAGS.map((f) => `<div class="sblk">` + hd(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), this._scopeSw(null, 'device')) +
-          `<div class="scalechips">` + [['on', t('set.on')], ['off', t('set.off')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._flag(f.id) ? ' on' : ''}" data-act="flag" data-id="${esc(f.id)}" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>`).join('') +
+          `<div class="scalechips">` + (f.opts ? f.opts.map((v) => [v, v === 'off' ? t('set.off') : t('flag.' + f.id + '.' + v)]) : [['on', t('set.on')], ['off', t('set.off')]]).map(([v, n]) => `<button class="chip${(f.opts ? v === this._flagV(f.id) : (v === 'on') === this._flag(f.id)) ? ' on' : ''}" data-act="flag" data-id="${esc(f.id)}" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>`).join('') +
         `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw('keepState')) +
         `<div class="scalechips">` + [['on', t('set.keepOn')], ['off', t('set.keepOff')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._keep() ? ' on' : ''}" data-act="keepst" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
         `<div class="sblk">` + hd(t('set.filters'), t('set.filtersSub'), this._scopeSw('filters')) + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
@@ -1872,10 +1885,15 @@
     }
     // Feature flags for experiments: add {id, label, sub} (texts in the language files as flag.<id> and flag.<id>Sub) and ask _flag(id).
     // Per device in the settings (only shown while FLAGS is not empty) or in the card config (flags: {id: true}).
-    _flag(id) {
+    _flag(id) { const v = this._flagV(id); return v !== 'off' && v !== false && v !== ''; }
+    // value of a flag: boolean flags give true/false, flags with options (opts) give the chosen option ('off' = not set)
+    _flagV(id) {
       const L = (this._local && this._local.flags) || {};
-      if (L[id] !== undefined) return !!L[id];
-      return !!((this._cfg.flags || {})[id]);
+      const def = FLAGS.find((x) => x.id === id);
+      let v = L[id] !== undefined ? L[id] : (this._cfg.flags || {})[id];
+      if (v === undefined && id === 'hdr') v = L.hdr2 ? 'a' : undefined; // earlier boolean flag hdr2
+      if (def && def.opts) return def.opts.includes(v) ? v : (v === true ? def.opts[1] : 'off');
+      return !!v;
     }
     // Format the value of a personal data field by its look (date, yes/no, number)
     _fmtVal(v) {
@@ -2262,7 +2280,7 @@
       this._renderSet();
     },
     flag(t) {
-      this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: t.dataset.v === 'on' }); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg();
+      this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: (FLAGS.find((x) => x.id === t.dataset.id) || {}).opts ? t.dataset.v : t.dataset.v === 'on' }); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg();
     },
     lang(t) {
       this._setLang(t.dataset.v || '');

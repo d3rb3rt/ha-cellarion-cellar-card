@@ -250,8 +250,10 @@
  "sort.priceAsc": "Price, low to high",
  "sort.priceDesc": "Price, high to low",
  "det.editIn": "Edit in Cellarion",
- "flag.hdr2": "Wide: two-column header",
- "flag.hdr2Sub": "Filters on the left in two rows, tools above the search on the right. The filters no longer fold when scrolling.",
  "flag.sinv": "Inverted search",
- "flag.sinvSub": "Light search field with dark text (only together with the two-column header)."
+ "flag.sinvSub": "Light search field with dark text (only together with the the header test).",
+ "flag.hdr": "Header (test)",
+ "flag.hdrSub": "A: filters left, tools right. B: search, sort, stats left, filters middle, reload and settings right (from 1100 px width).",
+ "flag.hdr.a": "A",
+ "flag.hdr.b": "B"
 }

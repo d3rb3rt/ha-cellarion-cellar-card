@@ -293,6 +293,15 @@
       :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
       :host([data-wi]) .wrow .wright .wsep { display: none; }
       :host([data-wi]) .wrow .wright .wloc { max-width: none; }
+      /* Flag: expanded vintages like on the phone: year (price) left, location right, bottle count, no status text, ascending */
+      :host([data-wi]) .vlist { display: flex; flex-direction: column-reverse; padding-left: 44px; }
+      :host([data-wi]) .vrow { padding-left: 0; min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
+      :host([data-wi]) .vrow .vyear { min-width: 0; flex: 0 0 auto; }
+      :host([data-wi]) .vrow .vmid { align-items: flex-end; text-align: right; }
+      :host([data-wi]) .vrow .locs { justify-content: flex-end; color: var(--cb-sub); font-size: .9em; }
+      :host([data-wi]) .vrow .vstat, :host([data-wi]) .vrow .vwin, :host([data-wi]) .vrow .vpr, :host([data-wi]) .vrow .loc b { display: none; }
+      :host([data-wi]) .vrow .vcnt, :host([data-wi]) .vrow .vprl { display: inline; }
+      :host([data-wi]) .vrow .vprl::before { content: '·'; margin: 0 8px 0 2px; }
       :host([data-wi]) .wrow .wright { min-width: 0; }
       :host([data-wi]) .wrow .wright .wvint { max-width: none; }
     }

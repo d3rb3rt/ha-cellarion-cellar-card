@@ -231,6 +231,11 @@
     :host([data-wi]) .wrow .wl1 > .wit { display: inline; }
     :host([data-wi]) .wrow .wl1 > .wprod { display: inline-block; max-width: 100%; vertical-align: baseline; }
     :host([data-wi]) .wrow .wl1 > .wit.d::after { margin-right: 6px; }
+    /* Line 2: the dot sits in front of each item and is clipped by the container where an item starts a line (no dot at line start or end) */
+    :host([data-wi]) .wrow .wl2 { overflow: hidden; column-gap: 14px; }
+    :host([data-wi]) .wrow .wl2 > .wit { position: relative; }
+    :host([data-wi]) .wrow .wl2 > .wit::before { content: '·'; position: absolute; left: -9px; top: 0; color: var(--cb-sub); }
+    :host([data-wi]) .wrow .wl2 > .wit.d::after { display: none; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -282,7 +287,7 @@
       :host([data-wi]) .wrow .wmain, :host([data-wi]) .wrow .wtitle { display: contents; }
       :host([data-wi]) .wrow .winfo { display: none; }
       :host([data-wi]) .wrow .wl1 { display: block; flex: 1 1 calc(100% - 32px); min-width: 0; }
-      :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
+      :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
       :host([data-wi]) .wrow .wl1, :host([data-wi]) .wrow .wl2 { align-items: baseline; }
       :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
       :host([data-wi]) .wrow .wright .wsep { display: none; }
@@ -486,7 +491,7 @@
       .wrow .wtitle .wl1 > :first-child { flex: 0 0 100%; }
       :host([data-wi]) .wrow .wtitle { display: block; }
       :host([data-wi]) .wrow .wtitle .wl1 { display: block; }
-      :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; }
+      :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; }
       :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
       :host([data-wi]) .wit.d::after { margin-left: 6px; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }

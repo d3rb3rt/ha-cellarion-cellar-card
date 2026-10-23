@@ -246,5 +246,7 @@
  "stat.vt.price": "Price",
  "stat.nBottles": "{n} btl.",
  "flag.webList": "Web list like phone",
- "flag.webListSub": "The list on wide screens in the phone layout (test)"
+ "flag.webListSub": "The list on wide screens in the phone layout (test)",
+ "flag.chipIcons": "Detail: icons and separators",
+ "flag.chipIconsSub": "Chip groups in the detail view with an icon and a thin separator line (test)"
 }

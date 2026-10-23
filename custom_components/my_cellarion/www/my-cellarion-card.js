@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'webList' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'webList' }, { id: 'chipIcons' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -271,6 +271,10 @@
     .loc.none { color: var(--cb-sub); }
     .vwin { color: var(--cb-sub); font-size: .86em; }
     .vcnt, .vprl { display: none; }
+    .d2grp { display: flex; align-items: flex-start; gap: 10px; padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--cb-line); }
+    .d2grp:first-of-type { }
+    .d2gic { flex: none; color: var(--cb-sub); margin-top: 6px; }
+    .d2grp .d2chips { flex: 1 1 auto; min-width: 0; margin: 0; }
     .fend { display: contents; }
     .vstat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-width: 5.5em; }
     .frow { border-bottom: 1px solid var(--cb-line); }
@@ -1791,9 +1795,12 @@
         const chips = ['body', 'acidity', 'sweetness', 'tannin'].filter((k) => pr[k]).map((k) => `<span><em>${esc(t('prof.' + k))}</em>${esc(lab(pr[k]))}</span>`).join('');
         const fl = (pr.flavors || []).map((x) => `<span>${esc(x)}</span>`).join('');
         const fp = (pr.foodPairings || []).map((x) => `<span>${esc(x)}</span>`).join('');
-        about = (chips ? `<div class="d2chips">${chips}</div>` : '') +
-          (fl ? `<div class="d2chips">${fl}</div>` : '') +
-          (fp ? `<div class="d2chips">${fp}</div>` : '') +
+        // Flag chipIcons: thin separator line and an icon in front of each chip group instead of headings
+        const ic = (d) => `<svg class="d2gic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+        const grp = (html, icon) => (!html ? '' : this._flag('chipIcons') ? `<div class="d2grp">${ic(icon)}<div class="d2chips">${html}</div></div>` : `<div class="d2chips">${html}</div>`);
+        about = grp(chips, '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>') +
+          grp(fl, '<path d="M5 19C5 10 10 5 19 5c0 9-5 14-14 14zM5 19l8-8"/>') +
+          grp(fp, '<path d="M6 3v7a2 2 0 0 0 2 2v9M10 3v7a2 2 0 0 1-2 2M18 3c-2.5 2-3 6-1 9h1v9"/>') +
           (pr.description ? `<div class="d2txt" style="margin-top:8px">${esc(pr.description)}</div>` : '');
       }
       // My data at vintage level: same for all bottles -> value, otherwise range and hint

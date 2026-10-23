@@ -113,7 +113,7 @@
     :host([data-mode="dark"]) ha-card { background: #1c1c1c; color: #e6e6e6; }
     :host([data-mode="light"]) ha-card { background: #ffffff; color: #1f1f1f; }
     :host([data-mode="dark"]) .wrap { --cb-text: #e6e6e6; --cb-sub: #a0a0a0; --cb-line: rgba(255,255,255,.14); --cb-chip: rgba(255,255,255,.14); --cb-seg: rgba(255,255,255,.14); --cb-ring: rgba(255,255,255,.45); --cb-card: #1c1c1c; --cb-on: #03a9f4; --cb-on-text: #fff; }
-    :host([data-mode="light"]) .wrap { --cb-text: #1f1f1f; --cb-sub: #666666; --cb-line: rgba(0,0,0,.14); --cb-chip: rgba(0,0,0,.08); --cb-seg: rgba(0,0,0,.08); --cb-ring: rgba(0,0,0,.4); --cb-card: #ffffff; --cb-on: #0288d1; --cb-on-text: #fff; --w-white: #b3a23a; --w-sparkling: #a38f2c; }
+    :host([data-mode="light"]) .wrap { --cb-text: #1f1f1f; --cb-sub: #666666; --cb-line: rgba(0,0,0,.14); --cb-chip: rgba(0,0,0,.08); --cb-seg: rgba(0,0,0,.08); --cb-ring: rgba(0,0,0,.4); --cb-card: #ffffff; --cb-on: #0288d1; --cb-on-text: #fff; --w-white: #cdb93d; --w-sparkling: #b5a032; }
     ha-card.flush { background: none; box-shadow: none; border: 0; border-radius: 0; }
     .wrap {
       /* Colours: all overridable via --cellarion-* (e.g. in the HA theme), otherwise derived from the standard variables of the active theme */
@@ -499,6 +499,7 @@
     /* Header band: slightly lighter than the list, with a clearer lower edge */
     :host([data-hdr2]) .head, :host([data-hdr2]) .az { background: color-mix(in srgb, var(--cb-text) 6%, var(--cb-card)); }
     :host([data-hdr2]) .head { border-bottom-color: transparent; }
+    :host([data-hdr2][data-mode="light"]) .head, :host([data-hdr2][data-mode="light"]) .az { background: color-mix(in srgb, var(--cb-text) 3%, var(--cb-card)); }
     :host([data-hdr2]) .az { box-sizing: border-box; }
     :host([data-hdr2]) .az { border-bottom-color: color-mix(in srgb, var(--cb-text) 16%, transparent); box-shadow: 0 5px 8px -5px rgba(0, 0, 0, .45); position: relative; z-index: 1; }
     :host([data-hdr2]) .fwrap .more.open > .sel.fs { border-color: color-mix(in srgb, var(--cb-text) 26%, transparent); }

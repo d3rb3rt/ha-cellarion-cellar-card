@@ -501,7 +501,9 @@
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: auto; }
       :host([data-hdr2][data-hdrv="c"]) .head > .fpills:not(:has(.fpill, [data-reset]:not([hidden]))) { display: none; }
       :host([data-hdr2][data-hdrv="c"]) .head > .sumline { grid-row: auto; }
-      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 30px; min-height: 30px; padding: 0 12px; font-size: 13px; }
+      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 28px; min-height: 28px; padding: 0 2px; gap: 6px; font-size: 13px; background: none; border: 0; border-radius: 6px; color: var(--cb-sub); justify-content: flex-start; }
+      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel::before { content: ''; width: 16px; height: 16px; flex: none; background: currentColor; -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 6h18M3 12h12M3 18h6' stroke='black' stroke-width='2.4' stroke-linecap='round' fill='none'/></svg>") center/contain no-repeat; }
+      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel:hover { color: var(--cb-text); }
     }
     /* Flag hdr, option b (from 900px): three columns. 1 search + (sort, stats) below, 2 filters in two rows, 3 reload above settings */
     @media (min-width: 1100px) {

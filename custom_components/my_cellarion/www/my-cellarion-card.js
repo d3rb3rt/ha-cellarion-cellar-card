@@ -296,6 +296,7 @@
     .fbtn.on .fcnt { background: var(--cb-on-text); color: var(--cb-on); }
     .sel.fs { min-height: 30px; font-size: 13px; padding: 0 6px 0 10px; border-radius: 15px; flex: none; text-overflow: ellipsis; }
     .btn.round.sm { width: 30px; min-height: 30px; font-size: 16px; }
+    .fpills .btn.round.sm[data-reset] { width: 26px; height: 26px; min-height: 26px; padding: 0; font-size: 13px; line-height: 1; }
     .fpills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .fpills:not(:has(> :not([hidden]))) { display: none; }
     .fpills button[hidden] { display: none; }

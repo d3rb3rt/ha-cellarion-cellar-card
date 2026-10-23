@@ -296,7 +296,7 @@
     .fbtn.on .fcnt { background: var(--cb-on-text); color: var(--cb-on); }
     .sel.fs { min-height: 30px; font-size: 13px; padding: 0 6px 0 10px; border-radius: 15px; flex: none; text-overflow: ellipsis; }
     .btn.round.sm { width: 30px; min-height: 30px; font-size: 16px; }
-    .fpills .btn.round.sm[data-reset] { width: 26px; height: 26px; min-height: 26px; padding: 0; font-size: 13px; line-height: 1; }
+    .fpills .btn.round.sm[data-reset] { width: 26px; height: 26px; min-height: 26px; padding: 0; font-size: 11px; line-height: 1; }
     .fpills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .fpills:not(:has(> :not([hidden]))) { display: none; }
     .fpills button[hidden] { display: none; }
@@ -500,7 +500,7 @@
     :host([data-hdr2][data-hdrv="c"]) .sumline > .sel:hover { color: var(--cb-text); }
     /* Flag hdr, option c (wide): search + stats left, reload/settings as plain icons right, filters in their own row, sort at the right of the summary line */
     @media (min-width: 601px) {
-      :host([data-hdr2][data-hdrv="c"]) .head { box-sizing: border-box; padding-right: 18px; /* content ends with the glyph of the last alphabet letter (Z) */ grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="c"]) .head { box-sizing: border-box; padding-right: 36px; /* content ends with the glyph of the last alphabet letter (Z) */ grid-template-columns: minmax(0, 300px) minmax(0, 1fr) max-content max-content max-content; column-gap: 8px; row-gap: 8px; }
       :host([data-hdr2][data-hdrv="c"]) .head > .top { display: contents; border-left: 0; padding-left: 0; }
       :host([data-hdr2][data-hdrv="c"]) .top .search { grid-column: 1; grid-row: 1; }
       :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 3; grid-row: 1; }
@@ -1247,7 +1247,7 @@
       const d = this._data, f = this._f, c = this._cfg;
       this._ddItems = {};
       const nAct = this._nAct();
-      const active = f.q || nAct;
+      const active = (f.q ? 1 : 0) + nAct > 1; // a single filter or the search is removed by its own cross; reset only for several
       const gear = `<button class="btn round gear" data-act="setopen" title="${esc(t('head.settings'))}" aria-label="${esc(t('head.settings'))}">` +
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7m7.4-2.5c.04-.33.1-.66.1-1s-.06-.67-.1-1l2.1-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42L9.12 5.07a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11c-.04.33-.1.66-.1 1s.06.67.1 1l-2.1 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.22.39.3.6.22l2.5-1c.52.4 1.08.73 1.7 1l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.62-.27 1.18-.6 1.7-1l2.5 1c.23.09.47 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></button>`;
       const stat = `<button class="btn round st" data-act="statopen" title="${esc(t('stat.title'))}" aria-label="${esc(t('stat.title'))}">` +
@@ -1402,7 +1402,7 @@
       const f = this._f;
       const rst = this._head && this._head.querySelector('[data-reset]');
       if (rst) {
-        rst.hidden = !(f.q || this._nAct());
+        rst.hidden = !((f.q ? 1 : 0) + this._nAct() > 1);
       }
       const sum = this._head && this._head.querySelector('[data-sum]');
       if (sum) {
@@ -1461,6 +1461,8 @@
       const hdr2 = this._hdr2();
       const others = this.shadowRoot.querySelectorAll(hdr2 ? '.head' : '.top, .fwrap, .fpills, .sumline');
       const set = (v) => {
+        // header layout c (wide): list and header are 18px wider than the alphabet bar, so the bottle count ('Fl.') ends under the letter Z
+        if (v && this._flagV('hdr') === 'c' && /px$/.test(v) && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches)) v = (parseFloat(v) + 18) + 'px';
         list.style.maxWidth = v;
         this.shadowRoot.querySelectorAll('.head, .top, .fwrap, .fpills, .sumline').forEach((e) => { e.style.maxWidth = ''; });
         others.forEach((e) => { e.style.maxWidth = v; });

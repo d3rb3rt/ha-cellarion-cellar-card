@@ -1168,7 +1168,11 @@
     }
     // Flag hdr2 (wide only): filters on the left in two rows, tools and search stacked on the right; filters never fold
     // Filters stay open (folding on scroll down / re-opening on scroll up is switched off for now: set SCROLL_FOLD = true)
-    _fixedHdr() { return !SCROLL_FOLD || (this._hdr2() && this._flagV('hdr') !== 'c'); }
+    // Phone (<=600px): folds on scroll only when the filters need more than one row (more than 4 pills)
+    _fixedHdr() {
+      if ((this._nChips || 0) > 4 && window.matchMedia && window.matchMedia('(max-width: 600px)').matches) return false;
+      return !SCROLL_FOLD || (this._hdr2() && this._flagV('hdr') !== 'c');
+    }
     _hdr2() { return this._flag('hdr') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
 
     _nAct() {
@@ -1283,6 +1287,7 @@
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
         const by = (x, y) => de.compare(x[0], y[0]);
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size).length + (hid.length ? 1 : 0);
+        this._nChips = nChips;
         html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);

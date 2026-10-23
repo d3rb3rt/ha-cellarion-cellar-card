@@ -247,6 +247,6 @@
  "stat.nBottles": "{n} Fl.",
  "set.info": "Infos in der Liste",
  "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)",
- "flag.webInfo": "Web-Liste: Infos in Zeile 2",
- "flag.webInfoSub": "Breite Ansicht: Zeile 1 nur Wein und Winzer, Zeile 2 die Infos (Einstufung, Region, Preis ...) neben Lagerort und Jahrgang, ohne Trinkfenster."
+ "flag.webInfo": "Liste: Wein und Winzer in Zeile 1",
+ "flag.webInfoSub": "Zeile 1 nur Wein und Winzer, Zeile 2 die Infos (Einstufung, Region, Preis ...), am Umbruch wird zwischen den Infos getrennt. Breit: ohne Trinkfenster, Infos neben Lagerort und Jahrgang."
 }

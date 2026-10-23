@@ -226,6 +226,8 @@
     .wsl { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
     .wsep { color: var(--cb-sub); flex: none; }
     .wl1, .wl2 { display: contents; }
+    :host([data-wi]) .wrow .wit.e::after { display: none; }
+    .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -277,7 +279,6 @@
       :host([data-wi]) .wrow .winfo { display: none; }
       :host([data-wi]) .wrow .wl1 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 calc(100% - 32px); min-width: 0; }
       :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 8px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
-      :host([data-wi]) .wrow .wl2 > .wsep:first-child { display: none; }
       :host([data-wi]) .wrow .wl1, :host([data-wi]) .wrow .wl2 { align-items: baseline; }
       :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
       :host([data-wi]) .wrow .wright .wsep { display: none; }
@@ -479,6 +480,10 @@
       .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
       .wright .chev { margin-left: 0; }
       .wrow .wtitle .wl1 > :first-child { flex: 0 0 100%; }
+      :host([data-wi]) .wrow .wtitle { display: block; }
+      :host([data-wi]) .wrow .wtitle .wl1, :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 6px; align-items: baseline; }
+      :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
+      :host([data-wi]) .wit.d::after { margin-left: 6px; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }
@@ -1371,6 +1376,24 @@
         const v = b.p && b.p[d.label];
         return v ? seg(esc([].concat(v).map((x) => this._fmtVal(x)).join(', '))) : '';
       }).join('');
+      if (this._flag('webInfo')) {
+        // Every item is one unit with its own trailing dot, so a line break falls between the items (no dot at the start of a line)
+        const txt = (d) => {
+          if (d.id === 'price') { const m = pr.match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
+          if (d.id === 'cls') return b._cls && b._cls.length ? this._hl(b._cls.join(', ')) : '';
+          if (d.id === 'region') return b.region ? this._hl(b.region) : '';
+          if (d.id === 'grape') return b.grapes && b.grapes.length ? esc(b.grapes.join(', ')) : '';
+          const v = b.p && b.p[d.label];
+          return v ? esc([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
+        };
+        const swap = this._sort === 'producer' && b.producer;
+        const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
+          : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
+        const infos = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
+        const all = head.concat(infos);
+        const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
+        return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
+      }
       if (this._sort === 'producer' && b.producer) {
         return `<span class="wtitle swap"><span class="wl1"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">·</span><span class="wname">${this._hl(b.name)}</span></span><span class="wl2">${reg}</span></span>`;
       }

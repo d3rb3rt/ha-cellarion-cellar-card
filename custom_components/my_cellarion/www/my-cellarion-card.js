@@ -251,8 +251,7 @@
     :host([data-wi]) .vrow .wcount.vcnt { order: 3; }
     :host([data-wi]) .vrow .chev.vcnt { order: 4; }
     /* Middle dots between location, price, vintage and count */
-    :host([data-wi]) .wrow .wright .wpm::before, :host([data-wi]) .wrow .wright .wvint::before,
-    :host([data-wi]) .vrow .vprl::before, :host([data-wi]) .vrow .vyear::before { content: '·'; margin-right: 10px; color: var(--cb-sub); font-weight: 400; }
+    :host([data-wi]) .wrow .wright .wpm::before, :host([data-wi]) .vrow .vprl::before { content: '·'; margin-right: 10px; color: var(--cb-sub); font-weight: 400; }
     :host([data-wi]) .wrow .wright .wvint.multi::before { content: none; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }

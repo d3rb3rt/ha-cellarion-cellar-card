@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'webInfo' }] : [];
+  const FLAGS = [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -224,35 +224,37 @@
     .shead { position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; gap: 10px; padding: 8px 12px 6px; background: var(--cb-card); border-bottom: 1px solid var(--cb-line); font-weight: 700; font-size: 1.05em; }
     .shead .shn { color: var(--cb-sub); font-weight: 400; font-size: .86em; }
     .wsl { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
-    .wsep { color: var(--cb-sub); flex: none; }
     .wl1, .wl2 { display: contents; }
-    .wpm { display: none; }
-    :host([data-wi]) .wrow .wit.e::after { display: none; }
-    /* Line 1 flows as text: a long wine name wraps by itself and the producer follows its last fragment */
-    :host([data-wi]) .wrow .wl1 > .wit { display: inline; }
-    :host([data-wi]) .wrow .wl1 > .wprod { display: inline-block; max-width: 100%; vertical-align: baseline; }
-    :host([data-wi]) .wrow .wl1 > .wit.d::after { margin-right: 6px; }
+    /* Row: line 1 = wine + producer (flows as text), line 2 = info items (left) + location / price / vintage / count (right) */
+    .wrow { flex-wrap: wrap; row-gap: 2px; }
+    .wrow .wmain, .wrow .wtitle { display: contents; }
+    .wrow .wl1 { display: block; flex: 1 1 calc(100% - 32px); min-width: 0; }
+    .wrow .wl1 > .wit { display: inline; }
+    .wrow .wl1 > .wprod { display: inline-block; max-width: 100%; vertical-align: baseline; }
+    .wrow .wl1 > .wit.d::after { margin-right: 6px; }
     /* Line 2: the dot sits in front of each item and is clipped by the container where an item starts a line (no dot at line start or end) */
-    :host([data-wi]) .wrow .wl2 { overflow: hidden; column-gap: 14px; }
-    :host([data-wi]) .wrow .wl2 > .wit { position: relative; }
-    :host([data-wi]) .wrow .wl2 > .wit::before { content: '·'; position: absolute; left: -9px; top: 0; color: var(--cb-sub); }
-    :host([data-wi]) .wrow .wl2 > .wit.d::after { display: none; }
-    /* Flag, all widths: right side of a row = location, price, vintage, count, arrow (price is vintage info; the same for expanded vintages) */
-    :host([data-wi]) .wrow .wright .wpm { display: inline; color: var(--cb-sub); white-space: nowrap; }
-    :host([data-wi]) .wrow .wright .wloc { order: 0; }
-    :host([data-wi]) .wrow .wright .wpm { order: 1; }
-    :host([data-wi]) .wrow .wright .wvint { order: 2; }
-    :host([data-wi]) .wrow .wright .wcount { order: 3; }
-    :host([data-wi]) .wrow .wright .chev { order: 4; }
-    :host([data-wi]) .wrow .wright .wvint.multi { text-align: right; }
-    :host([data-wi]) .vrow .vmid { order: 0; flex: 1 1 auto; margin-right: 10px; }
-    :host([data-wi]) .vrow .vprl { order: 1; margin-right: 10px; }
-    :host([data-wi]) .vrow .vyear { order: 2; margin-right: 0; }
-    :host([data-wi]) .vrow .wcount.vcnt { order: 3; }
-    :host([data-wi]) .vrow .chev.vcnt { order: 4; }
-    /* Middle dots between location, price, vintage and count */
-    :host([data-wi]) .wrow .wright .wpm::before, :host([data-wi]) .vrow .vprl::before { content: '·'; margin-right: 10px; color: var(--cb-sub); font-weight: 400; }
-    :host([data-wi]) .wrow .wright .wvint.multi::before { content: none; }
+    .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; overflow: hidden; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
+    .wrow .wl2 > .wit { position: relative; }
+    .wrow .wl2 > .wit::before { content: '·'; position: absolute; left: -9px; top: 0; color: var(--cb-sub); }
+    .wrow .wl2 > .wit.d::after, .wrow .wit.e::after { display: none; }
+    .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
+    /* Right side: location, price, vintage, count, arrow (the price is vintage info); the dot only between location and price */
+    .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; min-width: 0; }
+    .wrow .wright .wloc { order: 0; max-width: none; }
+    .wrow .wright .wpm { order: 1; color: var(--cb-sub); white-space: nowrap; }
+    .wrow .wright .wpm::before, .vrow .vprl::before { content: '·'; margin-right: 10px; color: var(--cb-sub); font-weight: 400; }
+    .wrow .wright .wvint { order: 2; max-width: none; }
+    .wrow .wright .wcount { order: 3; }
+    .wrow .wright .chev { order: 4; }
+    .wrow .wright .wvint.multi { text-align: right; }
+    /* Expanded vintages: same order, ascending, no status text */
+    .vrow .vmid { order: 0; flex: 1 1 auto; margin-right: 10px; align-items: flex-end; text-align: right; }
+    .vrow .locs { justify-content: flex-end; color: var(--cb-sub); font-size: .9em; }
+    .vrow .loc b { display: none; }
+    .vrow .vprl { order: 1; margin-right: 10px; }
+    .vrow .vyear { order: 2; margin-right: 0; min-width: 0; flex: 0 0 auto; }
+    .vrow .wcount.vcnt { order: 3; }
+    .vrow .chev.vcnt { order: 4; }
     .wit.d::after { content: '·'; margin-left: 8px; color: var(--cb-sub); font-weight: 400; }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -280,51 +282,18 @@
     .fwrap { display: flex; flex-direction: column; gap: 8px; }
     .fwrap:not(.fopen) { display: none; }
     .wprice { color: var(--cb-sub); font-size: .94em; white-space: nowrap; flex: none; }
-    .vpr { align-self: center; margin-right: 8px; }
     .wvint { font-weight: 700; color: inherit; white-space: nowrap; max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
     /* Vintage in the color of its maturity instead of a status dot */
     .yv { color: var(--yc); font-weight: 700; }
     .wvint.multi { color: var(--cb-sub); font-weight: 400; }
-    .sdots, .vstat .sdot { display: none; }
+    .vstat .sdot { display: none; }
     .wloc { color: var(--cb-sub); font-size: .9em; justify-content: flex-end; text-align: right; max-width: 30%; }
-    .wrow .wtitle { flex-wrap: wrap; gap: 0 8px; }
     .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
     .wcount { font-weight: 600; min-width: 2.4em; text-align: right; white-space: nowrap; }
-    /* Wide screens, one vintage: the title gets the whole width, location / vintage / count sit on a second line */
-    @media (min-width: 601px) {
-      .wrow.single { flex-wrap: wrap; row-gap: 2px; }
-      .wrow.single .wmain { display: contents; }
-      .wrow.single .wtitle { flex: 1 1 calc(100% - 32px); min-width: 0; }
-      .wrow.single .winfo { flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
-      .wrow.single .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; box-sizing: border-box; }
-      .wrow.single .wright .wsep { display: none; }
-      .wrow.single .wright .wloc { max-width: none; }
-      /* Flag webInfo: line 1 = wine + producer, line 2 = info next to location / vintage / count, no drink window */
-      :host([data-wi]) .wrow { flex-wrap: wrap; row-gap: 2px; }
-      :host([data-wi]) .wrow .wmain, :host([data-wi]) .wrow .wtitle { display: contents; }
-      :host([data-wi]) .wrow .winfo { display: none; }
-      :host([data-wi]) .wrow .wl1 { display: block; flex: 1 1 calc(100% - 32px); min-width: 0; }
-      :host([data-wi]) .wrow .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; flex: 1 1 0; min-width: 0; margin-left: 32px; align-self: center; }
-      :host([data-wi]) .wrow .wl1, :host([data-wi]) .wrow .wl2 { align-items: baseline; }
-      :host([data-wi]) .wrow .wright { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; margin-left: auto; }
-      :host([data-wi]) .wrow .wright .wsep { display: none; }
-      :host([data-wi]) .wrow .wright .wloc { max-width: none; }
-      /* Flag: expanded vintages like on the phone: year (price) left, location right, bottle count, no status text, ascending */
-      :host([data-wi]) .vlist { display: flex; flex-direction: column-reverse; padding-left: 44px; }
-      :host([data-wi]) .vrow { padding-left: 0; min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
-      :host([data-wi]) .vrow .vyear { min-width: 0; flex: 0 0 auto; }
-      :host([data-wi]) .vrow .vmid { align-items: flex-end; text-align: right; }
-      :host([data-wi]) .vrow .locs { justify-content: flex-end; color: var(--cb-sub); font-size: .9em; }
-      :host([data-wi]) .vrow .vstat, :host([data-wi]) .vrow .vwin, :host([data-wi]) .vrow .vpr, :host([data-wi]) .vrow .loc b { display: none; }
-      :host([data-wi]) .vrow .vcnt, :host([data-wi]) .vrow .vprl { display: inline; }
-      :host([data-wi]) .wrow .wright { min-width: 0; }
-      :host([data-wi]) .wrow .wright .wvint { max-width: none; }
-    }
-    .sdots { gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 80px; }
     .chev { color: var(--cb-sub); width: 14px; text-align: center; flex: none; }
-    .vlist { padding: 0 0 6px 33px; }
+    .vlist { display: flex; flex-direction: column-reverse; padding: 0 0 6px 44px; }
     .vrow {
-      display: flex; align-items: center; gap: 10px; min-height: var(--cb-row-h, 44px); padding: 4px 12px 4px 0;
+      display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 2px 12px 2px 0;
       border-top: 1px dashed var(--cb-line);
     }
     .vyear { font-weight: 700; min-width: 3.2em; }
@@ -333,8 +302,6 @@
     .loc b { font-weight: 600; margin-left: 4px; }
     .lp { font-size: .7em; opacity: .7; margin: 0 .55em; vertical-align: .08em; }
     .loc.none { color: var(--cb-sub); }
-    .vwin { color: var(--cb-sub); font-size: .86em; }
-    .vcnt, .vprl { display: none; }
     /* the sheet has a 12px gap between its children: the -6px margins cancel it so each line sits exactly between two chip rows */
     .d2grp { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; margin: -6px 0; border-top: 1px solid var(--cb-line); }
     .d2gic { flex: none; color: var(--cb-sub); margin-top: 7px; }
@@ -346,8 +313,6 @@
     .fmid { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .msg { padding: 28px 16px; text-align: center; color: var(--cb-sub); }
     .msg button { margin-top: 12px; }
-    .winfo { color: var(--cb-sub); font-size: .86em; display: flex; flex-wrap: wrap; gap: 0 12px; }
-    .winfo > span { white-space: nowrap; }
     .dtop { display: flex; gap: 14px; align-items: flex-start; }
     .dtop .dfacts { flex: 1; min-width: 0; }
     .d2hero { display: flex; gap: 14px; align-items: flex-start; }
@@ -505,55 +470,25 @@
       .wrow { flex-wrap: wrap; align-items: flex-start; row-gap: 2px; padding: 8px 12px; }
       .wrow .tdot, .wrow .tsp { margin-top: 5px; }
       .wrow .wmain { flex: 1 1 0; min-width: 0; }
-      .wrow .wtitle { flex-wrap: wrap; gap: 0 6px; }
       .wrow .wname, .wrow .wprod, .wrow .wreg { white-space: normal; overflow: visible; text-overflow: clip; }
-      .wrow .winfo { display: none; }
-      .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; padding-left: 32px; box-sizing: border-box; }
-      .wright .wsep { display: none; }
-      .wright .wloc { flex: 1 1 auto; justify-content: flex-start; text-align: left; max-width: none; min-width: 0; }
+      .wrow .wright { display: flex; align-items: center; gap: 10px; flex: 1 1 100%; margin-left: 0; padding-left: 32px; box-sizing: border-box; }
       .wright .wvint { flex: 0 0 auto; max-width: none; }
       .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
+      .wrow .wmain, .wrow .wtitle { display: block; }
+      .wrow .wl1 { flex: none; }
+      .wrow .wl2 { margin-left: 0; }
+      .wit.d::after { margin-left: 6px; }
+      /* Phone: location left, the rest (price, vintage, count) right */
+      .wrow .wright .wloc { justify-content: flex-start; text-align: left; flex: 1 1 auto; }
+      .wrow .wright .wpm::before, .vrow .vprl::before { content: none; }
+      .vrow .vmid { align-items: flex-start; text-align: left; }
+      .vrow .locs { justify-content: flex-start; }
       .wright .chev { margin-left: 0; }
-      .wrow .wtitle .wl1 > :first-child { flex: 0 0 100%; }
-      :host([data-wi]) .wrow .wtitle { display: block; }
-      :host([data-wi]) .wrow .wtitle .wl1 { display: block; }
-      :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; }
-      :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
-      :host([data-wi]) .wit.d::after { margin-left: 6px; }
-      /* Phone: location left, the rest (price | vintage | count) right; the first item of the right group needs no separator */
-      :host([data-wi]) .wrow .wright .wloc { justify-content: flex-start; text-align: left; flex: 1 1 auto; }
-      :host([data-wi]) .wrow .wright .wpm::before { content: none; }
-      :host([data-wi]) .wrow .wright:not(:has(.wpm)) .wvint:not(.multi)::before { content: none; }
-      :host([data-wi]) .vrow .vmid { align-items: flex-start; text-align: left; }
-      :host([data-wi]) .vrow .locs { justify-content: flex-start; }
-      :host([data-wi]) .vrow .vprl::before { content: none; }
-      :host([data-wi]) .vrow:not(:has(.vprl)) .vyear::before { content: none; }
-      .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
-      .wright .sdots { display: none; }
       .fwrap .more.open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
       .fwrap .more.open > .sel.fs { width: 100%; min-width: 0; padding: 0 4px; text-align: center; justify-content: center; overflow: hidden; text-overflow: ellipsis; }
       .fwrap .more.open > .fend { display: flex; gap: 6px; min-width: 0; }
       .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
-      .vlist { padding-left: 44px; }
-      .vrow { padding-left: 0; }
-      .vrow .vyear { min-width: 0; flex: 0 0 auto; }
-      .vrow .vmid { align-items: flex-end; text-align: right; }
-      .vrow .locs { justify-content: flex-end; }
-      .vrow .vstat { display: none; }
-      .vrow .vwin { display: none; }
-      .vrow .vpr { display: none; }
-      .vrow .vcnt { display: inline; }
-      .vrow .vprl { display: inline; }
-      .vrow .loc b { display: none; }
-      .vlist { display: flex; flex-direction: column-reverse; }
-      .vrow { min-height: 34px; padding-top: 2px; padding-bottom: 2px; }
-      .vrow .locs { color: var(--cb-sub); font-size: .9em; }
-      .wright .wvint { color: var(--cb-sub); font-weight: 400; }
-      .wright .wvint.yv { color: var(--yc); font-weight: 700; }
-      .wright .wvint { order: -2; }
-      .wright .wloc { order: -1; justify-content: flex-end; text-align: right; }
-      .wright .wvint.multi { flex: 1 1 auto; }
       .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; }
       .dtop { gap: 10px; }
       .dimg { width: 84px; max-height: 150px; }
@@ -1089,7 +1024,6 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
-      this.toggleAttribute('data-wi', this._flag('webInfo'));
       this._renderHead();
       this._renderList();
     }
@@ -1233,9 +1167,9 @@
       }
     }
 
-    // Flag: the parts of a place (rack, shelf, side) are separated by a tiny pipe; the dot separates the infos
+    // The parts of a place (rack, shelf, side) are separated by a tiny pipe; the dot separates the infos
     _lt(l) {
-      return this._flag('webInfo') ? esc(l).split(' · ').join('<span class="lp">|</span>') : esc(l);
+      return esc(l).split(' · ').join('<span class="lp">|</span>');
     }
     _locsHtml(bottles, brief) {
       const m = new Map();
@@ -1405,7 +1339,7 @@
     }
     _priceSpans(bottles) {
       const p = this._priceTxt(bottles);
-      return p ? { d: `<span class="wsep wpd">·</span><span class="wreg wprice wpd">${esc(p)}</span>` } : { d: '' };
+      return p ? { d: `<span class="wreg wprice wpd">${esc(p)}</span>` } : { d: '' };
     }
     // With sorting "producer A-Z" and a maintained sort word: its first letter in bold (H for "Fritz Haag")
     _prodHtml(name) {
@@ -1414,41 +1348,26 @@
       if (this._sort !== 'producer' || i === undefined || !(i >= 0 && i < w.length)) return this._hl(name);
       return w.map((x, k) => (k === i ? `<b class="wsl">${esc(x.charAt(0))}</b>${esc(x.slice(1))}` : esc(x))).join(' ');
     }
-    // Wine name | producer in one line
+    // Line 1: wine name and producer, line 2: the info items (setting "Info in the list"). The price is vintage info and sits
+    // on the right of the row, so it is only added here where there is no vintage (single is undefined: flat list, detail header).
+    // Every item is one unit with its own trailing dot, so a line break falls between the items.
     _title(b, pr, single) {
       pr = pr || '';
-      const seg = (txt) => `<span class="wsep">·</span><span class="wreg">${txt}</span>`;
-      const reg = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => {
-        if (d.id === 'price') return pr;
-        if (d.id === 'cls') return b._cls && b._cls.length ? seg(this._hl(b._cls.join(', '))) : '';
-        if (d.id === 'region') return b.region ? seg(this._hl(b.region)) : '';
-        if (d.id === 'grape') return b.grapes && b.grapes.length ? seg(esc(b.grapes.join(', '))) : '';
+      const txt = (d) => {
+        if (d.id === 'price') return this._priceOnly(pr);
+        if (d.id === 'cls') return b._cls && b._cls.length ? this._hl(b._cls.join(', ')) : '';
+        if (d.id === 'region') return b.region ? this._hl(b.region) : '';
+        if (d.id === 'grape') return b.grapes && b.grapes.length ? esc(b.grapes.join(', ')) : '';
         const v = b.p && b.p[d.label];
-        return v ? seg(esc([].concat(v).map((x) => this._fmtVal(x)).join(', '))) : '';
-      }).join('');
-      if (this._flag('webInfo')) {
-        // Every item is one unit with its own trailing dot, so a line break falls between the items (no dot at the start of a line)
-        const txt = (d) => {
-          if (d.id === 'price') return this._priceOnly(pr);
-          if (d.id === 'cls') return b._cls && b._cls.length ? this._hl(b._cls.join(', ')) : '';
-          if (d.id === 'region') return b.region ? this._hl(b.region) : '';
-          if (d.id === 'grape') return b.grapes && b.grapes.length ? esc(b.grapes.join(', ')) : '';
-          const v = b.p && b.p[d.label];
-          return v ? esc([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
-        };
-        const swap = this._sort === 'producer' && b.producer;
-        const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
-          : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
-        const infos = this._infoDefs().filter((d) => this._is.has(d.id) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
-        const all = head.concat(infos);
-        const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
-        return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
-      }
-      if (this._sort === 'producer' && b.producer) {
-        return `<span class="wtitle swap"><span class="wl1"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">·</span><span class="wname">${this._hl(b.name)}</span></span><span class="wl2">${reg}</span></span>`;
-      }
-      return `<span class="wtitle"><span class="wl1"><span class="wname">${this._hl(b.name)}</span>` +
-        (b.producer ? `<span class="wsep">·</span><span class="wprod">${this._prodHtml(b.producer)}</span>` : '') + `</span><span class="wl2">${reg}</span></span>`;
+        return v ? esc([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
+      };
+      const swap = this._sort === 'producer' && b.producer;
+      const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
+        : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
+      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
+      const all = head.concat(infos);
+      const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
+      return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
     }
 
     _groupRow(g) {
@@ -1458,31 +1377,29 @@
       if (g.entries.length === 1) {
         // Only one vintage: the details are right in the wine row, tapping opens the details.
         const e = g.entries[0];
-        const win = this._winText(e);
         const ps = this._priceSpans(e.bottles);
-        return `<div class="wine"><button class="wrow single" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
+        return `<div class="wine"><button class="wrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
           this._typeDot(g.b) +
-          `<span class="wmain">${this._title(g.b, ps.d, true)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
-          `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">·</span>` +
-          `<span class="wvint yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
-          (this._flag('webInfo') && this._is.has('price') && this._priceOnly(ps.d) ? `<span class="wpm">${this._priceOnly(ps.d)}</span>` : '') +
+          `<span class="wmain">${this._title(g.b, ps.d, true)}</span>` +
+          `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span>` +
+          `<span class="wvint yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
+          (this._is.has('price') && this._priceOnly(ps.d) ? `<span class="wpm">${this._priceOnly(ps.d)}</span>` : '') +
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
       }
       const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
       let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
         this._typeDot(g.b) +
         `<span class="wmain">${this._title(g.b, ps.d, true)}</span>` +
-        `<span class="wright"><span class="wvint multi">${vints}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
+        `<span class="wright"><span class="wvint multi">${vints}</span>` +
         `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
-        const pset = new Set(g.entries.map((e) => this._priceTxt(e.bottles)));
-        const diff = pset.size > 1;
-        html += `<div class="vlist">` + g.entries.map((e) =>
-          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>${(diff || (this._flag('webInfo') && this._is.has('price'))) && this._priceTxt(e.bottles) ? `<span class="wprice vprl">${esc(this._priceTxt(e.bottles))}</span>` : ''}<span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
-          `<span class="vwin">${esc(this._winText(e))}</span></span>` +
-          (this._priceTxt(e.bottles) ? `<span class="wprice vpr">${esc(this._priceTxt(e.bottles))}</span>` : '') +
-          `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span>` +
-          `<span class="wcount vcnt">${esc(t('count.bottlesShort', { n: e.bottles.length })).replace(/ /g, '&nbsp;')}</span><span class="chev vcnt">›</span></div>`).join('') + `</div>`;
+        html += `<div class="vlist">` + g.entries.map((e) => {
+          const pr = this._is.has('price') ? this._priceTxt(e.bottles) : '';
+          return `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
+            (pr ? `<span class="wprice vprl">${esc(pr)}</span>` : '') +
+            `<span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span></span>` +
+            `<span class="wcount vcnt">${esc(t('count.bottlesShort', { n: e.bottles.length })).replace(/ /g, '&nbsp;')}</span><span class="chev vcnt">›</span></div>`;
+        }).join('') + `</div>`;
       }
       return html + `</div>`;
     }

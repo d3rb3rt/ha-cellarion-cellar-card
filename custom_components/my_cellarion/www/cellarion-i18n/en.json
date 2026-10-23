@@ -246,7 +246,5 @@
  "stat.vt.price": "Price",
  "stat.nBottles": "{n} btl.",
  "set.info": "Info in the list",
- "set.infoSub": "What follows the wine name and in which order (this device only)",
- "flag.webInfo": "List: wine and producer on line 1",
- "flag.webInfoSub": "Line 1 only wine and producer, line 2 the info (classification, region, price ...), breaking between the items. Wide: no drink window, info next to location and vintage."
+ "set.infoSub": "What follows the wine name and in which order (this device only)"
 }

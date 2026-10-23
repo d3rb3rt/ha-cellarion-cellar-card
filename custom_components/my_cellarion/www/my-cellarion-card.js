@@ -520,6 +520,14 @@
       :host([data-wi]) .wrow .wtitle .wl2 { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: baseline; }
       :host([data-wi]) .wrow .wtitle .wl1 > :first-child { flex: 0 1 auto; }
       :host([data-wi]) .wit.d::after { margin-left: 6px; }
+      /* Phone: location left, the rest (price | vintage | count) right; the first item of the right group needs no separator */
+      :host([data-wi]) .wrow .wright .wloc { justify-content: flex-start; text-align: left; flex: 1 1 auto; }
+      :host([data-wi]) .wrow .wright .wpm { border-left: 0; padding-left: 0; }
+      :host([data-wi]) .wrow .wright:not(:has(.wpm)) .wvint:not(.multi) { border-left: 0; padding-left: 0; }
+      :host([data-wi]) .vrow .vmid { align-items: flex-start; text-align: left; }
+      :host([data-wi]) .vrow .locs { justify-content: flex-start; }
+      :host([data-wi]) .vrow .vprl { border-left: 0; padding-left: 0; }
+      :host([data-wi]) .vrow:not(:has(.vprl)) .vyear { border-left: 0; padding-left: 0; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
       .wright .sdots { display: none; }

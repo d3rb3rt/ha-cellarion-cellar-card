@@ -267,7 +267,6 @@
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wsub { color: var(--cb-sub); font-size: .86em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wright { display: contents; }
-    @media (min-width: 601px) { .top .fbtn { display: none; } } /* wide: the filters fold and unfold by scrolling, no button needed */
     .fbtn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--cb-chip-h, 40px); padding: 0; position: relative; }
     .fwrap:not(.fopen) { display: none; }
     .fcnt { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 8px;
@@ -1168,8 +1167,7 @@
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
           })() +
-          `<button class="btn fbtn${nAct ? ' on' : ''}${this._more ? ' open' : ''}" data-act="more" aria-label="${esc(t('head.filter'))}" aria-expanded="${this._more ? 'true' : 'false'}">` +
-          `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.5V20l-4-2v-4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>${nAct ? `<span class="fcnt">${nAct}</span>` : ''}</button>` + stat + reload + gear + `</div>`;
+          stat + reload + gear + `</div>`;
         const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id));
         const defs = this._showHid ? vis.concat(hid) : vis.concat(hid.filter((d) => this._fs(d.id).size));
         const t3 = {};

@@ -852,6 +852,8 @@
       this._data = {
         generated: data.generated,
         cellar: data.cellar || '',
+        cellarId: data.cellarId || '',
+        url: String(data.url || 'https://cellarion.app').replace(/\/+$/, ''),
         fields: Array.isArray(data.fields) ? data.fields : [],
         bottles,
         racks: data.racks || [],
@@ -2030,7 +2032,9 @@
         this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
       }
       const info = sel ? this._info[sel.id] : null;
-      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>` +
+      const edUrl = this._data.cellarId && b0 && b0.wine ? `${this._data.url}/cellars/${encodeURIComponent(this._data.cellarId)}/vintages/${encodeURIComponent(b0.wine)}/${encodeURIComponent(b0.vintage || 'NV')}` : '';
+      const edit = edUrl ? `<a class="dx" href="${esc(edUrl)}" target="_blank" rel="noopener" aria-label="${esc(t('det.editIn'))}" title="${esc(t('det.editIn'))}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : '';
+      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>${edit}` +
         `<button class="dx" data-act="dclose" aria-label="${esc(t('head.close'))}" ${d.busy ? 'disabled' : ''}>✕</button></div>`;
       let body = '';
       if (d.step === 'done') {

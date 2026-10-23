@@ -279,7 +279,9 @@
     .fbtn.on .fcnt { background: var(--cb-on-text); color: var(--cb-on); }
     .sel.fs { min-height: 30px; font-size: 13px; padding: 0 6px 0 10px; border-radius: 15px; flex: none; text-overflow: ellipsis; }
     .btn.round.sm { width: 30px; min-height: 30px; font-size: 16px; }
-    .fpills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fpills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .fpills:not(:has(> :not([hidden]))) { display: none; }
+    .fpills button[hidden] { display: none; }
     .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .fpill .x { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; opacity: .65; font-size: 11px; }
     mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
@@ -1161,14 +1163,14 @@
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint') };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
-          `<button class="btn round sm${active ? ' on' : ''}" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' disabled'}>↺</button>` + `</span></div></div>`;
+          `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
         const pills = defs.map((d) => Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
         }).join('')).join('');
-        if (pills) html += `<div class="fpills">${pills}</div>`;
+        html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>↺</button></div>`;
         html += `<div class="sumline"><span class="grow" data-sum></span></div>`;
       }
       if (this._ptr && !this._pulling) { this._ptr.style.height = this._busy ? '24px' : '0px'; this._ptr.textContent = this._busy ? t('head.loading') : ''; }
@@ -1257,8 +1259,7 @@
       const f = this._f;
       const rst = this._head && this._head.querySelector('[data-reset]');
       if (rst) {
-        rst.disabled = !(f.q || this._nAct());
-        rst.classList.toggle('on', !rst.disabled);
+        rst.hidden = !(f.q || this._nAct());
       }
       const sum = this._head && this._head.querySelector('[data-sum]');
       if (sum) {

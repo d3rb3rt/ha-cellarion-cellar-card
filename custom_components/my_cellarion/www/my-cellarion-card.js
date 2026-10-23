@@ -59,7 +59,7 @@
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
   const SCROLL_FOLD = false;
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr', opts: ['off', 'a', 'b', 'c'] }, { id: 'sinv' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -1962,6 +1962,7 @@
     _flag(id) { const v = this._flagV(id); return v !== 'off' && v !== false && v !== ''; }
     // value of a flag: boolean flags give true/false, flags with options (opts) give the chosen option ('off' = not set)
     _flagV(id) {
+      if (id === 'hdr') return 'c'; // the new header layout (c) is the standard; the earlier test variants a/b are no longer selectable
       const L = (this._local && this._local.flags) || {};
       const def = FLAGS.find((x) => x.id === id);
       let v = L[id] !== undefined ? L[id] : (this._cfg.flags || {})[id];

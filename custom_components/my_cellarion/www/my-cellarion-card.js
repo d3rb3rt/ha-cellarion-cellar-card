@@ -491,6 +491,12 @@
       :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
     }
+    /* Header band: slightly lighter than the list, with a clearer lower edge */
+    :host([data-hdr2]) .head, :host([data-hdr2]) .az { background: color-mix(in srgb, var(--cb-text) 6%, var(--cb-card)); }
+    :host([data-hdr2]) .head { border-bottom-color: transparent; }
+    :host([data-hdr2]) .az { box-sizing: border-box; }
+    :host([data-hdr2]) .az { border-bottom-color: color-mix(in srgb, var(--cb-text) 16%, transparent); box-shadow: 0 5px 8px -5px rgba(0, 0, 0, .45); position: relative; z-index: 1; }
+    :host([data-hdr2]) .fwrap .more.open > .sel.fs { border-color: color-mix(in srgb, var(--cb-text) 26%, transparent); }
     /* Flag hdr, option c: cellar name centered in the first row */
     :host([data-hdr2][data-hdrv="c"]) .top .cname { flex: 1 1 0; min-width: 0; text-align: center; font-weight: 600; font-size: 15px; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     @media (min-width: 601px) { :host([data-hdr2][data-hdrv="c"]) .top .cname { grid-column: 2; grid-row: 1; align-self: center; } }
@@ -1464,6 +1470,7 @@
         // header layout c (wide): list and header are 18px wider than the alphabet bar, so the bottle count ('Fl.') ends under the letter Z
         if (v && this._flagV('hdr') === 'c' && /px$/.test(v) && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches)) v = (parseFloat(v) + 18) + 'px';
         list.style.maxWidth = v;
+        bar.style.maxWidth = !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) ? v : ''; // the alphabet bar is part of the lighter header band, same width
         this.shadowRoot.querySelectorAll('.head, .top, .fwrap, .fpills, .sumline').forEach((e) => { e.style.maxWidth = ''; });
         others.forEach((e) => { e.style.maxWidth = v; });
       };

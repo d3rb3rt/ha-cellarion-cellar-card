@@ -464,8 +464,6 @@
       .wright .wvint { flex: 0 0 auto; max-width: none; }
       .wright .wvint.multi { flex: 1 1 auto; white-space: normal; }
       .wright .chev { margin-left: 0; }
-      .wrow .wtitle .wsep { display: inline; font-size: 0; }
-      .wrow .wtitle .wsep::before { content: '·'; font-size: 1rem; }
       .wrow .wtitle > :first-child { flex: 0 0 100%; }
       .wrow .wtitle > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
@@ -1337,7 +1335,7 @@
     }
     _priceSpans(bottles) {
       const p = this._priceTxt(bottles);
-      return p ? { d: `<span class="wsep wpd">|</span><span class="wreg wprice wpd">${esc(p)}</span>` } : { d: '' };
+      return p ? { d: `<span class="wsep wpd">·</span><span class="wreg wprice wpd">${esc(p)}</span>` } : { d: '' };
     }
     // With sorting "producer A-Z" and a maintained sort word: its first letter in bold (H for "Fritz Haag")
     _prodHtml(name) {
@@ -1349,7 +1347,7 @@
     // Wine name | producer in one line
     _title(b, pr) {
       pr = pr || '';
-      const seg = (txt) => `<span class="wsep">|</span><span class="wreg">${txt}</span>`;
+      const seg = (txt) => `<span class="wsep">·</span><span class="wreg">${txt}</span>`;
       const reg = this._infoDefs().filter((d) => this._is.has(d.id)).map((d) => {
         if (d.id === 'price') return pr;
         if (d.id === 'cls') return b._cls && b._cls.length ? seg(this._hl(b._cls.join(', '))) : '';
@@ -1359,10 +1357,10 @@
         return v ? seg(esc([].concat(v).map((x) => this._fmtVal(x)).join(', '))) : '';
       }).join('');
       if (this._sort === 'producer' && b.producer) {
-        return `<span class="wtitle swap"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">|</span><span class="wname">${this._hl(b.name)}</span>${reg}</span>`;
+        return `<span class="wtitle swap"><span class="wprod">${this._prodHtml(b.producer)}</span><span class="wsep">·</span><span class="wname">${this._hl(b.name)}</span>${reg}</span>`;
       }
       return `<span class="wtitle"><span class="wname">${this._hl(b.name)}</span>` +
-        (b.producer ? `<span class="wsep">|</span><span class="wprod">${this._prodHtml(b.producer)}</span>` : '') + reg + `</span>`;
+        (b.producer ? `<span class="wsep">·</span><span class="wprod">${this._prodHtml(b.producer)}</span>` : '') + reg + `</span>`;
     }
 
     _groupRow(g) {
@@ -1377,7 +1375,7 @@
         return `<div class="wine"><button class="wrow single" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}">` +
           this._typeDot(g.b) +
           `<span class="wmain">${this._title(g.b, ps.d)}${win ? `<span class="winfo"><span>${esc(win)}</span></span>` : ''}</span>` +
-          `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">|</span>` +
+          `<span class="wright"><span class="wloc locs">${this._locsHtml(e.bottles, true)}</span><span class="wsep">·</span>` +
           `<span class="wvint yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="sdots">${this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])}</span>` +
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
       }

@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr2' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -450,6 +450,15 @@
     .derr { color: var(--s-over); }
     .dask { font-size: 1.1em; font-weight: 600; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
+    /* Flag hdr2 (wide only): filters left in two rows; tools (sort, stats, reload, settings) above the search on the right */
+    @media (min-width: 601px) {
+      :host([data-hdr2]) .head { display: grid; grid-template-columns: minmax(0, 1fr) 280px; column-gap: 12px; row-gap: 6px; align-items: start; }
+      :host([data-hdr2]) .head > .fwrap { grid-column: 1; grid-row: 1; }
+      :host([data-hdr2]) .head > .top { grid-column: 2; grid-row: 1; justify-content: flex-end; }
+      :host([data-hdr2]) .top > * { margin-left: 0; }
+      :host([data-hdr2]) .top .search { order: 2; flex: 1 1 100%; min-width: 0; }
+      :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
+    }
     @media (max-width: 600px) {
       .d2st .bw { display: none; } .d2st .bi { display: inline-flex; align-items: center; gap: 3px; vertical-align: -2px; }
       .top .title, .top .rl { display: none; }
@@ -591,7 +600,7 @@
       const max = list.scrollHeight - list.clientHeight;
       if ((e.deltaY < 0 && list.scrollTop <= 0) || (e.deltaY > 0 && list.scrollTop >= max - 1)) return;
       list.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-      if (e.deltaY > 0 && this._more && list.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
+      if (e.deltaY > 0 && this._more && list.scrollTop > 2 && !this._hdr2()) { this._more = false; this._autoFolded = true; this._renderHead(); }
       e.preventDefault();
     }
 
@@ -1004,6 +1013,7 @@
       this._dlg = this.shadowRoot.querySelector('.dlg');
       // Collapse open filters when the user scrolls the list (real touch/wheel input only, not layout scrolling)
       const fold = () => {
+        if (this._hdr2()) return;
         if (this._more && this._listEl.scrollTop > 2) { this._more = false; this._autoFolded = true; this._renderHead(); }
       };
       this._listEl.addEventListener('scroll', () => {
@@ -1016,7 +1026,7 @@
         if (this._manual && !this._more && this._listEl.scrollTop > 40) { this._manual = false; this._autoFolded = true; }
         if (this._autoFolded && this._listEl.scrollTop <= 2) { this._autoFolded = false; this._more = true; this._renderHead(); }
         // Scrolling up anywhere in the list brings the filters back (about 24 px of travel, so small jitter does not trigger it)
-        else if (this._autoFolded && !this._more && this._upAcc >= 24) { this._autoFolded = false; this._more = true; this._upAcc = 0; this._renderHead(); }
+        else if (this._autoFolded && !this._more && this._upAcc >= 24 && !this._hdr2()) { this._autoFolded = false; this._more = true; this._upAcc = 0; this._renderHead(); }
       }, { passive: true });
       // Only moving down the list folds the filters (finger up / wheel down); moving up unfolds them again (see the scroll listener)
       this._listEl.addEventListener('touchstart', (e) => { this._ty = e.touches[0].clientY; }, { passive: true });
@@ -1060,9 +1070,12 @@
     _renderAll() {
       if (!this._built) return;
       if (this._keep()) this._saveState();
+      this.toggleAttribute('data-hdr2', this._hdr2());
       this._renderHead();
       this._renderList();
     }
+    // Flag hdr2 (wide only): filters on the left in two rows, tools and search stacked on the right; filters never fold
+    _hdr2() { return this._flag('hdr2') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
 
     _nAct() {
       const f = this._f;
@@ -1160,7 +1173,7 @@
           return m;
         };
         html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
-          `placeholder="${window.matchMedia && window.matchMedia('(max-width: 600px)').matches ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
+          `placeholder="${(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || this._hdr2() ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
           (() => {
             const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc'].map((v) => ({ v, t: t('sort.' + v) }));
             const cur = (so.find((o) => o.v === this._sort) || so[0]);
@@ -1173,7 +1186,7 @@
         const t3 = {};
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
         const by = (x, y) => de.compare(x[0], y[0]);
-        html += `<div class="fwrap${this._more ? ' fopen' : ''}"><div class="more open">` +
+        html += `<div class="fwrap${this._more || this._hdr2() ? ' fopen' : ''}"><div class="more open">` +
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';
@@ -1333,8 +1346,13 @@
     _azWidth(pre) {
       const list = this._listEl, bar = this._azEl;
       if (!list || !bar) return;
-      const others = this.shadowRoot.querySelectorAll('.top, .fwrap, .fpills, .sumline');
-      const set = (v) => { list.style.maxWidth = v; others.forEach((e) => { e.style.maxWidth = v; }); };
+      const hdr2 = this._hdr2();
+      const others = this.shadowRoot.querySelectorAll(hdr2 ? '.head' : '.top, .fwrap, .fpills, .sumline');
+      const set = (v) => {
+        list.style.maxWidth = v;
+        this.shadowRoot.querySelectorAll('.head, .top, .fwrap, .fpills, .sumline').forEach((e) => { e.style.maxWidth = ''; });
+        others.forEach((e) => { e.style.maxWidth = v; });
+      };
       let cached = '';
       try { cached = localStorage.getItem('cellarion-azw') || ''; } catch (e) { /* egal */ }
       // Before the alphabet bar exists (first render) use the last known width, so nothing jumps

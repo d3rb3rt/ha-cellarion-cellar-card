@@ -249,5 +249,7 @@
  "set.infoSub": "What follows the wine name and in which order (this device only)",
  "sort.priceAsc": "Price, low to high",
  "sort.priceDesc": "Price, high to low",
- "det.editIn": "Edit in Cellarion"
+ "det.editIn": "Edit in Cellarion",
+ "flag.hdr2": "Wide: two-column header",
+ "flag.hdr2Sub": "Filters on the left in two rows, tools above the search on the right. The filters no longer fold when scrolling."
 }

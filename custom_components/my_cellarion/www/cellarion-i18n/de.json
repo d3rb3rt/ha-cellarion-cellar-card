@@ -249,5 +249,7 @@
  "set.infoSub": "Was hinter dem Weinnamen steht und in welcher Reihenfolge (nur dieses Gerät)",
  "sort.priceAsc": "Preis aufsteigend",
  "sort.priceDesc": "Preis absteigend",
- "det.editIn": "In Cellarion bearbeiten"
+ "det.editIn": "In Cellarion bearbeiten",
+ "flag.hdr2": "Breit: Kopf zweispaltig",
+ "flag.hdr2Sub": "Filter links in zwei Zeilen, rechts Werkzeuge über der Suche. Die Filter klappen beim Scrollen nicht mehr zu."
 }

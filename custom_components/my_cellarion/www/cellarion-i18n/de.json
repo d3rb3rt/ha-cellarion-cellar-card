@@ -244,5 +244,9 @@
  "price.p100": "75–100 €",
  "price.pmax": "über 100 €",
  "stat.vt.price": "Preis",
- "stat.nBottles": "{n} Fl."
+ "stat.nBottles": "{n} Fl.",
+ "flag.clsIcon": "Lagen-Symbol unter dem Glas",
+ "flag.clsIconSub": "Stern für Grosse Lage / GG / Grand Cru, Umriss-Stern für Erste Lage / Premier Cru.",
+ "cls.top": "Grosse Lage / Grand Cru",
+ "cls.first": "Erste Lage / Premier Cru"
 }

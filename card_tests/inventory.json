@@ -1,0 +1,913 @@
+{
+"generated": "x",
+"cellar": "HK4",
+"total": 60,
+"racks": [],
+"fields": [],
+"bottles": [
+{
+"id": "b0",
+"wine": "w9",
+"name": "Wine 9",
+"producer": "Egon Müller",
+"vintage": "2001",
+"type": "white",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Riesling"
+],
+"price": 44.68,
+"currency": "EUR"
+},
+{
+"id": "b1",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Loimer",
+"vintage": "2015",
+"type": "dessert",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Pinot Noir"
+],
+"price": 16.57,
+"currency": "EUR"
+},
+{
+"id": "b2",
+"wine": "w20",
+"name": "Wine 20",
+"producer": "Knoll",
+"vintage": "2001",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 58.71,
+"currency": "EUR"
+},
+{
+"id": "b3",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Wegeler",
+"vintage": "2001",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 73.1,
+"currency": "EUR"
+},
+{
+"id": "b4",
+"wine": "w21",
+"name": "Wine 21",
+"producer": "Dönnhoff",
+"vintage": "2022",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 10.64,
+"currency": "EUR"
+},
+{
+"id": "b5",
+"wine": "w14",
+"name": "Wine 14",
+"producer": "Selbach",
+"vintage": "2001",
+"type": "white",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Riesling"
+],
+"price": 46.93,
+"currency": "EUR"
+},
+{
+"id": "b6",
+"wine": "w8",
+"name": "Wine 8",
+"producer": "Loimer",
+"vintage": "2019",
+"type": "red",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Pinot Noir"
+],
+"price": 26.16,
+"currency": "EUR"
+},
+{
+"id": "b7",
+"wine": "w1",
+"name": "Wine 1",
+"producer": "Loimer",
+"vintage": "2021",
+"type": "white",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Riesling"
+],
+"price": 68.63,
+"currency": "EUR"
+},
+{
+"id": "b8",
+"wine": "w6",
+"name": "Wine 6",
+"producer": "Selbach",
+"vintage": "2019",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 18.46,
+"currency": "EUR"
+},
+{
+"id": "b9",
+"wine": "w14",
+"name": "Wine 14",
+"producer": "Wegeler",
+"vintage": "2022",
+"type": "red",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Pinot Noir"
+],
+"price": 68.1,
+"currency": "EUR"
+},
+{
+"id": "b10",
+"wine": "w10",
+"name": "Wine 10",
+"producer": "Prinz",
+"vintage": "2022",
+"type": "white",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Riesling"
+],
+"price": 78.14,
+"currency": "EUR"
+},
+{
+"id": "b11",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Haart",
+"vintage": "2001",
+"type": "white",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Riesling"
+],
+"price": 43.62,
+"currency": "EUR"
+},
+{
+"id": "b12",
+"wine": "w22",
+"name": "Wine 22",
+"producer": "Knoll",
+"vintage": "2015",
+"type": "white",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Riesling"
+],
+"price": 35.7,
+"currency": "EUR"
+},
+{
+"id": "b13",
+"wine": "w3",
+"name": "Wine 3",
+"producer": "Selbach",
+"vintage": "2021",
+"type": "white",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Riesling"
+],
+"price": 56.46,
+"currency": "EUR"
+},
+{
+"id": "b14",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Keller",
+"vintage": "2019",
+"type": "red",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Pinot Noir"
+],
+"price": 44.28,
+"currency": "EUR"
+},
+{
+"id": "b15",
+"wine": "w10",
+"name": "Wine 10",
+"producer": "Loimer",
+"vintage": "2022",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 51.52,
+"currency": "EUR"
+},
+{
+"id": "b16",
+"wine": "w6",
+"name": "Wine 6",
+"producer": "Selbach",
+"vintage": "2022",
+"type": "white",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Riesling"
+],
+"price": 25.89,
+"currency": "EUR"
+},
+{
+"id": "b17",
+"wine": "w18",
+"name": "Wine 18",
+"producer": "Prinz",
+"vintage": "2015",
+"type": "red",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Pinot Noir"
+],
+"price": 38.31,
+"currency": "EUR"
+},
+{
+"id": "b18",
+"wine": "w15",
+"name": "Wine 15",
+"producer": "Egon Müller",
+"vintage": "2019",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 56.15,
+"currency": "EUR"
+},
+{
+"id": "b19",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Wegeler",
+"vintage": "2022",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 66.64,
+"currency": "EUR"
+},
+{
+"id": "b20",
+"wine": "w14",
+"name": "Wine 14",
+"producer": "Haart",
+"vintage": "2001",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 43.68,
+"currency": "EUR"
+},
+{
+"id": "b21",
+"wine": "w7",
+"name": "Wine 7",
+"producer": "Egon Müller",
+"vintage": "2022",
+"type": "red",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Pinot Noir"
+],
+"price": 38.94,
+"currency": "EUR"
+},
+{
+"id": "b22",
+"wine": "w1",
+"name": "Wine 1",
+"producer": "Knoll",
+"vintage": "2022",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 47.81,
+"currency": "EUR"
+},
+{
+"id": "b23",
+"wine": "w20",
+"name": "Wine 20",
+"producer": "Kühn",
+"vintage": "2001",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 66.32,
+"currency": "EUR"
+},
+{
+"id": "b24",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Keller",
+"vintage": "2015",
+"type": "red",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Pinot Noir"
+],
+"price": 70.27,
+"currency": "EUR"
+},
+{
+"id": "b25",
+"wine": "w22",
+"name": "Wine 22",
+"producer": "Schäfer",
+"vintage": "2001",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 15.83,
+"currency": "EUR"
+},
+{
+"id": "b26",
+"wine": "w25",
+"name": "Wine 25",
+"producer": "Loimer",
+"vintage": "2019",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 27.47,
+"currency": "EUR"
+},
+{
+"id": "b27",
+"wine": "w12",
+"name": "Wine 12",
+"producer": "Egon Müller",
+"vintage": "2019",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 14.87,
+"currency": "EUR"
+},
+{
+"id": "b28",
+"wine": "w6",
+"name": "Wine 6",
+"producer": "Schäfer",
+"vintage": "2019",
+"type": "red",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Pinot Noir"
+],
+"price": 55.37,
+"currency": "EUR"
+},
+{
+"id": "b29",
+"wine": "w16",
+"name": "Wine 16",
+"producer": "Loimer",
+"vintage": "2021",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 17.99,
+"currency": "EUR"
+},
+{
+"id": "b30",
+"wine": "w14",
+"name": "Wine 14",
+"producer": "Knoll",
+"vintage": "2015",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 28.09,
+"currency": "EUR"
+},
+{
+"id": "b31",
+"wine": "w7",
+"name": "Wine 7",
+"producer": "Wegeler",
+"vintage": "2022",
+"type": "red",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Pinot Noir"
+],
+"price": 40.22,
+"currency": "EUR"
+},
+{
+"id": "b32",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Prinz",
+"vintage": "2015",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 12.47,
+"currency": "EUR"
+},
+{
+"id": "b33",
+"wine": "w22",
+"name": "Wine 22",
+"producer": "Loimer",
+"vintage": "2021",
+"type": "red",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Pinot Noir"
+],
+"price": 48.13,
+"currency": "EUR"
+},
+{
+"id": "b34",
+"wine": "w15",
+"name": "Wine 15",
+"producer": "Selbach",
+"vintage": "2015",
+"type": "red",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Pinot Noir"
+],
+"price": 46.67,
+"currency": "EUR"
+},
+{
+"id": "b35",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Knoll",
+"vintage": "2019",
+"type": "dessert",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Pinot Noir"
+],
+"price": 56.19,
+"currency": "EUR"
+},
+{
+"id": "b36",
+"wine": "w5",
+"name": "Wine 5",
+"producer": "Dönnhoff",
+"vintage": "2015",
+"type": "white",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Riesling"
+],
+"price": 71.29,
+"currency": "EUR"
+},
+{
+"id": "b37",
+"wine": "w10",
+"name": "Wine 10",
+"producer": "Fritz Haag",
+"vintage": "2019",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 62.07,
+"currency": "EUR"
+},
+{
+"id": "b38",
+"wine": "w5",
+"name": "Wine 5",
+"producer": "Egon Müller",
+"vintage": "2001",
+"type": "white",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Riesling"
+],
+"price": 49.25,
+"currency": "EUR"
+},
+{
+"id": "b39",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Egon Müller",
+"vintage": "2021",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 22.01,
+"currency": "EUR"
+},
+{
+"id": "b40",
+"wine": "w2",
+"name": "Wine 2",
+"producer": "Egon Müller",
+"vintage": "2021",
+"type": "red",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Pinot Noir"
+],
+"price": 24.03,
+"currency": "EUR"
+},
+{
+"id": "b41",
+"wine": "w22",
+"name": "Wine 22",
+"producer": "Prinz",
+"vintage": "2021",
+"type": "sparkling",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Pinot Noir"
+],
+"price": 51.4,
+"currency": "EUR"
+},
+{
+"id": "b42",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Fritz Haag",
+"vintage": "2019",
+"type": "dessert",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Pinot Noir"
+],
+"price": 45.29,
+"currency": "EUR"
+},
+{
+"id": "b43",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Kühn",
+"vintage": "2019",
+"type": "sparkling",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Pinot Noir"
+],
+"price": 11.27,
+"currency": "EUR"
+},
+{
+"id": "b44",
+"wine": "w5",
+"name": "Wine 5",
+"producer": "Kühn",
+"vintage": "2019",
+"type": "sparkling",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Pinot Noir"
+],
+"price": 40.05,
+"currency": "EUR"
+},
+{
+"id": "b45",
+"wine": "w13",
+"name": "Wine 13",
+"producer": "Selbach",
+"vintage": "2022",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 34.07,
+"currency": "EUR"
+},
+{
+"id": "b46",
+"wine": "w25",
+"name": "Wine 25",
+"producer": "Haart",
+"vintage": "2022",
+"type": "white",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Riesling"
+],
+"price": 26.42,
+"currency": "EUR"
+},
+{
+"id": "b47",
+"wine": "w5",
+"name": "Wine 5",
+"producer": "Dönnhoff",
+"vintage": "2015",
+"type": "white",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Riesling"
+],
+"price": 21.66,
+"currency": "EUR"
+},
+{
+"id": "b48",
+"wine": "w25",
+"name": "Wine 25",
+"producer": "Prinz",
+"vintage": "2019",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 52.01,
+"currency": "EUR"
+},
+{
+"id": "b49",
+"wine": "w11",
+"name": "Wine 11",
+"producer": "Kühn",
+"vintage": "2001",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 30.39,
+"currency": "EUR"
+},
+{
+"id": "b50",
+"wine": "w5",
+"name": "Wine 5",
+"producer": "Wegeler",
+"vintage": "2022",
+"type": "white",
+"country": "France",
+"region": "Champagne",
+"grapes": [
+"Riesling"
+],
+"price": 48.58,
+"currency": "EUR"
+},
+{
+"id": "b51",
+"wine": "w14",
+"name": "Wine 14",
+"producer": "Kühn",
+"vintage": "2001",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 36.62,
+"currency": "EUR"
+},
+{
+"id": "b52",
+"wine": "w4",
+"name": "Wine 4",
+"producer": "Keller",
+"vintage": "2022",
+"type": "white",
+"country": "Germany",
+"region": "Nahe",
+"grapes": [
+"Riesling"
+],
+"price": 51.12,
+"currency": "EUR"
+},
+{
+"id": "b53",
+"wine": "w18",
+"name": "Wine 18",
+"producer": "Fritz Haag",
+"vintage": "2015",
+"type": "sparkling",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Pinot Noir"
+],
+"price": 49.62,
+"currency": "EUR"
+},
+{
+"id": "b54",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Kühn",
+"vintage": "2022",
+"type": "white",
+"country": "Germany",
+"region": "Rheingau",
+"grapes": [
+"Riesling"
+],
+"price": 74.75,
+"currency": "EUR"
+},
+{
+"id": "b55",
+"wine": "w2",
+"name": "Wine 2",
+"producer": "Schäfer",
+"vintage": "2019",
+"type": "white",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Riesling"
+],
+"price": 10.87,
+"currency": "EUR"
+},
+{
+"id": "b56",
+"wine": "w14",
+"name": "Wine 14",
+"producer": "Dönnhoff",
+"vintage": "2001",
+"type": "white",
+"country": "Austria",
+"region": "Wachau",
+"grapes": [
+"Riesling"
+],
+"price": 67.83,
+"currency": "EUR"
+},
+{
+"id": "b57",
+"wine": "w19",
+"name": "Wine 19",
+"producer": "Prinz",
+"vintage": "2021",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 21.34,
+"currency": "EUR"
+},
+{
+"id": "b58",
+"wine": "w8",
+"name": "Wine 8",
+"producer": "Keller",
+"vintage": "2015",
+"type": "dessert",
+"country": "Italy",
+"region": "Alto Adige",
+"grapes": [
+"Pinot Noir"
+],
+"price": 62.08,
+"currency": "EUR"
+},
+{
+"id": "b59",
+"wine": "w18",
+"name": "Wine 18",
+"producer": "Knoll",
+"vintage": "2019",
+"type": "white",
+"country": "Germany",
+"region": "Mosel",
+"grapes": [
+"Riesling"
+],
+"price": 48.51,
+"currency": "EUR"
+}
+],
+"sortnamen": {},
+"einstellungen": {},
+"cellarId": "c0ffee000000000000000001",
+"url": "https://cellarion.example"
+}

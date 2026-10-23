@@ -58,7 +58,7 @@
   // Types, maturity, placeholders: refilled in place when the language changes
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr', opts: ['off', 'a', 'b'] }, { id: 'sinv' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'hdr', opts: ['off', 'a', 'b', 'c'] }, { id: 'sinv' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -483,6 +483,24 @@
       :host([data-hdr2]) .fwrap .more.open > .fend > * { flex: 1 1 0; min-width: 0; width: auto; }
       :host([data-hdr2]) .top .search { grid-column: 1 / -1; grid-row: 2; width: 0; min-width: 100%; } /* as wide as the buttons above, without widening the column itself */
       :host([data-hdr2]) .head > .fpills, :host([data-hdr2]) .head > .sumline { grid-column: 1 / -1; }
+    }
+    /* Flag hdr, option c (wide): search + stats left, reload/settings as plain icons right, filters in their own row, sort at the right of the summary line */
+    @media (min-width: 601px) {
+      :host([data-hdr2][data-hdrv="c"]) .head { grid-template-columns: minmax(0, 300px) max-content minmax(0, 1fr) max-content max-content; column-gap: 8px; row-gap: 8px; }
+      :host([data-hdr2][data-hdrv="c"]) .head > .top { display: contents; border-left: 0; padding-left: 0; }
+      :host([data-hdr2][data-hdrv="c"]) .top .search { grid-column: 1; grid-row: 1; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .st { grid-column: 2; grid-row: 1; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .rl { grid-column: 4; grid-row: 1; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .gear { grid-column: 5; grid-row: 1; }
+      :host([data-hdr2][data-hdrv="c"]) .top > .rl, :host([data-hdr2][data-hdrv="c"]) .top > .gear { background: none; border-color: transparent; box-shadow: none; }
+      :host([data-hdr2][data-hdrv="c"]) .head > .fwrap { grid-column: 1 / -1; grid-row: 2; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open { display: flex; flex-wrap: wrap; gap: 8px; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .sel.fs, :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend > .sel.fs { width: auto; flex: none; padding: 0 16px; }
+      :host([data-hdr2][data-hdrv="c"]) .fwrap .more.open > .fend { display: contents; }
+      :host([data-hdr2][data-hdrv="c"]) .head > .fpills { grid-row: 3; }
+      :host([data-hdr2][data-hdrv="c"]) .head > .fpills:not(:has(.fpill, [data-reset]:not([hidden]))) { display: none; }
+      :host([data-hdr2][data-hdrv="c"]) .head > .sumline { grid-row: auto; }
+      :host([data-hdr2][data-hdrv="c"]) .sumline > .sel { width: auto; height: 30px; min-height: 30px; padding: 0 12px; font-size: 13px; }
     }
     /* Flag hdr, option b (from 900px): three columns. 1 search + (sort, stats) below, 2 filters in two rows, 3 reload above settings */
     @media (min-width: 1100px) {
@@ -1212,14 +1230,16 @@
           m.forEach((o, k) => m.set(k, { w: o.ws.size, j: o.js.size, f: o.f }));
           return m;
         };
-        html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
-          `placeholder="${(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || this._hdr2() ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
-          (() => {
+        const sortBtn = (() => {
             const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc'].map((v) => ({ v, t: t('sort.' + v) }));
             const cur = (so.find((o) => o.v === this._sort) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
-          })() +
+        })();
+        const sortInSum = this._flagV('hdr') === 'c' && this._hdr2();
+        html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
+          `placeholder="${(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || this._hdr2() ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
+          (sortInSum ? '' : sortBtn) +
           stat + reload + gear + `</div>`;
         const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id));
         const defs = this._showHid ? vis.concat(hid) : vis.concat(hid.filter((d) => this._fs(d.id).size));
@@ -1243,7 +1263,7 @@
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
         }).join('')).join('');
         html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>↺</button></div>`;
-        html += `<div class="sumline"><span class="grow" data-sum></span></div>`;
+        html += `<div class="sumline"><span class="grow" data-sum></span>${sortInSum ? sortBtn : ''}</div>`;
       }
       if (this._ptr && !this._pulling) { this._ptr.style.height = this._busy ? '24px' : '0px'; this._ptr.textContent = this._busy ? t('head.loading') : ''; }
       // Keep focus and cursor in the search field when the header is rebuilt
@@ -1251,6 +1271,8 @@
       const hadFocus = input && this.shadowRoot.activeElement === input;
       const pos = hadFocus ? input.selectionStart : 0;
       this._head.innerHTML = html;
+      const sm = this._sumTxt && this._head.querySelector('[data-sum]'); // the summary line is filled by _renderList; restore after a header rebuild
+      if (sm) sm.textContent = this._sumTxt;
       this._azWidth(true);
       if (hadFocus) {
         const ni = this._head.querySelector('input[type=search]');
@@ -1339,6 +1361,7 @@
         const all = this._data.bottles.length;
         sum.textContent = `${this._data.cellar ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: nWine })} · ${t('count.vintages', { n: entries.length })} · ${t('count.bottles', { n: bottles.length })}` + (bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
           (this._error ? ' · ' + t('count.loadError') : '');
+        this._sumTxt = sum.textContent;
       }
     }
 

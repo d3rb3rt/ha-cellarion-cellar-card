@@ -498,6 +498,7 @@
       /* Flag: price of a one-vintage wine sits left, next to the vintage, in the bottom line */
       :host([data-wi]) .wrow .wl2 > .wpw { display: none; }
       :host([data-wi]) .wrow .wright .wpm { display: inline; order: -2; color: var(--cb-sub); white-space: nowrap; }
+      :host([data-wi]) .vrow .vprl::before { content: '·'; margin: 0 8px 0 2px; }
       :host([data-wi]) .wrow .wright .wpm::before { content: '·'; margin-right: 10px; }
       .wrow .wtitle .wl1 > :first-child + .wsep { display: none; }
       .yv { color: var(--yc); font-weight: 700; }
@@ -1438,14 +1439,14 @@
       const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
       let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
         this._typeDot(g.b) +
-        `<span class="wmain">${this._title(g.b, ps.d)}</span>` +
+        `<span class="wmain">${this._title(g.b, ps.d, true)}</span>` +
         `<span class="wright"><span class="wvint multi">${vints}</span><span class="sdots">${asc.map((e) => this._sdot(e.status, e.vintage + ' ' + STATUS_LABEL[e.status])).join('')}</span>` +
         `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
         const pset = new Set(g.entries.map((e) => this._priceTxt(e.bottles)));
         const diff = pset.size > 1;
         html += `<div class="vlist">` + g.entries.map((e) =>
-          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>${diff && this._priceTxt(e.bottles) ? `<span class="wprice vprl">${esc(this._priceTxt(e.bottles))}</span>` : ''}<span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
+          `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>${(diff || (this._flag('webInfo') && this._is.has('price'))) && this._priceTxt(e.bottles) ? `<span class="wprice vprl">${esc(this._priceTxt(e.bottles))}</span>` : ''}<span class="vmid"><span class="locs">${this._locsHtml(e.bottles)}</span>` +
           `<span class="vwin">${esc(this._winText(e))}</span></span>` +
           (this._priceTxt(e.bottles) ? `<span class="wprice vpr">${esc(this._priceTxt(e.bottles))}</span>` : '') +
           `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL[e.status])}</span>` +

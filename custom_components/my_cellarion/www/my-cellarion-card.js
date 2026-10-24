@@ -1298,7 +1298,9 @@
       if (!an || !an.isConnected) { pop.classList.add('c'); return; }
       const ov = el.getBoundingClientRect(), a = an.getBoundingClientRect(), m = 8;
       const w = Math.min(Math.max(a.width, 220), 360, ov.width - 2 * m);
-      const left = Math.max(m, Math.min(a.left - ov.left, ov.width - w - m));
+      // left half of the page: flush with the chip's left edge, right half: flush with its right edge
+      const rightHalf = (a.left + a.right) / 2 - ov.left > ov.width / 2;
+      const left = Math.max(m, Math.min(rightHalf ? a.right - ov.left - w : a.left - ov.left, ov.width - w - m));
       const below = ov.bottom - a.bottom - m - 4, above = a.top - ov.top - m - 4;
       pop.style.width = w + 'px';
       pop.style.left = left + 'px';

@@ -1984,7 +1984,7 @@
         `<button class="chip${z.all ? '' : ' on'}" data-act="wzall" aria-pressed="${!z.all}">${esc(t('wz.multi'))}</button></div>`) +
         `<div class="derr" data-wzerr ${z.err ? '' : 'hidden'}>${esc(z.err)}</div>` +
         `<div class="wzlist"></div>` +
-        `<div class="dact" data-wzbar>${this._wzBar()}</div></div>`;
+        (v2 ? '' : `<div class="dact" data-wzbar>${this._wzBar()}</div>`) + `</div>`;
       el.hidden = false;
       this._renderWzList();
     }
@@ -2026,6 +2026,22 @@
       if (!name) return;
       if (i < 0 || z.draft[name] === i) delete z.draft[name]; else z.draft[name] = i;
       this._renderWzList();
+      if (this._flag('setv2')) this._wzSaveOne(name, z.draft[name] === undefined ? -1 : z.draft[name]); // new settings: every tap is saved at once
+    }
+    async _wzSaveOne(name, i) {
+      const z = this._wz;
+      try {
+        const data = await this._call('winzer', { h: this._hash(name), i }, { name, index: i });
+        this._sortMap = data.map || this._sortMap;
+        if (z) z.err = '';
+        this._renderHead(); this._renderList();
+      } catch (e) {
+        if (z && this._wz === z) { // saving failed: back to the saved state and show the error
+          if (this._sortMap[name] === undefined) delete z.draft[name]; else z.draft[name] = this._sortMap[name];
+          z.err = t('set.saveFailed', { err: (e && e.message) || String(e) });
+          this._renderWz();
+        }
+      }
     }
     async _wzSave() {
       const z = this._wz;

@@ -2292,7 +2292,13 @@
     _backdropClick(e) {
       const c = e.target.classList;
       if (!c || !c.contains('dlg')) return false;
-      if (this._dd) { this._dd = null; this._renderDlg(); }
+      if (this._dd) {
+        // a click on another filter chip behind the backdrop opens that one directly
+        let chip = null;
+        try { chip = (this.shadowRoot.elementsFromPoint(e.clientX, e.clientY) || []).find((x) => x.dataset && x.dataset.act === 'dd'); } catch (err) { chip = null; }
+        if (chip) { this._dd = chip.dataset.id; this._ddAnchor = chip; } else this._dd = null;
+        this._renderDlg();
+      }
       else if (this._cfm) { this._cfm = false; this._renderDlg(); }
       else if (this._stat) { this._stat = null; this._renderDlg(); }
       else if (this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); }

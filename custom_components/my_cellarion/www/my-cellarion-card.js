@@ -59,7 +59,7 @@
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
   const SCROLL_FOLD = false;
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'vlocl' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -293,6 +293,11 @@
       .vrow .vyear { order: 0; }
       .vrow .vprl { order: 1; }
       .vrow .vmid { order: 2; }
+    }
+    /* flag vlocl (wide view): location in the expanded vintages left-aligned instead of right-aligned */
+    @media (min-width: 601px) {
+      :host([data-vlocl]) .vrow .vmid { align-items: flex-start; text-align: left; }
+      :host([data-vlocl]) .vrow .locs { justify-content: flex-start; }
     }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -1224,6 +1229,7 @@
       if (this._keep()) this._saveState();
       this._applyMode();
       this.toggleAttribute('data-sinv', this._flag('sinv'));
+      this.toggleAttribute('data-vlocl', this._flag('vlocl'));
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();

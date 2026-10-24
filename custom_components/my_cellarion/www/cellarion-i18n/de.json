@@ -254,6 +254,8 @@
  "det.editIn": "In Cellarion bearbeiten",
  "flag.sinv": "Suche invertiert",
  "flag.sinvSub": "Helles Suchfeld mit dunkler Schrift (nur zusammen mit dem Kopfbereich-Test).",
+ "flag.vlocl": "Lagerort links",
+ "flag.vloclSub": "Lagerort in den aufgeklappten Jahrgängen linksbündig statt rechtsbündig (nur breite Ansicht, Test).",
  "flag.hdr": "Kopfbereich (Test)",
  "flag.hdrSub": "A: Filter links, Tools rechts. B: Suche, Sortierung, Statistik links, Filter Mitte, Reload und Einstellungen rechts (ab 1100 px Breite). C: Suche und Statistik links, Reload/Einstellungen als Icons rechts, Filter eine eigene Zeile, Sortierung rechts in der Zählzeile.",
  "flag.hdr.a": "A",

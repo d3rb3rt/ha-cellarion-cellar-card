@@ -209,6 +209,11 @@
     .ddi:active { background: var(--cb-chip); }
     .ddi.cur { font-weight: 600; color: var(--cb-on); }
     .ddsep { height: 6px; border-top: 1px solid var(--cb-line); }
+    /* The filter and sort pick list looks like the settings dropdown list: own surface, visible border, rows of the same height with thin separators */
+    .ddsheet .ddlist { background: color-mix(in srgb, var(--cb-text) 14%, var(--cb-card)); border: 1px solid color-mix(in srgb, var(--cb-text) 40%, transparent); border-radius: 6px; }
+    .ddsheet .ddi { min-height: 40px; border-top: 0; border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
+    .ddsheet .ddi:last-child { border-bottom: 0; }
+    .ddsheet .ddsep { height: 0; border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--cb-text) 40%, transparent); }
     .filt2 { display: flex; flex-wrap: wrap; gap: 8px 40px; align-items: center; }
     .row-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .glabel { color: var(--cb-text); font-size: 16px; font-weight: 600; margin-right: 4px; min-width: 40px; }

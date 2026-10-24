@@ -498,7 +498,17 @@
     .setv2 .sw2 .ic.act { color: var(--cb-on-text); }
     .setv2 .sw2.fixed { opacity: .55; pointer-events: none; }
     .setv2 .shead { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; text-align: left; border-bottom: 1px solid var(--cb-line); }
-    .setv2 .sbody { padding: 4px 0 8px 12px; border-bottom: 1px solid var(--cb-line); }
+    .setv2 .ssec { border-bottom: 1px solid var(--cb-line); }
+    .setv2 .ssec .shead { border-bottom: 0; }
+    .setv2 .shead[aria-expanded="true"] .wname { font-weight: 600; }
+    .setv2 .sbody { margin: 0 0 10px 4px; padding: 2px 0 6px 14px; border-left: 2px solid color-mix(in srgb, var(--cb-on) 40%, transparent); }
+    .setv2 .rackblk { margin: 6px 0 12px; padding: 2px 12px 4px; background: color-mix(in srgb, var(--cb-text) 5%, transparent); border-left: 0; border-radius: 8px; }
+    .setv2 .racknm { padding: 8px 0 2px; font-size: 1em; font-weight: 600; color: var(--cb-text); }
+    .setv2 .rackblk .srow { display: block; padding: 8px 0; border-bottom: 1px solid var(--cb-line); }
+    .setv2 .rackblk .srow:last-child { border-bottom: 0; }
+    .setv2 .rackblk .sdesc { margin-bottom: 2px; }
+    .setv2 .rackblk .sdesc .wname { font-size: .92em; color: var(--cb-sub); }
+    .setv2 .rackblk .rads { flex-direction: row; flex-wrap: wrap; gap: 0 20px; }
     .setv2 .sbar { display: flex; align-items: center; gap: 8px; padding: 2px 0 6px; }
     .setv2 .sbar .sscope { margin-top: 0; }
     .setv2 .sbody .srow:last-child { border-bottom: 0; }

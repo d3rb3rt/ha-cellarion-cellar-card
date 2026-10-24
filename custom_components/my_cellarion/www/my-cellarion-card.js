@@ -459,6 +459,15 @@
     .wzname { padding: 8px 0; }
     .wznote { color: var(--cb-sub); font-size: .86em; }
     .wzn { color: var(--cb-sub); min-width: 3.4em; text-align: right; }
+    .wzv2 .row-chips { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .wzv2 .wzq { flex: 1 1 180px; min-width: 0; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font-size: inherit; outline: none; }
+    .wzv2 .wzq:focus { border-color: var(--cb-on); }
+    .wzv2 .opt { display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; }
+    .wzv2 .opt input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--cb-on); cursor: pointer; }
+    .wzv2 .wzrow { padding: 6px 0; gap: 6px; }
+    .wzv2 .wzwords { gap: 6px; flex: 1 1 auto; }
+    .wzv2 .wzw { min-height: 32px; padding: 0 10px; border-radius: 6px; background: transparent; border: 1px solid var(--cb-line); font-size: inherit; }
+    .wzv2 .wzw.on { background: var(--cb-on); border-color: var(--cb-on); color: var(--cb-on-text); font-weight: 600; }
     .gear { margin-left: auto; color: var(--cb-sub); }
     .scalechips { display: flex; flex-wrap: wrap; gap: 6px; }
     .frow { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--cb-line); }
@@ -1964,12 +1973,15 @@
       const el = this._dlg, z = this._wz;
       if (!el) return;
       if (!z) { el.hidden = true; el.innerHTML = ''; return; }
-      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
+      const v2 = this._flag('setv2'); // plain look of the new settings (flag setv2): square input, checkbox, small word buttons, no bottle counts
+      el.innerHTML = `<div class="dsheet${v2 ? ' wzv2' : ''}" role="dialog" aria-modal="true">` +
         `<div class="dh"><span class="wmain"><span class="wname">${esc(t('wz.title'))}</span>` +
         `<span class="wsub">${esc(t('wz.hint'))}</span></span>` +
         `<button class="dx" data-act="wzclose" aria-label="${esc(t('wz.close'))}" ${z.busy ? 'disabled' : ''}>✕</button></div>` +
-        `<div class="row-chips"><div class="search has" style="flex:1 1 180px"><input type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}"></div>` +
-        `<button class="chip${z.all ? '' : ' on'}" data-act="wzall" aria-pressed="${!z.all}">${esc(t('wz.multi'))}</button></div>` +
+        (v2 ? `<div class="row-chips"><input class="wzq" type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}">` +
+          `<label class="opt"><input type="checkbox" data-act="wzall"${z.all ? '' : ' checked'}><span>${esc(t('wz.multi'))}</span></label></div>`
+        : `<div class="row-chips"><div class="search has" style="flex:1 1 180px"><input type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}"></div>` +
+        `<button class="chip${z.all ? '' : ' on'}" data-act="wzall" aria-pressed="${!z.all}">${esc(t('wz.multi'))}</button></div>`) +
         `<div class="derr" data-wzerr ${z.err ? '' : 'hidden'}>${esc(z.err)}</div>` +
         `<div class="wzlist"></div>` +
         `<div class="dact" data-wzbar>${this._wzBar()}</div></div>`;
@@ -1996,6 +2008,7 @@
           `<button class="wzw${cur === i ? ' on' : ''}" data-act="wzw" data-h="${this._hash(n)}" data-i="${i}" aria-pressed="${cur === i}">${esc(x)}</button>`).join('');
         const note = orphan ? `<button class="btn" data-act="wzdel" data-h="${this._hash(n)}">${esc(t('wz.delete'))}</button>`
           : (cur !== undefined ? `<span class="dpur">${esc(t('wz.sortedAs', { key: this._pkey(n, draft) }))}</span>` : '');
+        if (this._flag('setv2')) return `<div class="wzrow"><span class="wzwords">${words}</span>${orphan ? `<span class="wznote">${note}</span>` : ''}</div>`;
         return `<div class="wzrow"><span class="wzwords">${words}</span><span class="wznote">${note}</span>` +
           `<span class="wzn">${esc(t('count.bottlesShort', { n: counts.get(n) || 0 })).replace(/ /g, '&nbsp;')}</span></div>`;
       };
@@ -2477,7 +2490,7 @@
       this._renderDlg(); this._renderAll();
     },
     setopen() { this._det = null; this._set = true; this._renderDlg(); },
-    sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; o.has(id) ? o.delete(id) : o.add(id); this._renderSet(); },
+    sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; if (o.has(id)) o.delete(id); else { o.clear(); o.add(id); } this._renderSet(); }, // one section open at a time
     setclose() { this._set = null; this._renderDlg(); },
     fvis(t) {
       const id = t.dataset.id;

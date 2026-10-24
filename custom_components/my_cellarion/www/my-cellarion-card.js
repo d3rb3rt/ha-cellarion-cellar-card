@@ -1245,6 +1245,7 @@
     // Filters stay open (folding on scroll down / re-opening on scroll up is switched off for now: set SCROLL_FOLD = true)
     // Phone (<=600px): folds on scroll only when the filters need more than one row (more than 4 pills)
     _fixedHdr() {
+      if (this._nShown !== undefined && this._nShown <= 10) return true; // short list: nothing to hide
       if ((this._nChips || 0) > 4 && window.matchMedia && window.matchMedia('(max-width: 600px)').matches) return false;
       return !SCROLL_FOLD || (this._hdr2() && this._flagV('hdr') !== 'c');
     }
@@ -1485,6 +1486,9 @@
       if (rst) {
         rst.hidden = !((f.q ? 1 : 0) + this._nAct() > 1);
       }
+      // Scroll-to-hide of the filters only makes sense for a longer list: up to 10 entries the header stays; an already folded header unfolds
+      this._nShown = this._view === 'flat' ? entries.length : nWine;
+      if (this._nShown <= 10 && this._autoFolded && !this._more) { this._autoFolded = false; this._more = true; this._renderHead(); }
       const sum = this._head && this._head.querySelector('[data-sum]');
       if (sum) {
         const all = this._data.bottles.length;

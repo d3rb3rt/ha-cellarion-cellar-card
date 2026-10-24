@@ -200,20 +200,20 @@
     button.sel::after { content: ''; flex: none; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); opacity: .7; margin-right: 4px; }
     button.sel.more-pill { opacity: .75; }
     button.sel.more-pill.open::after { content: '✕'; width: auto; height: auto; border: 0; transform: none; font-size: 12px; margin-right: 2px; }
-    .dsheet.ddsheet { gap: 0; padding: 12px 12px 8px; max-width: 360px; max-height: 70%; overflow: hidden; }
-    .dlg.dd { align-items: center; padding: 0 24px; box-sizing: border-box; }
-    .dlg.dd .dsheet { border-radius: 16px; }
-    .dsheet > .ddlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-    .ddsheet .dh { flex: none; padding-bottom: 8px; }
+    /* Filter and sort pick list: opens right under the chip (transparent backdrop only catches the click outside) */
+    .dlg.dd { display: block; background: transparent; }
+    .ddpop { position: absolute; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; border-radius: 6px; background: color-mix(in srgb, var(--cb-text) 14%, var(--cb-card)); border: 1px solid color-mix(in srgb, var(--cb-text) 40%, transparent); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+    .ddpop.c { top: 50%; left: 50%; width: min(300px, calc(100% - 32px)); transform: translate(-50%, -50%); max-height: 70%; }
+    .ddpop .ddhint { flex: none; padding: 6px 12px; font-size: 12px; color: var(--cb-sub); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
+    .ddpop .ddlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     .ddi { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 0; border-top: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
     .ddi:active { background: var(--cb-chip); }
     .ddi.cur { font-weight: 600; color: var(--cb-on); }
     .ddsep { height: 6px; border-top: 1px solid var(--cb-line); }
     /* The filter and sort pick list looks like the settings dropdown list: own surface, visible border, rows of the same height with thin separators */
-    .ddsheet .ddlist { background: color-mix(in srgb, var(--cb-text) 14%, var(--cb-card)); border: 1px solid color-mix(in srgb, var(--cb-text) 40%, transparent); border-radius: 6px; }
-    .ddsheet .ddi { min-height: 40px; border-top: 0; border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
-    .ddsheet .ddi:last-child { border-bottom: 0; }
-    .ddsheet .ddsep { height: 0; border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--cb-text) 40%, transparent); }
+    .ddpop .ddi { min-height: 40px; border-top: 0; border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
+    .ddpop .ddi:last-child { border-bottom: 0; }
+    .ddpop .ddsep { height: 0; border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--cb-text) 40%, transparent); }
     .filt2 { display: flex; flex-wrap: wrap; gap: 8px 40px; align-items: center; }
     .row-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .glabel { color: var(--cb-text); font-size: 16px; font-weight: 600; margin-right: 4px; min-width: 40px; }
@@ -1291,10 +1291,20 @@
     _renderDd() {
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
-      el.innerHTML = `<div class="dsheet ddsheet" role="listbox" aria-label="${esc(d.label)}"><div class="dh"><span class="wmain"><span class="wname">${esc(d.label)}</span>${d.hint ? `<span class="wsub">${esc(d.hint)}</span>` : ''}</span>` +
-        `<button class="dx" data-act="ddclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
+      el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint">${esc(d.hint)}</div>` : '') +
         `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`;
       el.hidden = false;
+      const pop = el.firstElementChild, an = this._ddAnchor;
+      if (!an || !an.isConnected) { pop.classList.add('c'); return; }
+      const ov = el.getBoundingClientRect(), a = an.getBoundingClientRect(), m = 8;
+      const w = Math.min(Math.max(a.width, 220), 360, ov.width - 2 * m);
+      const left = Math.max(m, Math.min(a.left - ov.left, ov.width - w - m));
+      const below = ov.bottom - a.bottom - m - 4, above = a.top - ov.top - m - 4;
+      pop.style.width = w + 'px';
+      pop.style.left = left + 'px';
+      if (below >= 220 || below >= above) { pop.style.top = (a.bottom - ov.top + 4) + 'px'; pop.style.maxHeight = Math.max(120, below) + 'px'; }
+      else { pop.style.bottom = (ov.bottom - a.top + 4) + 'px'; pop.style.maxHeight = Math.max(120, above) + 'px'; }
+      return;
     }
 
     _renderHead() {
@@ -2356,7 +2366,7 @@
   // Handler per data-act; `this` is the card, `t` the clicked element
   const ACTIONS = {
     showhid() { this._showHid = !this._showHid; this._renderHead(); },
-    dd(t) { this._dd = t.dataset.id; this._renderDlg(); },
+    dd(t) { this._dd = t.dataset.id; this._ddAnchor = t; this._renderDlg(); },
     ddclose() { this._dd = null; this._renderDlg(); },
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;

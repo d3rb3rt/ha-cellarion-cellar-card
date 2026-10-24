@@ -486,7 +486,13 @@
     .setv2 .rads { display: flex; flex-direction: column; gap: 2px; }
     .setv2 .opt { display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; }
     .setv2 .opt input, .setv2 .frow input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--cb-on); cursor: pointer; }
-    .setv2 .ssel { width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 8px; font-size: inherit; }
+    .setv2 .ssel { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; text-align: left; cursor: pointer; }
+    .setv2 .ssel.open { border-color: var(--cb-on); }
+    .setv2 .ssarr { flex: none; color: var(--cb-sub); font-size: .8em; }
+    .setv2 .ssopts { display: flex; flex-direction: column; margin-top: 4px; border: 1px solid var(--cb-line); border-radius: 6px; background: var(--cb-card); max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .setv2 .ssopt { display: block; width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
+    .setv2 .ssopt:last-child { border-bottom: 0; }
+    .setv2 .ssopt.on { color: var(--cb-on); font-weight: 600; }
     .setv2 .sscope { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: .86em; color: var(--cb-sub); }
     .setv2 .sw2 { position: relative; display: inline-flex; align-items: center; flex: none; width: 68px; height: 30px; padding: 0; border-radius: 15px; background: var(--cb-chip); }
     .setv2 .sw2 .knob { position: absolute; top: 2px; left: 2px; width: 32px; height: 26px; border-radius: 13px; background: var(--cb-on); transition: left .15s; }
@@ -496,7 +502,7 @@
     .setv2 .sone { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 26px; border-radius: 13px; background: transparent; border: 1.5px solid var(--cb-on); color: var(--cb-on); pointer-events: none; }
     .setv2 .sscopeb { padding: 0 0 12px; }
     .setv2 .sscopeb .sscope { margin-top: 0; }
-    .setv2 .ssec:has(.sscopeb) .shead { padding-bottom: 4px; }
+    .setv2 .ssec.hs .shead { padding-bottom: 4px; }
     .setv2 .shead { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; text-align: left; border-bottom: 1px solid var(--cb-line); }
     .setv2 .ssec { border-bottom: 1px solid var(--cb-line); }
     .setv2 .ssec .shead { border-bottom: 0; }
@@ -1820,11 +1826,17 @@
         (sub ? `<span class="wsub">${esc(sub)}</span>` : '') + (scope || '') + `</div><div class="sctl">${ctl}</div></div>`;
       const radios = (name, act, opts, cur, extra) => `<div class="rads" role="radiogroup">` + opts.map(([v, n]) =>
         `<label class="opt"><input type="radio" name="${esc(name)}" data-act="${act}" data-v="${esc(v)}"${extra || ''}${String(v) === String(cur) ? ' checked' : ''}><span>${esc(n)}</span></label>`).join('') + `</div>`;
-      const sel = (key, opts, cur) => `<select class="ssel" data-sel="${key}">` + opts.map(([v, n]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(n)}</option>`).join('') + `</select>`;
+      // Own dropdown inside the card (no native popup: on older tablets the native list flashes up and disappears)
+      const sel = (key, opts, cur) => {
+        const o = this._selOpen === key;
+        const curN = (opts.find(([v]) => String(v) === String(cur)) || ['', ''])[1];
+        return `<div class="ssel2"><button class="ssel${o ? ' open' : ''}" data-act="selopen" data-key="${key}" aria-haspopup="listbox" aria-expanded="${o}"><span>${esc(curN)}</span><span class="ssarr">${o ? '▴' : '▾'}</span></button>` +
+          (o ? `<div class="ssopts" role="listbox">` + opts.map(([v, n]) => `<button class="ssopt${String(v) === String(cur) ? ' on' : ''}" role="option" aria-selected="${String(v) === String(cur)}" data-act="selpick" data-key="${key}" data-v="${esc(v)}">${esc(n)}</button>`).join('') + `</div>` : '') + `</div>`;
+      };
       const chkOpt = (act, extra, on, label) => `<label class="opt"><input type="checkbox" data-act="${act}"${extra || ''}${on ? ' checked' : ''}><span>${esc(label)}</span></label>`;
       const grp = (name) => `<div class="sgrp">${esc(name)}</div>`;
       const sec = (id, title, sum, body, scope) => { const o = open.has(id);
-        return `<div class="ssec"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
+        return `<div class="ssec${scope ? ' hs' : ''}"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const lbl = (d) => d.personal ? '[' + d.label + ']' : d.label;
       const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
       const grip = `<span class="grip" role="button" aria-label="${esc(t('set2.drag'))}" title="${esc(t('set2.drag'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14M5 12h14M5 16h14"/></svg></span>`;
@@ -1856,7 +1868,7 @@
         sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw(null, 'device')) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
-        `<div class="ssec"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
+        `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -2317,8 +2329,6 @@
     _onChange(e) {
       const s = e.target && e.target.dataset && e.target.dataset.sel;
       if (!s) return;
-      if (s === 'setlang') { ACTIONS.lang.call(this, { dataset: { v: e.target.value } }); return; }
-      if (s === 'setscale') { ACTIONS.scale.call(this, { dataset: { v: e.target.value } }); this._renderSet(); return; }
       if (s === 'sort') { this._sort = e.target.value; this._saveState(); }
       else if (e.target.value) { this._fs(s).add(e.target.value); }
       this._renderAll();
@@ -2371,7 +2381,14 @@
     },
     setopen() { this._det = null; this._set = true; this._renderDlg(); },
     sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; if (o.has(id)) o.delete(id); else { o.clear(); o.add(id); } this._renderSet(); }, // one section open at a time
-    setclose() { this._set = null; this._renderDlg(); },
+    setclose() { this._set = null; this._selOpen = null; this._renderDlg(); },
+    selopen(t) { this._selOpen = this._selOpen === t.dataset.key ? null : t.dataset.key; this._renderSet(); },
+    selpick(t) {
+      const k = t.dataset.key, v = t.dataset.v;
+      this._selOpen = null;
+      if (k === 'setlang') ACTIONS.lang.call(this, { dataset: { v } });
+      else if (k === 'setscale') { ACTIONS.scale.call(this, { dataset: { v } }); this._renderSet(); }
+    },
     fvis(t) {
       const id = t.dataset.id;
       const hid = new Set(this._fh);

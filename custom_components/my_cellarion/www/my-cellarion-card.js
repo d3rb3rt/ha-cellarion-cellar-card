@@ -1864,7 +1864,6 @@
         this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
           `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
           `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
-          (d.personal && !this._integ() ? `<button class="btn round" data-act="fdelask" data-id="${esc(d.id)}" aria-label="${esc(t('set.deleteForever', { label: d.label }))}" title="${esc(t('set.deleteTitle'))}">🗑</button>` : '') +
           `<button class="btn round" data-act="fup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
           `<button class="btn round" data-act="fdn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
         `</div>` +
@@ -1914,7 +1913,6 @@
       const idefs = this._infoDefs();
       const iord = idefs.filter((d) => !d.fixed);
       const racks = (this._data && this._data.racks) || [];
-      const pers = fdefs.filter((d) => d.personal);
       const frow = (d, on, grp) => `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><label class="fl">${fchk(grp === 'f' ? 'fvis' : 'ivis', d.id, on, d.label)}<span class="wname">${esc(lbl(d))}</span></label>${grp ? grip : ''}</div>`;
       const filtersBody = `<div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>`;
       const infoBody = `<div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
@@ -1923,8 +1921,6 @@
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
           row(t('set.rackOrder'), '', '', radios('rk-' + n + '-order', 'rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
           row(t('set.rackSide'), '', '', radios('rk-' + n + '-side', 'rack', [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]], rs.side, ` data-n="${esc(n)}" data-k="side"`)) + `</div>`; }).join('');
-      const persBody = `<div class="wsub" style="padding:4px 0">${esc(t('set2.fieldsSub'))}</div>` + pers.map((d) => `<div class="frow"><span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>` +
-        (!this._integ() ? `<button class="btn round" data-act="fdelask" data-id="${esc(d.id)}" aria-label="${esc(t('set.deleteForever', { label: d.label }))}" title="${esc(t('set.deleteTitle'))}">🗑</button>` : '') + `</div>`).join('');
       const langs = [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {}));
       const shownF = fdefs.filter((d) => !this._fh.has(d.id)).length;
       el.innerHTML = `<div class="dsheet setv2" role="dialog" aria-modal="true">` +
@@ -1942,7 +1938,6 @@
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span>${sw(null, 'all')}</span><span class="chev">›</span></button>` +
-        (pers.length ? sec('fields', t('set2.fields'), t('set2.sumFields', { n: pers.length }), persBody) : '') +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -1961,21 +1956,6 @@
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
       }
       if (this._set) this._renderSet();
-    }
-    async _delField() {
-      const f = this._fdel;
-      if (!f || f.busy) return;
-      f.busy = true; f.err = ''; this._renderDlg();
-      try {
-        await this._call('fielddel', { l: encodeURIComponent(f.label) }, { label: f.label });
-        this._fdel = null;
-        this._setNote = t('fd.note', { label: f.label });
-        [40000, 90000].forEach((ms) => setTimeout(() => { this._load().then(() => { if (!(this._data.fields || []).includes(f.label)) this._setNote = ''; if (this._set) this._renderSet(); }); }, ms));
-        this._renderDlg();
-      } catch (e) {
-        f.busy = false; f.err = t('fd.failed', { err: (e && e.message) || String(e) });
-        this._renderDlg();
-      }
     }
     _fmove(id, dir) {
       const ids = this._allDefs().map((d) => d.id);
@@ -2275,7 +2255,7 @@
     }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
     _hdepth() {
-      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._fdel ? 1 : 0) + (this._cfm ? 1 : 0);
+      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._cfm ? 1 : 0);
     }
     _hsync() {
       if (this._hskip) return;
@@ -2290,8 +2270,7 @@
       if (!this._hd) return;
       this._hd--;
       // one level back
-      if (this._fdel) { if (!this._fdel.busy) this._fdel = null; }
-      else if (this._cfm) this._cfm = null;
+      if (this._cfm) this._cfm = null;
       else if (this._dd) this._dd = null;
       else if (this._wz) { if (!this._wz.busy) this._wz = null; }
       else if (this._set) this._set = null;
@@ -2304,15 +2283,6 @@
       const el = this._dlg;
       if (!el) return;
       el.classList.toggle('dd', !!this._dd);
-      if (this._fdel) {
-        const f = this._fdel;
-        el.innerHTML = `<div class="dsheet csheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('fd.title', { label: f.label }))}</span>` +
-          `<span class="wsub">${esc(t('fd.text', { n: f.n }))}</span></span></div>` +
-          (f.err ? `<div class="derr">${esc(f.err)}</div>` : '') +
-          `<div class="dact"><button class="btn" data-act="fdelno" ${f.busy ? 'disabled' : ''}>${esc(t('fd.cancel'))}</button><button class="btn danger" data-act="fdelyes" ${f.busy ? 'disabled' : ''}>${esc(f.busy ? t('fd.starting') : t('fd.confirm'))}</button></div></div>`;
-        el.hidden = false;
-        return;
-      }
       if (this._cfm) {
         el.innerHTML = `<div class="dsheet csheet" role="dialog" aria-modal="true"><div class="dh"><span class="wmain"><span class="wname">${esc(t('rl.title'))}</span>` +
           `<span class="wsub">${esc(t('rl.text'))}</span></span></div>` +
@@ -2410,7 +2380,6 @@
       const c = e.target.classList;
       if (!c || !c.contains('dlg')) return false;
       if (this._dd) { this._dd = null; this._renderDlg(); }
-      else if (this._fdel) { if (!this._fdel.busy) { this._fdel = null; this._renderDlg(); } }
       else if (this._cfm) { this._cfm = false; this._renderDlg(); }
       else if (this._stat) { this._stat = null; this._renderDlg(); }
       else if (this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); }
@@ -2531,12 +2500,6 @@
       this._setFilters(this._fo, Array.from(hid));
       this._renderAll(); this._renderSet();
     },
-    fdelask(t) {
-      const dd = this._allDefs().find((x) => x.id === t.dataset.id);
-      if (dd && dd.personal) { this._fdel = { id: dd.id, label: dd.label, n: this._data.bottles.filter((b) => b.p && b.p[dd.label]).length, busy: false }; this._renderDlg(); }
-    },
-    fdelno() { this._fdel = null; this._renderDlg(); },
-    fdelyes() { this._delField(); },
     ivis(t) {
       const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
       this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();

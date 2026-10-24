@@ -198,3 +198,15 @@ def test_settings_page_marks_fixed_and_switchable_scopes(card):
     page.wait_for_timeout(300)
     assert count(page, ".sscopeb button.sw2.dev") == 0
     assert page.errors == []
+
+
+def test_dropdown_is_inside_the_card_and_changes_the_setting(card):
+    page = card()
+    page.evaluate("() => { c._set = true; c._renderDlg(); }")
+    assert count(page, "select") == 0  # no native popup (it misbehaves on older tablets)
+    click(page, "[data-act=selopen][data-key=setscale]")
+    assert count(page, ".ssopts .ssopt") == 7
+    click(page, "[data-act=selpick][data-key=setscale][data-v='115']")
+    assert count(page, ".ssopts") == 0  # the list closes after a pick
+    assert "115 %" in page.evaluate("c.shadowRoot.querySelector('[data-key=setscale]').textContent")
+    assert page.errors == []

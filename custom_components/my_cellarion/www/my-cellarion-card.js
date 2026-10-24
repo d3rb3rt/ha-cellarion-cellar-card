@@ -477,11 +477,13 @@
     .sblk { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--cb-line); }
     .dh + .sblk { border-top: 0; padding-top: 4px; }
     /* Settings v2 (flag setv2): description column left, control column right (fixed proportions), plain controls */
-    .setv2 .sgrp { margin-top: 14px; padding-bottom: 4px; font-size: .78em; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); border-bottom: 1px solid var(--cb-line); }
-    .setv2 .dh + .sgrp, .setv2 .dh + .derr + .sgrp { margin-top: 4px; }
+    .setv2 .sgrp { display: flex; align-items: center; gap: 14px; margin-top: 28px; font-size: 1.1em; font-weight: 600; letter-spacing: .02em; color: var(--cb-on); }
+    .setv2 .sgrp::before, .setv2 .sgrp::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--cb-on) 40%, transparent); }
+    .setv2 .dh + .sgrp, .setv2 .dh + .derr + .sgrp { margin-top: 10px; }
     .setv2 .srow { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 16px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--cb-line); }
     .setv2 .sdesc { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-    .setv2 .sdesc .wname, .setv2 .shead .wname { white-space: normal; font-size: 1em; font-weight: 500; }
+    .setv2 .sdesc .wname, .setv2 .shead .wname { white-space: normal; font-size: 1em; font-weight: 400; }
+    .setv2 .shead .wsub { font-weight: 400; }
     .setv2 .wsub { white-space: normal; }
     .setv2 .sctl { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .setv2 .rads { display: flex; flex-direction: column; gap: 2px; }

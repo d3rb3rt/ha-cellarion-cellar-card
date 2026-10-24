@@ -143,6 +143,8 @@
  "set.languageAuto": "Automatisch",
  "set.scopeAll": "Alle Geräte",
  "set.scopeDevice": "Nur dieses Gerät",
+ "set.scopeAllFixed": "Immer für alle Geräte",
+ "set.scopeDeviceFixed": "Immer nur dieses Gerät",
  "set.on": "An",
  "set.off": "Aus",
  "det.drinkWindow": "Trinkfenster",

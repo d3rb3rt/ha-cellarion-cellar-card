@@ -496,7 +496,7 @@
     .setv2 .sw2.dev .knob { left: 34px; }
     .setv2 .sw2 .ic { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 34px; height: 30px; color: var(--cb-sub); }
     .setv2 .sw2 .ic.act { color: var(--cb-on-text); }
-    .setv2 .sone { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 26px; border-radius: 13px; background: var(--cb-on); color: var(--cb-on-text); pointer-events: none; }
+    .setv2 .sone { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 26px; border-radius: 13px; background: transparent; border: 1.5px solid var(--cb-on); color: var(--cb-on); pointer-events: none; }
     .setv2 .sscopeb { padding: 0 0 12px; }
     .setv2 .sscopeb .sscope { margin-top: 0; }
     .setv2 .ssec:has(.sscopeb) .shead { padding-bottom: 4px; }
@@ -1890,7 +1890,7 @@
       // scope: switch with the globe (all devices) on the left and the phone (this device) on the right, the text says what is set
       const sw = (k, only) => {
         const dev = only ? only === 'device' : this._local[k] !== undefined;
-        const lbl = dev ? t('set.scopeDevice') : t('set.scopeAll');
+        const lbl = only ? (dev ? t('set.scopeDeviceFixed') : t('set.scopeAllFixed')) : (dev ? t('set.scopeDevice') : t('set.scopeAll'));
         const inner = `<span class="knob"></span><span class="ic${dev ? '' : ' act'}">${gi}</span><span class="ic${dev ? ' act' : ''}">${pi}</span>`;
         // Only one scope possible: show just that icon (highlighted, not a switch), so nothing looks switchable
         const ctl = only ? `<span class="sone" role="img" aria-label="${esc(lbl)}">${dev ? pi : gi}</span>`

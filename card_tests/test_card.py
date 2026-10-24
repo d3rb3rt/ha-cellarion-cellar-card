@@ -182,3 +182,19 @@ def test_appearance_setting_per_device(card):
     assert page.evaluate("c.getAttribute('data-mode')") == "light"
     click(page, "[data-act=mode][data-v=auto]")
     assert page.evaluate("c.hasAttribute('data-mode')") is False
+
+
+def test_settings_page_marks_fixed_and_switchable_scopes(card):
+    page = card()
+    page.evaluate("() => { c._set = true; c._renderDlg(); }")
+    assert count(page, ".setv2") == 1
+    assert count(page, "[data-act=fdelask]") == 0  # data fields are managed in Cellarion, not in the card
+    assert count(page, ".sone") >= 3  # settings with a single possible scope show only their icon, no switch
+    assert count(page, ".sscopeb button.sw2") == 1  # the collapsed Filter section keeps a real switch
+    click(page, ".sscopeb button.sw2")
+    page.wait_for_timeout(300)
+    assert count(page, ".sscopeb button.sw2.dev") == 1
+    click(page, ".sscopeb button.sw2")
+    page.wait_for_timeout(300)
+    assert count(page, ".sscopeb button.sw2.dev") == 0
+    assert page.errors == []

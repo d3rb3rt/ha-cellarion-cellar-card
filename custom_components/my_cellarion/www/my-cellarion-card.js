@@ -59,7 +59,7 @@
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
   const SCROLL_FOLD = false;
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'setv2' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -458,7 +458,6 @@
     .wzw.on { background: var(--cb-on); color: var(--cb-on-text); font-weight: 700; }
     .wzname { padding: 8px 0; }
     .wznote { color: var(--cb-sub); font-size: .86em; }
-    .wzn { color: var(--cb-sub); min-width: 3.4em; text-align: right; }
     .wzv2 .row-chips { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .wzv2 .wzq { flex: 1 1 180px; min-width: 0; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font-size: inherit; outline: none; }
     .wzv2 .wzq:focus { border-color: var(--cb-on); }
@@ -469,14 +468,12 @@
     .wzv2 .wzw { min-height: 32px; padding: 0 10px; border-radius: 6px; background: transparent; border: 1px solid var(--cb-line); font-size: inherit; }
     .wzv2 .wzw.on { background: var(--cb-on); border-color: var(--cb-on); color: var(--cb-on-text); font-weight: 600; }
     .gear { margin-left: auto; color: var(--cb-sub); }
-    .scalechips { display: flex; flex-wrap: wrap; gap: 6px; }
     .frow { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--cb-line); }
     .frow .wmain { flex: 1; }
     .frow .btn.round { width: 36px; min-height: 36px; font-size: 16px; }
     .frow.off .wname { opacity: .5; }
-    .sblk { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--cb-line); }
     .dh + .sblk { border-top: 0; padding-top: 4px; }
-    /* Settings v2 (flag setv2): description column left, control column right (fixed proportions), plain controls */
+    /* Settings page: description column left, control column right (fixed proportions), plain controls */
     .setv2 .sgrp { display: flex; align-items: center; gap: 14px; margin-top: 28px; font-size: 1.1em; font-weight: 600; letter-spacing: .02em; color: var(--cb-on); }
     .setv2 .sgrp::before, .setv2 .sgrp::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--cb-on) 40%, transparent); }
     .setv2 .dh + .sgrp, .setv2 .dh + .derr + .sgrp { margin-top: 10px; }
@@ -523,11 +520,7 @@
     .setv2 .frow.drag .grip { cursor: grabbing; color: var(--cb-text); }
     .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }
     .racknm { font-size: .88em; font-weight: 600; color: var(--cb-sub); }
-    .shd { display: flex; align-items: center; gap: 10px; }
-    .shd .wmain { flex: 1; }
     .scopeone { flex: none; cursor: default; pointer-events: none; }
-    .setrow { display: flex; align-items: center; gap: 12px; padding: 0; text-align: left; width: 100%; }
-    .setrow .wmain { flex: 1; }
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
     .dask { font-size: 1.1em; font-weight: 600; }
@@ -807,14 +800,6 @@
       this._local.info = { order, show };
       this._saveState(); this._applyEff();
     }
-    _imove(id, dir) {
-      const ids = this._infoDefs().filter((d) => !d.fixed).map((d) => d.id);
-      const i = ids.indexOf(id), j = i + dir;
-      if (i < 0 || j < 0 || j >= ids.length) return;
-      ids.splice(j, 0, ids.splice(i, 1)[0]);
-      this._setInfo(ids, Array.from(this._is));
-      this._renderSet(); this._renderAll();
-    }
     _setLang(v) {
       if (this._local.language !== undefined) { this._local.language = v; this._saveState(); }
       else { if (v) this._shared.language = v; else delete this._shared.language; this._saveSettings(); }
@@ -824,20 +809,6 @@
       if (this._local.filters) { this._local.filters = { filterOrder: order, filterHidden: hidden }; this._saveState(); }
       else { this._shared.filterOrder = order; this._shared.filterHidden = hidden; this._saveSettings(); }
       this._applyEff();
-    }
-    // Switch "all devices" (globe) / "this device only" (phone): two round icons, one active
-    _scopeSw(k, only) {
-      const dev = only ? only === 'device' : this._local[k] !== undefined;
-      const ico = {
-        all: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
-        device: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>',
-      };
-      const b = (v, label, on) => `<button class="btn round${on ? ' on' : ''}" data-act="scope" data-k="${k}" data-v="${v}" aria-pressed="${on}" title="${esc(label)}" aria-label="${esc(label)}">${ico[v]}</button>`;
-      if (only) { // fixed scope: show only the matching icon, highlighted, not clickable
-        const lbl = only === 'all' ? t('set.scopeAll') : t('set.scopeDevice');
-        return `<span class="btn round on scopeone" role="img" title="${esc(lbl)}" aria-label="${esc(lbl)}">${ico[only]}</span>`;
-      }
-      return `<span style="display:flex;gap:6px;flex:none">${b('all', t('set.scopeAll'), !dev)}${b('device', t('set.scopeDevice'), dev)}</span>`;
     }
     // Beim Neuladen Filter/Sortierung behalten: Geraet (local) vor zentral (shared); Standard: frisch starten
     _keep() {
@@ -1685,11 +1656,6 @@
       Object.keys(m).forEach((n) => { if (!(n in d)) out.push([n, -1]); });
       return out;
     }
-    _wzBar() {
-      const z = this._wz, n = this._wzChanges().length;
-      return `<button class="btn" data-act="wzclose" ${z.busy ? 'disabled' : ''}>${esc(n ? t('wz.cancel') : t('wz.close'))}</button>` +
-        `<button class="btn on" data-act="wzsave" ${n && !z.busy ? '' : 'disabled'}>${esc(z.busy ? t('wz.saving') : n ? t('wz.saveN', { n }) : t('wz.save'))}</button>`;
-    }
     // ---------- Statistics (computed from the bottle list of the card, whole cellar) ----------
     _statData() {
       const d = this._data;
@@ -1830,56 +1796,9 @@
       el.hidden = false;
       const sh = el.querySelector('.dsheet'); if (sh) sh.scrollTop = topPos;
     }
-    _renderSet() {
-      if (this._flag('setv2')) { this._renderSet2(); return; }
-      const el = this._dlg;
-      if (!el) return;
-      const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Keep the scroll position when redrawing
-      const sc = Math.round(this._scale * 100);
-      const steps = [85, 100, 115, 130, 150, 175, 200];
-      const hd = (name, sub, right) => `<div class="shd"><div class="wmain"><span class="wname">${esc(name)}</span><span class="wsub">${esc(sub)}</span></div>${right || ''}</div>`;
-      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">` +
-        `<div class="dh"><span class="wmain"><span class="wname">${esc(t('head.settings'))}</span></span>` +
-        `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
-        `<div class="sblk">` + hd(t('set.language'), t('set.languageSub'), this._scopeSw('language')) +
-        `<div class="scalechips">` + [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {})).map(([c, n]) => `<button class="chip${c === (this._langSel || '') ? ' on' : ''}" data-act="lang" data-v="${esc(c)}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px;white-space:nowrap">${esc(n)}</button>`).join('') + `</div></div>` +
-        `<div class="sblk"><button class="setrow" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span>` +
-        `<span class="wsub">${esc(t('set.producersSub'))}</span></span>${this._scopeSw(null, 'all')}<span class="chev">›</span></button></div>` +
-        (((this._data && this._data.racks) || []).length ? `<div class="sblk">` + hd(t('set.racks'), t('set.racksSub'), this._scopeSw(null, 'all')) +
-          this._data.racks.map((n) => {
-            const rs = this._rs(n);
-            const grp = (key, label, opts) => `<div class="wsub" style="margin-top:4px">${esc(label)}</div><div class="scalechips">` + opts.map(([v, l]) => `<button class="chip${rs[key] === v ? ' on' : ''}" data-act="rack" data-n="${esc(n)}" data-k="${key}" data-v="${v}" style="width:auto;padding:0 14px;border-radius:20px;white-space:nowrap">${esc(l)}</button>`).join('') + `</div>`;
-            return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` + grp('order', t('set.rackOrder'), [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]]) +
-              grp('side', t('set.rackSide'), [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]]) + `</div>`;
-          }).join('') + `</div>` : '') +
-        `<div class="sblk">` + hd(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), this._scopeSw(null, 'device')) +
-        `<div class="scalechips">` + steps.map((v) => `<button class="chip${v === sc ? ' on' : ''}" data-act="scale" data-v="${v}" style="min-width:64px">${v} %</button>`).join('') + `</div></div>` +
-        `<div class="sblk">` + hd(t('set.mode'), t('set.modeSub'), this._scopeSw(null, 'device')) +
-        `<div class="scalechips">` + [['auto', t('set.modeAuto')], ['light', t('set.modeLight')], ['dark', t('set.modeDark')]].map(([v, n]) => `<button class="chip${v === this._mode() ? ' on' : ''}" data-act="mode" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
-        FLAGS.map((f) => `<div class="sblk">` + hd(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), this._scopeSw(null, 'device')) +
-          `<div class="scalechips">` + (f.opts ? f.opts.map((v) => [v, v === 'off' ? t('set.off') : t('flag.' + f.id + '.' + v)]) : [['on', t('set.on')], ['off', t('set.off')]]).map(([v, n]) => `<button class="chip${(f.opts ? v === this._flagV(f.id) : (v === 'on') === this._flag(f.id)) ? ' on' : ''}" data-act="flag" data-id="${esc(f.id)}" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>`).join('') +
-        `<div class="sblk">` + hd(t('set.keepState'), t('set.keepStateSub'), this._scopeSw('keepState')) +
-        `<div class="scalechips">` + [['on', t('set.keepOn')], ['off', t('set.keepOff')]].map(([v, n]) => `<button class="chip${(v === 'on') === this._keep() ? ' on' : ''}" data-act="keepst" data-v="${v}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px">${esc(n)}</button>`).join('') + `</div></div>` +
-        `<div class="sblk">` + hd(t('set.filters'), t('set.filtersSub'), this._scopeSw('filters')) + (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
-        this._allDefs().map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">` +
-          `<button class="btn round" data-act="fvis" data-id="${esc(d.id)}" aria-pressed="${!this._fh.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._fh.has(d.id) ? '○' : '●'}</button>` +
-          `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
-          `<button class="btn round" data-act="fup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
-          `<button class="btn round" data-act="fdn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 1 ? ' disabled' : ''}>▼</button></div>`).join('') +
-        `</div>` +
-        `<div class="sblk">` + hd(t('set.info'), t('set.infoSub'), this._scopeSw(null, 'device')) +
-        this._infoDefs().map((d, i, arr) => `<div class="frow${this._is.has(d.id) ? '' : ' off'}">` +
-          `<button class="btn round" data-act="ivis" data-id="${esc(d.id)}" aria-pressed="${this._is.has(d.id)}" aria-label="${esc(t('set.toggle', { label: d.label }))}">${this._is.has(d.id) ? '●' : '○'}</button>` +
-          `<span class="wmain"><span class="wname">${d.personal ? '[' + esc(d.label) + ']' : esc(d.label)}</span>${d.personal ? '<span class="wsub">' + esc(t('set.dataField')) + '</span>' : ''}</span>` +
-          (d.fixed ? '' : `<button class="btn round" data-act="iup" data-id="${esc(d.id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button>` +
-          `<button class="btn round" data-act="idn" data-id="${esc(d.id)}" aria-label="${esc(t('set.down'))}"${i === arr.length - 2 ? ' disabled' : ''}>▼</button>`) + `</div>`).join('') +
-        `</div><div class="dact"><button class="btn on" data-act="setclose">${esc(t('set.done'))}</button></div></div>`;
-      el.hidden = false;
-      if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
-    }
-    // New settings page (flag setv2): plain list, groups, a description column (left) and a control column (right) of fixed proportions.
+    // Settings page: plain list, groups, a description column (left) and a control column (right) of fixed proportions.
     // Few options: radios or a checkbox; many options: a plain dropdown; long topics collapsed. Scope: one switch with two icons plus the text.
-    _renderSet2() {
+    _renderSet() {
       const el = this._dlg;
       if (!el) return;
       const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Keep the scroll position when redrawing
@@ -1937,7 +1856,7 @@
         sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw(null, 'device')) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
-        `<button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span>${sw(null, 'all')}</span><span class="chev">›</span></button>` +
+        `<div class="ssec"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -1957,30 +1876,19 @@
       }
       if (this._set) this._renderSet();
     }
-    _fmove(id, dir) {
-      const ids = this._allDefs().map((d) => d.id);
-      const i = ids.indexOf(id), j = i + dir;
-      if (i < 0 || j < 0 || j >= ids.length) return;
-      ids.splice(j, 0, ids.splice(i, 1)[0]);
-      this._setFilters(ids, Array.from(this._fh));
-      this._renderHead(); this._renderSet();
-    }
     _renderWz() {
       const el = this._dlg, z = this._wz;
       if (!el) return;
       if (!z) { el.hidden = true; el.innerHTML = ''; return; }
-      const v2 = this._flag('setv2'); // plain look of the new settings (flag setv2): square input, checkbox, small word buttons, no bottle counts
-      el.innerHTML = `<div class="dsheet${v2 ? ' wzv2' : ''}" role="dialog" aria-modal="true">` +
+      el.innerHTML = `<div class="dsheet wzv2" role="dialog" aria-modal="true">` +
         `<div class="dh"><span class="wmain"><span class="wname">${esc(t('wz.title'))}</span>` +
         `<span class="wsub">${esc(t('wz.hint'))}</span></span>` +
         `<button class="dx" data-act="wzclose" aria-label="${esc(t('wz.close'))}" ${z.busy ? 'disabled' : ''}>✕</button></div>` +
-        (v2 ? `<div class="row-chips"><input class="wzq" type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}">` +
-          `<label class="opt"><input type="checkbox" data-act="wzall"${z.all ? '' : ' checked'}><span>${esc(t('wz.multi'))}</span></label></div>`
-        : `<div class="row-chips"><div class="search has" style="flex:1 1 180px"><input type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}"></div>` +
-        `<button class="chip${z.all ? '' : ' on'}" data-act="wzall" aria-pressed="${!z.all}">${esc(t('wz.multi'))}</button></div>`) +
+        `<div class="row-chips"><input class="wzq" type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}">` +
+          `<label class="opt"><input type="checkbox" data-act="wzall"${z.all ? '' : ' checked'}><span>${esc(t('wz.multi'))}</span></label></div>` +
         `<div class="derr" data-wzerr ${z.err ? '' : 'hidden'}>${esc(z.err)}</div>` +
         `<div class="wzlist"></div>` +
-        (v2 ? '' : `<div class="dact" data-wzbar>${this._wzBar()}</div>`) + `</div>`;
+        `</div>`;
       el.hidden = false;
       this._renderWzList();
     }
@@ -2004,15 +1912,11 @@
           `<button class="wzw${cur === i ? ' on' : ''}" data-act="wzw" data-h="${this._hash(n)}" data-i="${i}" aria-pressed="${cur === i}">${esc(x)}</button>`).join('');
         const note = orphan ? `<button class="btn" data-act="wzdel" data-h="${this._hash(n)}">${esc(t('wz.delete'))}</button>`
           : (cur !== undefined ? `<span class="dpur">${esc(t('wz.sortedAs', { key: this._pkey(n, draft) }))}</span>` : '');
-        if (this._flag('setv2')) return `<div class="wzrow"><span class="wzwords">${words}</span>${orphan ? `<span class="wznote">${note}</span>` : ''}</div>`;
-        return `<div class="wzrow"><span class="wzwords">${words}</span><span class="wznote">${note}</span>` +
-          `<span class="wzn">${esc(t('count.bottlesShort', { n: counts.get(n) || 0 })).replace(/ /g, '&nbsp;')}</span></div>`;
+        return `<div class="wzrow"><span class="wzwords">${words}</span>${orphan ? `<span class="wznote">${note}</span>` : ''}</div>`;
       };
       let html = show.map((n) => row(n, false)).join('') || `<div class="msg">${esc(t('wz.empty'))}</div>`;
       if (orphans.length) html += `<div class="dsec" style="margin-top:8px">${esc(t('wz.orphans'))}</div>` + orphans.map((n) => row(n, true)).join('');
       box.innerHTML = html;
-      const bar = this._dlg.querySelector('[data-wzbar]');
-      if (bar) bar.innerHTML = this._wzBar();
     }
     // Tap in the dialog: only the draft changes, it is saved with "Save"
     _wzTap(h, i) {
@@ -2022,7 +1926,7 @@
       if (!name) return;
       if (i < 0 || z.draft[name] === i) delete z.draft[name]; else z.draft[name] = i;
       this._renderWzList();
-      if (this._flag('setv2')) this._wzSaveOne(name, z.draft[name] === undefined ? -1 : z.draft[name]); // new settings: every tap is saved at once
+      this._wzSaveOne(name, z.draft[name] === undefined ? -1 : z.draft[name]); // every tap is saved at once
     }
     async _wzSaveOne(name, i) {
       const z = this._wz;
@@ -2038,30 +1942,6 @@
           this._renderWz();
         }
       }
-    }
-    async _wzSave() {
-      const z = this._wz;
-      if (!z || z.busy) return;
-      const changes = this._wzChanges();
-      if (!changes.length) return;
-      z.busy = true; z.err = '';
-      this._renderWz();
-      try {
-        for (const [name, i] of changes) {
-          const data = await this._call('winzer', { h: this._hash(name), i }, { name, index: i });
-          this._sortMap = data.map || this._sortMap;
-        }
-      } catch (e) {
-        z.busy = false;
-        z.err = t('set.saveFailed', { err: (e && e.message) || String(e) });
-        this._renderWz();
-        this._renderHead(); this._renderList();
-        return;
-      }
-      this._wz = null;
-      this._renderDlg();
-      this._renderHead();
-      this._renderList();
     }
 
     // ---------- Detail view and take-out ----------
@@ -2430,7 +2310,6 @@
     }
     _onWz(act, t) {
       if (act === 'wzclose') { if (!this._wz.busy) { this._wz = null; this._renderDlg(); } }
-      else if (act === 'wzsave') this._wzSave();
       else if (act === 'wzall') { this._wz.all = !this._wz.all; this._renderWz(); }
       else if (act === 'wzw') this._wzTap(t.dataset.h, Number(t.dataset.i));
       else if (act === 'wzdel') this._wzTap(t.dataset.h, -1);
@@ -2504,10 +2383,6 @@
       const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
       this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
     },
-    iup(t) { this._imove(t.dataset.id, -1); },
-    idn(t) { this._imove(t.dataset.id, 1); },
-    fup(t) { this._fmove(t.dataset.id, -1); },
-    fdn(t) { this._fmove(t.dataset.id, 1); },
     rack(t) { this._setRack(t.dataset.n, t.dataset.k, t.dataset.v); },
     keepst(t) {
       const on = t.dataset.v === 'on';

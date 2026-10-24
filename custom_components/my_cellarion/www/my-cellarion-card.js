@@ -59,7 +59,7 @@
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
   const SCROLL_FOLD = false;
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'vlocl' }, { id: 'fullw' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'vlocl' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -498,6 +498,9 @@
     .setv2 .rads { display: flex; flex-direction: column; gap: 2px; }
     .setv2 .opt { display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; }
     .setv2 .opt input, .setv2 .frow input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--cb-on); cursor: pointer; }
+    /* Own checkbox look (the native one turns into a dark block on the tablet): outlined box, accent fill and tick when set */
+    .setv2 input[type=checkbox] { -webkit-appearance: none; appearance: none; box-sizing: border-box; border: 2px solid color-mix(in srgb, var(--cb-text) 60%, transparent); border-radius: 5px; background: transparent center / 14px no-repeat; }
+    .setv2 input[type=checkbox]:checked { background-color: var(--cb-on); border-color: var(--cb-on); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
     .setv2 .ssel { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; text-align: left; cursor: pointer; }
     .setv2 .ssel.open { border-color: var(--cb-on); }
     .setv2 .ssarr { flex: none; color: var(--cb-sub); font-size: .8em; }
@@ -787,6 +790,7 @@
       return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
     }
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
+    _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
     _applyMode() { const m = this._mode(); if (m === 'auto') this.removeAttribute('data-mode'); else this.setAttribute('data-mode', m); }
     _applyScale() {
       const w = this.shadowRoot && this.shadowRoot.querySelector('.wrap');
@@ -1232,7 +1236,7 @@
       this._applyMode();
       this.toggleAttribute('data-sinv', this._flag('sinv'));
       this.toggleAttribute('data-vlocl', this._flag('vlocl'));
-      this.toggleAttribute('data-fullw', this._flag('fullw'));
+      this.toggleAttribute('data-fullw', this._fullw());
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();
@@ -1545,7 +1549,7 @@
         this.shadowRoot.querySelectorAll('.head, .top, .fwrap, .fpills, .sumline').forEach((e) => { e.style.maxWidth = ''; });
         others.forEach((e) => { e.style.maxWidth = v; });
       };
-      if (this._flag('fullw')) { set(''); return; } // flag fullw: no width limit, list and header use the whole width
+      if (this._fullw()) { set(''); return; } // setting fullw (this device only): no width limit, list and header use the whole width
       let cached = '';
       try { cached = localStorage.getItem('cellarion-azw') || ''; } catch (e) { /* egal */ }
       // Before the alphabet bar exists (first render) use the last known width, so nothing jumps
@@ -1893,6 +1897,7 @@
         row(t('set.language'), t('set.languageSub'), sw('language'), sel('setlang', langs, this._langSel || '')) +
         row(t('set2.mode'), t('set.modeSub'), sw(null, 'device'), radios('mode', 'mode', [['auto', t('set.modeAuto')], ['light', t('set.modeLight')], ['dark', t('set.modeDark')]], this._mode())) +
         row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), sw(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
+        row(t('set2.fullw'), t('set2.fullwSub'), sw(null, 'device'), chkOpt('fullw', '', this._fullw(), t('set.on'))) +
         grp(t('set2.grpList')) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
@@ -2469,6 +2474,7 @@
         this._renderAll(); this._renderSet();
       });
     },
+    fullw() { this._local.fullw = !this._fullw(); this._saveState(); this._renderAll(); this._renderSet(); this._azWidth(); },
     mode(t) { this._local.mode = t.dataset.v; this._applyMode(); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg(); },
     scale(t) { this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg(); },
     wzopen() { this._wzOpen(); },

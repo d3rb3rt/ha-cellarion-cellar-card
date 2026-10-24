@@ -59,7 +59,7 @@
   // Experiments behind a switch (empty = no switch in the settings)
   // Experiments only exist in the development card (BACKEND 'dev'); the integration build gets an empty list, so no switch appears there
   const SCROLL_FOLD = false;
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'vlocl' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'vlocl' }, { id: 'fullw' }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -321,6 +321,7 @@
     mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
     .tsp { flex: none; display: inline-block; vertical-align: middle; width: 22px; height: 22px; }
     .azanc { display: block; height: 0; }
+    @media (min-width: 601px) { :host([data-fullw]) .az { justify-content: space-between; } } /* flag fullw: the letters spread over the whole width */
     .az button.cur { background: var(--cb-on); color: var(--cb-on-text); }
     .ptr { height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; color: var(--cb-sub); font-size: 12px; flex: none; }
     .fbtn.open:not(.on) { box-shadow: 0 0 0 2px var(--cb-on) inset; }
@@ -1231,6 +1232,7 @@
       this._applyMode();
       this.toggleAttribute('data-sinv', this._flag('sinv'));
       this.toggleAttribute('data-vlocl', this._flag('vlocl'));
+      this.toggleAttribute('data-fullw', this._flag('fullw'));
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();
@@ -1543,6 +1545,7 @@
         this.shadowRoot.querySelectorAll('.head, .top, .fwrap, .fpills, .sumline').forEach((e) => { e.style.maxWidth = ''; });
         others.forEach((e) => { e.style.maxWidth = v; });
       };
+      if (this._flag('fullw')) { set(''); return; } // flag fullw: no width limit, list and header use the whole width
       let cached = '';
       try { cached = localStorage.getItem('cellarion-azw') || ''; } catch (e) { /* egal */ }
       // Before the alphabet bar exists (first render) use the last known width, so nothing jumps

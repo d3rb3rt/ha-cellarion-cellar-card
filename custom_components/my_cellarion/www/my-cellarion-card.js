@@ -2294,6 +2294,7 @@
       else if (this._cfm) { this._cfm = false; this._renderDlg(); }
       else if (this._stat) { this._stat = null; this._renderDlg(); }
       else if (this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); }
+      else if (this._set) { this._set = null; this._selOpen = null; this._renderDlg(); }
       else if (this._det && !this._det.busy) { this._det = null; this._renderDlg(); }
       return true;
     }

@@ -278,7 +278,7 @@
   "one": "{n} Feld",
   "other": "{n} Felder"
  },
- "set2.reorder": "Reihenfolge ändern",
+ "set2.drag": "Verschieben (ziehen)",
  "set2.fields": "Datenfelder aus Cellarion",
  "set2.fieldsSub": "Persönliche Felder. Löschen entfernt das Feld samt allen Werten in Cellarion.",
  "flag.setv2": "Neue Einstellungen (Test)",

@@ -278,7 +278,7 @@
   "one": "{n} field",
   "other": "{n} fields"
  },
- "set2.reorder": "Change order",
+ "set2.drag": "Move (drag)",
  "set2.fields": "Data fields from Cellarion",
  "set2.fieldsSub": "Personal fields. Deleting removes the field and all its values in Cellarion.",
  "flag.setv2": "New settings (test)",

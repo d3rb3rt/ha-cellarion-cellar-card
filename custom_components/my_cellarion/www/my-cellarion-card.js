@@ -488,10 +488,15 @@
     .setv2 .sw2.fixed { opacity: .55; pointer-events: none; }
     .setv2 .shead { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; text-align: left; border-bottom: 1px solid var(--cb-line); }
     .setv2 .sbody { padding: 4px 0 8px 12px; border-bottom: 1px solid var(--cb-line); }
-    .setv2 .sbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 0 6px; }
+    .setv2 .sbar { display: flex; align-items: center; gap: 8px; padding: 2px 0 6px; }
     .setv2 .sbar .sscope { margin-top: 0; }
     .setv2 .sbody .srow:last-child { border-bottom: 0; }
-    .setv2 .frow { cursor: pointer; }
+    .setv2 .frow { display: flex; align-items: center; gap: 8px; padding: 0; user-select: none; -webkit-user-select: none; }
+    .setv2 .fl { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; min-height: 44px; cursor: pointer; }
+    .setv2 .fl .wname { white-space: normal; }
+    .setv2 .grip { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 44px; color: var(--cb-sub); cursor: grab; touch-action: none; }
+    .setv2 .frow.drag { background: var(--cb-chip); border-radius: 6px; }
+    .setv2 .frow.drag .grip { cursor: grabbing; color: var(--cb-text); }
     .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }
     .racknm { font-size: .88em; font-weight: 600; color: var(--cb-sub); }
     .shd { display: flex; align-items: center; gap: 10px; }
@@ -1189,6 +1194,7 @@
       this._listEl.addEventListener('touchcancel', () => { y0 = null; pull = 0; setPtr(0); }, { passive: true });
       this.shadowRoot.addEventListener('click', (e) => this._onClick(e));
       this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
+      this.shadowRoot.addEventListener('pointerdown', (e) => this._onGrip(e));
       this.shadowRoot.addEventListener('input', (e) => this._onInput(e));
       this.shadowRoot.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && this._dd) { this._dd = null; this._renderDlg(); return; }
@@ -1876,21 +1882,18 @@
       const grp = (name) => `<div class="sgrp">${esc(name)}</div>`;
       const sec = (id, title, sum, body) => { const o = open.has(id);
         return `<div class="ssec"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
-      const ord = !!this._ord;
-      const ordChk = chkOpt('sord', '', ord, t('set2.reorder'));
       const lbl = (d) => d.personal ? '[' + d.label + ']' : d.label;
       const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
-      const arrows = (up, dn, id, i, n) => ord ? `<button class="btn round" data-act="${up}" data-id="${esc(id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button><button class="btn round" data-act="${dn}" data-id="${esc(id)}" aria-label="${esc(t('set.down'))}"${i === n - 1 ? ' disabled' : ''}>▼</button>` : '';
+      const grip = `<span class="grip" role="button" aria-label="${esc(t('set2.drag'))}" title="${esc(t('set2.drag'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14M5 12h14M5 16h14"/></svg></span>`;
       const fdefs = this._allDefs();
       const idefs = this._infoDefs();
       const iord = idefs.filter((d) => !d.fixed);
       const racks = (this._data && this._data.racks) || [];
       const pers = fdefs.filter((d) => d.personal);
-      const filtersBody = `<div class="sbar">${sw('filters')}${ordChk}</div>` +
-        fdefs.map((d, i, arr) => `<label class="frow${this._fh.has(d.id) ? ' off' : ''}">${fchk('fvis', d.id, !this._fh.has(d.id), d.label)}<span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>${arrows('fup', 'fdn', d.id, i, arr.length)}</label>`).join('');
-      const infoBody = `<div class="sbar">${sw(null, 'device')}${ordChk}</div>` +
-        idefs.map((d) => { const i = iord.indexOf(d);
-          return `<label class="frow${this._is.has(d.id) ? '' : ' off'}">${fchk('ivis', d.id, this._is.has(d.id), d.label)}<span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>${d.fixed ? '' : arrows('iup', 'idn', d.id, i, iord.length)}</label>`; }).join('');
+      const frow = (d, on, grp) => `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><label class="fl">${fchk(grp === 'f' ? 'fvis' : 'ivis', d.id, on, d.label)}<span class="wname">${esc(lbl(d))}</span></label>${grp ? grip : ''}</div>`;
+      const filtersBody = `<div class="sbar">${sw('filters')}</div><div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>`;
+      const infoBody = `<div class="sbar">${sw(null, 'device')}</div><div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
+        idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
       const racksBody = `<div class="sbar">${sw(null, 'all')}</div>` + racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
           row(t('set.rackOrder'), '', '', radios('rk-' + n + '-order', 'rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
@@ -2381,6 +2384,36 @@
       else if (act.startsWith('wz')) this._onWz(act, t);
       else if (act.startsWith('d')) this._onDlg(act, t);
     }
+    // Settings v2: drag a row by its grip (three lines); the rows swap places live, the new order is saved on release
+    _onGrip(e) {
+      const g = e.target.closest && e.target.closest('.grip');
+      const row = g && g.closest('.frow');
+      const list = row && row.parentElement;
+      if (!list || !list.dataset.g) return;
+      e.preventDefault();
+      const ids = () => Array.from(list.children).map((r) => r.dataset.id);
+      const before = ids().join('\n');
+      row.classList.add('drag');
+      try { g.setPointerCapture(e.pointerId); } catch (x) { /* no pointer capture: the events still come in over the grip */ }
+      const move = (ev) => {
+        const y = ev.clientY;
+        let prev = row.previousElementSibling;
+        while (prev && y < prev.getBoundingClientRect().top + prev.offsetHeight / 2) { list.insertBefore(row, prev); prev = row.previousElementSibling; }
+        let next = row.nextElementSibling;
+        while (next && y > next.getBoundingClientRect().top + next.offsetHeight / 2) { list.insertBefore(next, row); next = row.nextElementSibling; }
+        const sh = list.closest('.dsheet');
+        if (sh) { const r = sh.getBoundingClientRect(); if (y < r.top + 48) sh.scrollTop -= 14; else if (y > r.bottom - 48) sh.scrollTop += 14; }
+      };
+      const end = () => {
+        g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', end); g.removeEventListener('pointercancel', end);
+        row.classList.remove('drag');
+        const now = ids();
+        if (now.join('\n') === before) return;
+        if (list.dataset.g === 'f') { this._setFilters(now, Array.from(this._fh)); this._renderHead(); this._renderSet(); }
+        else { this._setInfo(now, Array.from(this._is)); this._renderSet(); this._renderAll(); }
+      };
+      g.addEventListener('pointermove', move); g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end);
+    }
     _onWz(act, t) {
       if (act === 'wzclose') { if (!this._wz.busy) { this._wz = null; this._renderDlg(); } }
       else if (act === 'wzsave') this._wzSave();
@@ -2445,7 +2478,6 @@
     },
     setopen() { this._det = null; this._set = true; this._renderDlg(); },
     sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; o.has(id) ? o.delete(id) : o.add(id); this._renderSet(); },
-    sord() { this._ord = !this._ord; this._renderSet(); },
     setclose() { this._set = null; this._renderDlg(); },
     fvis(t) {
       const id = t.dataset.id;

@@ -467,23 +467,31 @@
     .frow.off .wname { opacity: .5; }
     .sblk { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--cb-line); }
     .dh + .sblk { border-top: 0; padding-top: 4px; }
-    /* Settings v2 (flag setv2): plain rows, group headings, collapsible sections */
+    /* Settings v2 (flag setv2): description column left, control column right (fixed proportions), plain controls */
     .setv2 .sgrp { margin-top: 14px; padding-bottom: 4px; font-size: .78em; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); border-bottom: 1px solid var(--cb-line); }
-    .setv2 .dh + .sgrp { margin-top: 4px; }
-    .setv2 .srow { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--cb-line); }
-    .setv2 .srow .wmain { flex: 1; min-width: 0; }
-    .setv2 .srow .wname, .setv2 .shead .wname { white-space: normal; font-size: 1em; font-weight: 500; }
+    .setv2 .dh + .sgrp, .setv2 .dh + .derr + .sgrp { margin-top: 4px; }
+    .setv2 .srow { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 16px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--cb-line); }
+    .setv2 .sdesc { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+    .setv2 .sdesc .wname, .setv2 .shead .wname { white-space: normal; font-size: 1em; font-weight: 500; }
     .setv2 .wsub { white-space: normal; }
-    .setv2 .sctl { flex: none; display: flex; align-items: center; gap: 6px; }
-    .setv2 .sscope { font-size: .86em; color: var(--cb-sub); padding: 0; min-height: 0; }
-    .setv2 .sscope.tap { text-decoration: underline dotted; text-underline-offset: 3px; cursor: pointer; }
-    .setv2 .ssel { min-height: var(--cb-chip-h, 40px); max-width: 190px; border-radius: 20px; border: 1px solid var(--cb-line); background: var(--cb-chip); color: var(--cb-text); padding: 0 12px; font-size: var(--cb-chip-font, 14px); }
-    .setv2 .shead { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 0; text-align: left; border-bottom: 1px solid var(--cb-line); }
-    .setv2 .shead .wmain { flex: 1; min-width: 0; }
+    .setv2 .sctl { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .setv2 .rads { display: flex; flex-direction: column; gap: 2px; }
+    .setv2 .opt { display: flex; align-items: center; gap: 10px; min-height: 34px; cursor: pointer; }
+    .setv2 .opt input, .setv2 .frow input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--cb-on); cursor: pointer; }
+    .setv2 .ssel { width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 8px; font-size: inherit; }
+    .setv2 .sscope { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: .86em; color: var(--cb-sub); }
+    .setv2 .sw2 { position: relative; display: inline-flex; align-items: center; flex: none; width: 68px; height: 30px; padding: 0; border-radius: 15px; background: var(--cb-chip); }
+    .setv2 .sw2 .knob { position: absolute; top: 2px; left: 2px; width: 32px; height: 26px; border-radius: 13px; background: var(--cb-on); transition: left .15s; }
+    .setv2 .sw2.dev .knob { left: 34px; }
+    .setv2 .sw2 .ic { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 34px; height: 30px; color: var(--cb-sub); }
+    .setv2 .sw2 .ic.act { color: var(--cb-on-text); }
+    .setv2 .sw2.fixed { opacity: .55; pointer-events: none; }
+    .setv2 .shead { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; text-align: left; border-bottom: 1px solid var(--cb-line); }
     .setv2 .sbody { padding: 4px 0 8px 12px; border-bottom: 1px solid var(--cb-line); }
-    .setv2 .sbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0 6px; }
+    .setv2 .sbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 0 6px; }
+    .setv2 .sbar .sscope { margin-top: 0; }
     .setv2 .sbody .srow:last-child { border-bottom: 0; }
-    .setv2 .sbody .frow:first-of-type { border-top: 0; }
+    .setv2 .frow { cursor: pointer; }
     .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }
     .racknm { font-size: .88em; font-weight: 600; color: var(--cb-sub); }
     .shd { display: flex; align-items: center; gap: 10px; }
@@ -1840,45 +1848,53 @@
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
     }
-    // New settings page (flag setv2): plain list, groups, one row per setting with the value on the right, long topics collapsed
+    // New settings page (flag setv2): plain list, groups, a description column (left) and a control column (right) of fixed proportions.
+    // Few options: radios or a checkbox; many options: a plain dropdown; long topics collapsed. Scope: one switch with two icons plus the text.
     _renderSet2() {
       const el = this._dlg;
       if (!el) return;
       const _keep = el.querySelector('.dsheet'); const _top = _keep && !el.hidden ? _keep.scrollTop : 0; // Keep the scroll position when redrawing
       const open = this._sx || (this._sx = new Set());
       const sc = Math.round(this._scale * 100);
-      const scopeTxt = (k, only) => {
+      const gi = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>';
+      const pi = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>';
+      // scope: switch with the globe (all devices) on the left and the phone (this device) on the right, the text says what is set
+      const sw = (k, only) => {
         const dev = only ? only === 'device' : this._local[k] !== undefined;
         const lbl = dev ? t('set.scopeDevice') : t('set.scopeAll');
-        return only ? `<span class="sscope">${esc(lbl)}</span>`
-          : `<button class="sscope tap" data-act="scope" data-k="${k}" data-v="${dev ? 'all' : 'device'}" title="${esc(dev ? t('set.scopeAll') : t('set.scopeDevice'))}">${esc(lbl)}</button>`;
+        const inner = `<span class="knob"></span><span class="ic${dev ? '' : ' act'}">${gi}</span><span class="ic${dev ? ' act' : ''}">${pi}</span>`;
+        const ctl = only ? `<span class="sw2 fixed${dev ? ' dev' : ''}" role="img" aria-label="${esc(lbl)}">${inner}</span>`
+          : `<button class="sw2${dev ? ' dev' : ''}" role="switch" aria-checked="${dev}" aria-label="${esc(lbl)}" data-act="scope" data-k="${k}" data-v="${dev ? 'all' : 'device'}">${inner}</button>`;
+        return `<span class="sscope">${ctl}<span>${esc(lbl)}</span></span>`;
       };
-      const row = (name, sub, scope, ctl) => `<div class="srow"><div class="wmain"><span class="wname">${esc(name)}</span>` +
-        (sub ? `<span class="wsub">${esc(sub)}</span>` : '') + (scope ? `<span class="wsub">${scope}</span>` : '') + `</div><div class="sctl">${ctl}</div></div>`;
-      const seg = (act, opts, cur, extra) => `<span class="seg">` + opts.map(([v, n]) => `<button class="${v === cur ? 'on' : ''}" data-act="${act}" data-v="${esc(v)}"${extra || ''}>${esc(n)}</button>`).join('') + `</span>`;
+      const row = (name, sub, scope, ctl) => `<div class="srow"><div class="sdesc"><span class="wname">${esc(name)}</span>` +
+        (sub ? `<span class="wsub">${esc(sub)}</span>` : '') + (scope || '') + `</div><div class="sctl">${ctl}</div></div>`;
+      const radios = (name, act, opts, cur, extra) => `<div class="rads" role="radiogroup">` + opts.map(([v, n]) =>
+        `<label class="opt"><input type="radio" name="${esc(name)}" data-act="${act}" data-v="${esc(v)}"${extra || ''}${String(v) === String(cur) ? ' checked' : ''}><span>${esc(n)}</span></label>`).join('') + `</div>`;
       const sel = (key, opts, cur) => `<select class="ssel" data-sel="${key}">` + opts.map(([v, n]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(n)}</option>`).join('') + `</select>`;
+      const chkOpt = (act, extra, on, label) => `<label class="opt"><input type="checkbox" data-act="${act}"${extra || ''}${on ? ' checked' : ''}><span>${esc(label)}</span></label>`;
       const grp = (name) => `<div class="sgrp">${esc(name)}</div>`;
       const sec = (id, title, sum, body) => { const o = open.has(id);
-        return `<div class="ssec"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="wmain"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
+        return `<div class="ssec"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const ord = !!this._ord;
-      const ordBtn = `<button class="chip${ord ? ' on' : ''}" data-act="sord" aria-pressed="${ord}">${esc(t('set2.reorder'))}</button>`;
-      const chk = (act, id, on, label) => `<button class="btn round" data-act="${act}" data-id="${esc(id)}" aria-pressed="${on}" aria-label="${esc(t('set.toggle', { label }))}">${on ? '☑' : '☐'}</button>`;
+      const ordChk = chkOpt('sord', '', ord, t('set2.reorder'));
       const lbl = (d) => d.personal ? '[' + d.label + ']' : d.label;
+      const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
       const arrows = (up, dn, id, i, n) => ord ? `<button class="btn round" data-act="${up}" data-id="${esc(id)}" aria-label="${esc(t('set.up'))}"${i === 0 ? ' disabled' : ''}>▲</button><button class="btn round" data-act="${dn}" data-id="${esc(id)}" aria-label="${esc(t('set.down'))}"${i === n - 1 ? ' disabled' : ''}>▼</button>` : '';
       const fdefs = this._allDefs();
       const idefs = this._infoDefs();
       const iord = idefs.filter((d) => !d.fixed);
       const racks = (this._data && this._data.racks) || [];
       const pers = fdefs.filter((d) => d.personal);
-      const filtersBody = `<div class="sbar">${scopeTxt('filters')}${ordBtn}</div>` +
-        fdefs.map((d, i, arr) => `<div class="frow${this._fh.has(d.id) ? ' off' : ''}">${chk('fvis', d.id, !this._fh.has(d.id), d.label)}<span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>${arrows('fup', 'fdn', d.id, i, arr.length)}</div>`).join('');
-      const infoBody = `<div class="sbar">${scopeTxt(null, 'device')}${ordBtn}</div>` +
+      const filtersBody = `<div class="sbar">${sw('filters')}${ordChk}</div>` +
+        fdefs.map((d, i, arr) => `<label class="frow${this._fh.has(d.id) ? ' off' : ''}">${fchk('fvis', d.id, !this._fh.has(d.id), d.label)}<span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>${arrows('fup', 'fdn', d.id, i, arr.length)}</label>`).join('');
+      const infoBody = `<div class="sbar">${sw(null, 'device')}${ordChk}</div>` +
         idefs.map((d) => { const i = iord.indexOf(d);
-          return `<div class="frow${this._is.has(d.id) ? '' : ' off'}">${chk('ivis', d.id, this._is.has(d.id), d.label)}<span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>${d.fixed ? '' : arrows('iup', 'idn', d.id, i, iord.length)}</div>`; }).join('');
-      const racksBody = `<div class="sbar">${scopeTxt(null, 'all')}</div>` + racks.map((n) => { const rs = this._rs(n);
+          return `<label class="frow${this._is.has(d.id) ? '' : ' off'}">${fchk('ivis', d.id, this._is.has(d.id), d.label)}<span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>${d.fixed ? '' : arrows('iup', 'idn', d.id, i, iord.length)}</label>`; }).join('');
+      const racksBody = `<div class="sbar">${sw(null, 'all')}</div>` + racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
-          row(t('set.rackOrder'), '', '', seg('rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
-          row(t('set.rackSide'), '', '', seg('rack', [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]], rs.side, ` data-n="${esc(n)}" data-k="side"`)) + `</div>`; }).join('');
+          row(t('set.rackOrder'), '', '', radios('rk-' + n + '-order', 'rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
+          row(t('set.rackSide'), '', '', radios('rk-' + n + '-side', 'rack', [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]], rs.side, ` data-n="${esc(n)}" data-k="side"`)) + `</div>`; }).join('');
       const persBody = `<div class="wsub" style="padding:4px 0">${esc(t('set2.fieldsSub'))}</div>` + pers.map((d) => `<div class="frow"><span class="wmain"><span class="wname">${esc(lbl(d))}</span></span>` +
         (!this._integ() ? `<button class="btn round" data-act="fdelask" data-id="${esc(d.id)}" aria-label="${esc(t('set.deleteForever', { label: d.label }))}" title="${esc(t('set.deleteTitle'))}">🗑</button>` : '') + `</div>`).join('');
       const langs = [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {}));
@@ -1888,18 +1904,18 @@
         `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
         (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
         grp(t('set2.grpView')) +
-        row(t('set.language'), t('set.languageSub'), scopeTxt('language'), sel('setlang', langs, this._langSel || '')) +
-        row(t('set2.mode'), t('set.modeSub'), scopeTxt(null, 'device'), seg('mode', [['auto', t('set.modeAuto')], ['light', t('set.modeLight')], ['dark', t('set.modeDark')]], this._mode())) +
-        row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), scopeTxt(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
+        row(t('set.language'), t('set.languageSub'), sw('language'), sel('setlang', langs, this._langSel || '')) +
+        row(t('set2.mode'), t('set.modeSub'), sw(null, 'device'), radios('mode', 'mode', [['auto', t('set.modeAuto')], ['light', t('set.modeLight')], ['dark', t('set.modeDark')]], this._mode())) +
+        row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), sw(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
         grp(t('set2.grpList')) +
-        row(t('set.keepState'), t('set.keepStateSub'), scopeTxt('keepState'), seg('keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
+        row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody) +
         sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody) : '') +
         grp(t('set2.grpData')) +
-        `<button class="shead" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button>` +
+        `<button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button>` +
         (pers.length ? sec('fields', t('set2.fields'), t('set2.sumFields', { n: pers.length }), persBody) : '') +
-        (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', seg('flag', [['on', t('set.on')], ['off', t('set.off')]], this._flag(f.id) ? 'on' : 'off', ` data-id="${esc(f.id)}"`))).join('') : '') +
+        (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }

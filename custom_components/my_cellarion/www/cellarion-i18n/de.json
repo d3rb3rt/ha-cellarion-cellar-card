@@ -261,5 +261,26 @@
  "set.modeSub": "Gilt nur für diesen Browser. Auto folgt dem Design von Home Assistant.",
  "set.modeAuto": "Auto",
  "set.modeLight": "Hell",
- "set.modeDark": "Dunkel"
+ "set.modeDark": "Dunkel",
+ "set2.grpView": "Darstellung",
+ "set2.grpList": "Liste",
+ "set2.grpPlaces": "Lagerorte",
+ "set2.grpData": "Daten",
+ "set2.grpDev": "Entwicklung",
+ "set2.mode": "Farbschema",
+ "set2.sumFilters": "{n} von {all} sichtbar",
+ "set2.sumInfo": "{n} angezeigt",
+ "set2.sumRacks": {
+  "one": "{n} Regal",
+  "other": "{n} Regale"
+ },
+ "set2.sumFields": {
+  "one": "{n} Feld",
+  "other": "{n} Felder"
+ },
+ "set2.reorder": "Reihenfolge ändern",
+ "set2.fields": "Datenfelder aus Cellarion",
+ "set2.fieldsSub": "Persönliche Felder. Löschen entfernt das Feld samt allen Werten in Cellarion.",
+ "flag.setv2": "Neue Einstellungen (Test)",
+ "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen."
 }

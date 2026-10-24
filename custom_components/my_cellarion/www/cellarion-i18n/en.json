@@ -261,5 +261,26 @@
  "set.modeSub": "Applies to this browser only. Auto follows the Home Assistant theme.",
  "set.modeAuto": "Auto",
  "set.modeLight": "Light",
- "set.modeDark": "Dark"
+ "set.modeDark": "Dark",
+ "set2.grpView": "Appearance",
+ "set2.grpList": "List",
+ "set2.grpPlaces": "Storage",
+ "set2.grpData": "Data",
+ "set2.grpDev": "Development",
+ "set2.mode": "Color scheme",
+ "set2.sumFilters": "{n} of {all} shown",
+ "set2.sumInfo": "{n} shown",
+ "set2.sumRacks": {
+  "one": "{n} rack",
+  "other": "{n} racks"
+ },
+ "set2.sumFields": {
+  "one": "{n} field",
+  "other": "{n} fields"
+ },
+ "set2.reorder": "Change order",
+ "set2.fields": "Data fields from Cellarion",
+ "set2.fieldsSub": "Personal fields. Deleting removes the field and all its values in Cellarion.",
+ "flag.setv2": "New settings (test)",
+ "flag.setv2Sub": "Plain settings page with groups and collapsed lists."
 }

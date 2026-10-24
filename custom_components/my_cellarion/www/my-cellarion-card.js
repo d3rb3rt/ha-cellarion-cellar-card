@@ -1842,7 +1842,7 @@
         `<div class="scalechips">` + [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {})).map(([c, n]) => `<button class="chip${c === (this._langSel || '') ? ' on' : ''}" data-act="lang" data-v="${esc(c)}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px;white-space:nowrap">${esc(n)}</button>`).join('') + `</div></div>` +
         `<div class="sblk"><button class="setrow" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span>` +
         `<span class="wsub">${esc(t('set.producersSub'))}</span></span>${this._scopeSw(null, 'all')}<span class="chev">›</span></button></div>` +
-        (((this._data && this._data.racks) || []).length ? `<div class="sblk">` + hd(t('set.racks'), t('set.racksSub'), this._scopeSw(null, 'all')) +
+        (((this._data && this._data.racks) || []).length ? `<div class="sblk">` + hd(t('set.racks'), t('set.racksSub'), '') +
           this._data.racks.map((n) => {
             const rs = this._rs(n);
             const grp = (key, label, opts) => `<div class="wsub" style="margin-top:4px">${esc(label)}</div><div class="scalechips">` + opts.map(([v, l]) => `<button class="chip${rs[key] === v ? ' on' : ''}" data-act="rack" data-n="${esc(n)}" data-k="${key}" data-v="${v}" style="width:auto;padding:0 14px;border-radius:20px;white-space:nowrap">${esc(l)}</button>`).join('') + `</div>`;
@@ -1915,7 +1915,7 @@
       const filtersBody = `<div class="sbar">${sw('filters')}</div><div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>`;
       const infoBody = `<div class="sbar">${sw(null, 'device')}</div><div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
-      const racksBody = `<div class="sbar">${sw(null, 'all')}</div>` + racks.map((n) => { const rs = this._rs(n);
+      const racksBody = racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
           row(t('set.rackOrder'), '', '', radios('rk-' + n + '-order', 'rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
           row(t('set.rackSide'), '', '', radios('rk-' + n + '-side', 'rack', [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]], rs.side, ` data-n="${esc(n)}" data-k="side"`)) + `</div>`; }).join('');

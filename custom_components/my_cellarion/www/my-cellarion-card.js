@@ -496,7 +496,8 @@
     .setv2 .sw2.dev .knob { left: 34px; }
     .setv2 .sw2 .ic { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 34px; height: 30px; color: var(--cb-sub); }
     .setv2 .sw2 .ic.act { color: var(--cb-on-text); }
-    .setv2 .sw2.fixed { opacity: .55; pointer-events: none; }
+    .setv2 .sone { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 26px; border-radius: 13px; background: var(--cb-on); color: var(--cb-on-text); pointer-events: none; }
+    .setv2 .shead .sscope { margin-top: 4px; }
     .setv2 .shead { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; text-align: left; border-bottom: 1px solid var(--cb-line); }
     .setv2 .ssec { border-bottom: 1px solid var(--cb-line); }
     .setv2 .ssec .shead { border-bottom: 0; }
@@ -1842,7 +1843,7 @@
         `<div class="scalechips">` + [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {})).map(([c, n]) => `<button class="chip${c === (this._langSel || '') ? ' on' : ''}" data-act="lang" data-v="${esc(c)}" style="width:auto;min-width:64px;padding:0 16px;border-radius:20px;white-space:nowrap">${esc(n)}</button>`).join('') + `</div></div>` +
         `<div class="sblk"><button class="setrow" data-act="wzopen"><span class="wmain"><span class="wname">${esc(t('set.producers'))}</span>` +
         `<span class="wsub">${esc(t('set.producersSub'))}</span></span>${this._scopeSw(null, 'all')}<span class="chev">›</span></button></div>` +
-        (((this._data && this._data.racks) || []).length ? `<div class="sblk">` + hd(t('set.racks'), t('set.racksSub'), '') +
+        (((this._data && this._data.racks) || []).length ? `<div class="sblk">` + hd(t('set.racks'), t('set.racksSub'), this._scopeSw(null, 'all')) +
           this._data.racks.map((n) => {
             const rs = this._rs(n);
             const grp = (key, label, opts) => `<div class="wsub" style="margin-top:4px">${esc(label)}</div><div class="scalechips">` + opts.map(([v, l]) => `<button class="chip${rs[key] === v ? ' on' : ''}" data-act="rack" data-n="${esc(n)}" data-k="${key}" data-v="${v}" style="width:auto;padding:0 14px;border-radius:20px;white-space:nowrap">${esc(l)}</button>`).join('') + `</div>`;
@@ -1890,7 +1891,8 @@
         const dev = only ? only === 'device' : this._local[k] !== undefined;
         const lbl = dev ? t('set.scopeDevice') : t('set.scopeAll');
         const inner = `<span class="knob"></span><span class="ic${dev ? '' : ' act'}">${gi}</span><span class="ic${dev ? ' act' : ''}">${pi}</span>`;
-        const ctl = only ? `<span class="sw2 fixed${dev ? ' dev' : ''}" role="img" aria-label="${esc(lbl)}">${inner}</span>`
+        // Only one scope possible: show just that icon (highlighted, not a switch), so nothing looks switchable
+        const ctl = only ? `<span class="sone" role="img" aria-label="${esc(lbl)}">${dev ? pi : gi}</span>`
           : `<button class="sw2${dev ? ' dev' : ''}" role="switch" aria-checked="${dev}" aria-label="${esc(lbl)}" data-act="scope" data-k="${k}" data-v="${dev ? 'all' : 'device'}">${inner}</button>`;
         return `<span class="sscope">${ctl}<span>${esc(lbl)}</span></span>`;
       };
@@ -1901,8 +1903,8 @@
       const sel = (key, opts, cur) => `<select class="ssel" data-sel="${key}">` + opts.map(([v, n]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(n)}</option>`).join('') + `</select>`;
       const chkOpt = (act, extra, on, label) => `<label class="opt"><input type="checkbox" data-act="${act}"${extra || ''}${on ? ' checked' : ''}><span>${esc(label)}</span></label>`;
       const grp = (name) => `<div class="sgrp">${esc(name)}</div>`;
-      const sec = (id, title, sum, body) => { const o = open.has(id);
-        return `<div class="ssec"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
+      const sec = (id, title, sum, body, scope) => { const o = open.has(id);
+        return `<div class="ssec"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span>${scope || ''}</span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const lbl = (d) => d.personal ? '[' + d.label + ']' : d.label;
       const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
       const grip = `<span class="grip" role="button" aria-label="${esc(t('set2.drag'))}" title="${esc(t('set2.drag'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14M5 12h14M5 16h14"/></svg></span>`;
@@ -1913,7 +1915,7 @@
       const pers = fdefs.filter((d) => d.personal);
       const frow = (d, on, grp) => `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><label class="fl">${fchk(grp === 'f' ? 'fvis' : 'ivis', d.id, on, d.label)}<span class="wname">${esc(lbl(d))}</span></label>${grp ? grip : ''}</div>`;
       const filtersBody = `<div class="sbar">${sw('filters')}</div><div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>`;
-      const infoBody = `<div class="sbar">${sw(null, 'device')}</div><div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
+      const infoBody = `<div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
@@ -1934,10 +1936,10 @@
         grp(t('set2.grpList')) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody) +
-        sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody) +
-        (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody) : '') +
+        sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw(null, 'device')) +
+        (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
-        `<button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button>` +
+        `<button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span>${sw(null, 'all')}</span><span class="chev">›</span></button>` +
         (pers.length ? sec('fields', t('set2.fields'), t('set2.sumFields', { n: pers.length }), persBody) : '') +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;

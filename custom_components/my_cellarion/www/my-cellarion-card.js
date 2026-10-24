@@ -298,6 +298,7 @@
     @media (min-width: 601px) {
       :host([data-vlocl]) .vrow .vmid { align-items: flex-start; text-align: left; }
       :host([data-vlocl]) .vrow .locs { justify-content: flex-start; }
+      :host([data-vlocl]) .vrow .vprl::before { content: none; }
     }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }

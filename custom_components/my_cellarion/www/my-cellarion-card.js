@@ -493,6 +493,10 @@
     .setv2 .ssopt { display: block; width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
     .setv2 .ssopt:last-child { border-bottom: 0; }
     .setv2 .ssopt.on { color: var(--cb-on); font-weight: 600; }
+    /* Dropdown stands out from the sheet: its own surface (text color mixed into the card color, still opaque), a visible border and a shadow; the theme divider color is almost the card color on the tablet */
+    .setv2 .ssel { border-color: color-mix(in srgb, var(--cb-text) 35%, transparent); }
+    .setv2 .ssopts { background: color-mix(in srgb, var(--cb-text) 14%, var(--cb-card)); border-color: color-mix(in srgb, var(--cb-text) 40%, transparent); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+    .setv2 .ssopt { border-bottom-color: color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .setv2 .sscope { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: .86em; color: var(--cb-sub); }
     .setv2 .sw2 { position: relative; display: inline-flex; align-items: center; flex: none; width: 68px; height: 30px; padding: 0; border-radius: 15px; background: var(--cb-chip); }
     .setv2 .sw2 .knob { position: absolute; top: 2px; left: 2px; width: 32px; height: 26px; border-radius: 13px; background: var(--cb-on); transition: left .15s; }

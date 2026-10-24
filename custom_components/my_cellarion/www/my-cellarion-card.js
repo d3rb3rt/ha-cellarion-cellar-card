@@ -2292,18 +2292,21 @@
     _backdropClick(e) {
       const c = e.target.classList;
       if (!c || !c.contains('dlg')) return false;
-      if (this._dd) {
-        // a click on another filter chip behind the backdrop opens that one directly
-        let chip = null;
-        try { chip = (this.shadowRoot.elementsFromPoint(e.clientX, e.clientY) || []).find((x) => x.dataset && x.dataset.act === 'dd'); } catch (err) { chip = null; }
-        if (chip) { this._dd = chip.dataset.id; this._ddAnchor = chip; } else this._dd = null;
-        this._renderDlg();
-      }
-      else if (this._cfm) { this._cfm = false; this._renderDlg(); }
-      else if (this._stat) { this._stat = null; this._renderDlg(); }
-      else if (this._wz) { if (!this._wz.busy) this._wz = null; this._renderDlg(); }
-      else if (this._set) { this._set = null; this._selOpen = null; this._renderDlg(); }
-      else if (this._det && !this._det.busy) { this._det = null; this._renderDlg(); }
+      // what lies under the click behind the backdrop (a chip, the statistics button, ...): that click is passed on after closing
+      let under = null;
+      try { under = (this.shadowRoot.elementsFromPoint(e.clientX, e.clientY) || []).find((x) => x.dataset && x.dataset.act && !x.closest('.dlg')); } catch (err) { under = null; }
+      const ua = under && under.dataset.act;
+      const same = !!(under && ((this._dd && ua === 'dd' && under.dataset.id === this._dd) || (this._set && ua === 'setopen') || (this._stat && ua === 'statopen'))); // same dialog: just close
+      let closed = true;
+      if (this._dd) this._dd = null;
+      else if (this._cfm) { this._cfm = false; under = null; }
+      else if (this._stat) this._stat = null;
+      else if (this._wz) { if (this._wz.busy) { closed = false; } else this._wz = null; }
+      else if (this._set) { this._set = null; this._selOpen = null; }
+      else if (this._det && !this._det.busy) this._det = null;
+      else closed = false;
+      if (closed && under && !same && ACTIONS[under.dataset.act]) ACTIONS[under.dataset.act].call(this, under);
+      else this._renderDlg();
       return true;
     }
     // Clicks: the element carries data-act; ACTIONS (below the class) maps each name to its handler.

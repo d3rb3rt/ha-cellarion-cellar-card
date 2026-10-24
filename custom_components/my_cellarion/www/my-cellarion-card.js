@@ -2292,9 +2292,9 @@
     _backdropClick(e) {
       const c = e.target.classList;
       if (!c || !c.contains('dlg')) return false;
-      // what lies under the click behind the backdrop (a chip, the statistics button, ...): that click is passed on after closing
+      // what lies under the click behind the backdrop (a chip, the statistics button, icons, ...): that click is passed on after closing; list rows (detail) are not, the click only closes
       let under = null;
-      try { under = (this.shadowRoot.elementsFromPoint(e.clientX, e.clientY) || []).find((x) => x.dataset && x.dataset.act && !x.closest('.dlg')); } catch (err) { under = null; }
+      try { under = (this.shadowRoot.elementsFromPoint(e.clientX, e.clientY) || []).find((x) => x.dataset && x.dataset.act && x.dataset.act !== 'detail' && !x.closest('.dlg')); } catch (err) { under = null; }
       const ua = under && under.dataset.act;
       const same = !!(under && ((this._dd && ua === 'dd' && under.dataset.id === this._dd) || (this._set && ua === 'setopen') || (this._stat && ua === 'statopen'))); // same dialog: just close
       let closed = true;

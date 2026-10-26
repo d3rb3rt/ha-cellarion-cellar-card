@@ -445,7 +445,8 @@
     .dh .wmain { flex: 1; }
     .dh .wname { white-space: normal; font-size: 1.2em; }
     .dh .wsub { white-space: normal; }
-    .dx .clogo { display: block; height: 24px; width: auto; }
+    .clink { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--cb-text); }
+    .clink .clogo { display: block; height: 22px; width: auto; }
     .dx { width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--cb-sub); }
     .dfacts { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
     .dfacts dt { color: var(--cb-sub); }
@@ -2061,6 +2062,8 @@
       try { return cur ? new Intl.NumberFormat(I18N.lang, { style: 'currency', currency: cur }).format(v) : String(v); } catch (e) { return v + ' ' + (cur || ''); }
     }
     // Detail view ("view" only): orders the details like Cellarion (wine, maturity, profile, my entry, own fields, bottles)
+    // Link to the vintage in Cellarion (opens the web app)
+    _edUrl(b) { return this._data && this._data.cellarId && b && b.wine ? `${this._data.url}/cellars/${encodeURIComponent(this._data.cellarId)}/vintages/${encodeURIComponent(b.wine)}/${encodeURIComponent(b.vintage || 'NV')}` : ''; }
     _viewV2(sel, bottles, info) {
       const yr = new Date().getFullYear();
       const d = this._det;
@@ -2168,7 +2171,8 @@
       const actBar = `<div class="dact d2act">${popup}` +
         `<button class="d2sel" data-act="dbots" aria-expanded="${sectionOpen}" aria-haspopup="listbox"><span class="d2st"><span class="d2sub" style="color:var(--cb-text);font-weight:600">${esc(_rk)} · <span class="bw">${esc(_cnt)}</span><span class="bi" title="${esc(_cnt)}" aria-label="${esc(_cnt)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 2h4v2.5c0 1 .6 1.6 1.2 2.6C16 8.3 16.5 9.5 16.5 11V21a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V11c0-1.5.5-2.7 1.3-3.9C9.4 6.1 10 5.5 10 4.5z"/></svg>${_nRack}</span></span>${_places ? `<span class="loc">${esc(_places)}</span>` : ''}</span>` +
         `<span class="d2pill${multi ? ' hot' : ''}"${multi ? ` title="${esc(t('det.morePlaces', { n: groups.size - 1 }))}" aria-label="${esc(t('det.morePlaces', { n: groups.size - 1 }))}"` : ''}>${multi ? '+' + (groups.size - 1) + ' ' : ''}${sectionOpen ? '▾' : '▴'}</span></button>` +
-        `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button></div>`;
+        `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button>` +
+        (this._edUrl(sel) ? `<a class="btn clink" href="${esc(this._edUrl(sel))}" target="_blank" rel="noopener" title="${esc(t('det.editIn'))}"><img class="clogo" src="${CEL_LOGO}" alt="" width="10" height="24"><span>${esc(t('det.openIn'))}</span></a>` : '') + `</div>`;
       const img = info && info.image ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(info.image)}" onerror="this.remove()">` : '';
       const grapes = (sel.grapes || []).join(', ');
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
@@ -2241,9 +2245,7 @@
         this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
       }
       const info = sel ? this._info[sel.id] : null;
-      const edUrl = this._data.cellarId && b0 && b0.wine ? `${this._data.url}/cellars/${encodeURIComponent(this._data.cellarId)}/vintages/${encodeURIComponent(b0.wine)}/${encodeURIComponent(b0.vintage || 'NV')}` : '';
-      const edit = edUrl ? `<a class="dx" href="${esc(edUrl)}" target="_blank" rel="noopener" aria-label="${esc(t('det.editIn'))}" title="${esc(t('det.editIn'))}"><img class="clogo" src="${CEL_LOGO}" alt="" width="10" height="24"></a>` : '';
-      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>${edit}` +
+      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>` +
         `<button class="dx" data-act="dclose" aria-label="${esc(t('head.close'))}" ${d.busy ? 'disabled' : ''}>✕</button></div>`;
       let body = '';
       if (d.step === 'done') {

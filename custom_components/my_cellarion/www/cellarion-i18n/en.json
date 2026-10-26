@@ -252,7 +252,7 @@
  "sort.priceAsc": "Price, low to high",
  "sort.priceDesc": "Price, high to low",
  "det.editIn": "Edit in Cellarion",
- "det.openIn": "In Cellarion",
+ "det.openIn": "Edit in",
  "flag.sinv": "Inverted search",
  "flag.sinvSub": "Light search field with dark text (only together with the the header test).",
  "flag.vlocl": "Location left-aligned",

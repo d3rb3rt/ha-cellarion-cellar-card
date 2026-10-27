@@ -269,6 +269,8 @@
  "set.modeLight": "Hell",
  "set.modeDark": "Dunkel",
  "set2.grpView": "Darstellung",
+ "set2.showOther": "Sonstige in der Liste",
+ "set2.showOtherSub": "Gilt nur für diesen Browser: Einträge ohne Wein (Kategorie Other, z. B. Olivenöl) erscheinen immer in der Liste. Aus: nur, wenn im Typ-Filter „Sonstige“ gewählt ist.",
  "set2.fullw": "Volle Breite erzwingen",
  "set2.fullwSub": "Gilt nur für diesen Browser: Liste, Kopfbereich und Buchstabenleiste nutzen die ganze Breite (breite Ansicht).",
  "set2.grpList": "Liste",

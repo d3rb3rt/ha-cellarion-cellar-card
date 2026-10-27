@@ -795,6 +795,9 @@
       return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
     }
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
+    // Setting 'show Other in the list' (this device only, default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen
+    _showOther() { return !(this._local && this._local.hideOther); }
+    _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')); }
     _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
     _applyMode() { const m = this._mode(); if (m === 'auto') this.removeAttribute('data-mode'); else this.setAttribute('data-mode', m); }
     _applyScale() {
@@ -1061,7 +1064,9 @@
       const f = this._f;
       const toks = norm(f.q).split(/\s+/).filter(Boolean);
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
+      const noOther = skip !== 'types' && this._hideOther(); // the type pulldown itself still counts Other, so it can be chosen
       return this._data.bottles.filter((b) => {
+        if (noOther && b._type === 'other') return false;
         for (const d of act) if (![].concat(d.get(b)).some((v) => f[d.id].has(v))) return false;
         for (const t of toks) if (!b._hay.includes(t)) return false;
         return true;
@@ -1496,7 +1501,7 @@
       if (this._nShown <= 10 && this._autoFolded && !this._more) { this._autoFolded = false; this._more = true; this._renderHead(); }
       const sum = this._head && this._head.querySelector('[data-sum]');
       if (sum) {
-        const all = this._data.bottles.length;
+        const all = this._hideOther() ? this._data.bottles.filter((b) => b._type !== 'other').length : this._data.bottles.length;
         sum.textContent = `${this._data.cellar && this._flagV('hdr') !== 'c' ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: nWine })} · ${t('count.vintages', { n: entries.length })} · ${t('count.bottles', { n: bottles.length })}` + (bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
           (this._error ? ' · ' + t('count.loadError') : '');
         this._sumTxt = sum.textContent;
@@ -1908,6 +1913,7 @@
         row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), sw(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
         row(t('set2.fullw'), t('set2.fullwSub'), sw(null, 'device'), chkOpt('fullw', '', this._fullw(), t('set.on'))) +
         grp(t('set2.grpList')) +
+        row(t('set2.showOther'), t('set2.showOtherSub'), sw(null, 'device'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw(null, 'device')) +
@@ -2485,6 +2491,7 @@
         this._renderAll(); this._renderSet();
       });
     },
+    showother() { this._local.hideOther = this._showOther(); this._saveState(); this._renderAll(); this._renderSet(); },
     fullw() { this._local.fullw = !this._fullw(); this._saveState(); this._renderAll(); this._renderSet(); this._azWidth(); },
     mode(t) { this._local.mode = t.dataset.v; this._applyMode(); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg(); },
     scale(t) { this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg(); },

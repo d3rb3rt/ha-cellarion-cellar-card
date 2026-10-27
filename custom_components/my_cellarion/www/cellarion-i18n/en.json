@@ -270,7 +270,7 @@
  "set.modeDark": "Dark",
  "set2.grpView": "Appearance",
  "set2.showOther": "Show Other in the list",
- "set2.showOtherSub": "This browser only: items that are not wine (Other category, e.g. olive oil) always appear in the list. Off: only when \"Other\" is chosen in the type filter.",
+ "set2.showOtherSub": "This browser only: items that are not wine (Other category, e.g. olive oil) always appear in the list. Off: only when searching or when \"Other\" is chosen in the type filter.",
  "set2.fullw": "Force full width",
  "set2.fullwSub": "Applies to this browser only: list, header and alphabet bar use the whole width (wide view).",
  "set2.grpList": "List",

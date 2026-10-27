@@ -795,9 +795,9 @@
       return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
     }
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
-    // Setting 'show Other in the list' (this device only, default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen
+    // Setting 'show Other in the list' (this device only, default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen or a search term is entered
     _showOther() { return !(this._local && this._local.hideOther); }
-    _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')); }
+    _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')) && !norm(this._f.q || '').trim(); } // a search term always finds Other items too
     _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
     _applyMode() { const m = this._mode(); if (m === 'auto') this.removeAttribute('data-mode'); else this.setAttribute('data-mode', m); }
     _applyScale() {

@@ -5,6 +5,7 @@
  "type.sparkling": "Sparkling",
  "type.dessert": "Sweet",
  "type.fortified": "Fortified",
+ "type.other": "Other",
  "status.over": "Past",
  "status.late": "Late",
  "status.peak": "Peak",

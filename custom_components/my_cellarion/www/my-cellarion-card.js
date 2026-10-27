@@ -815,8 +815,8 @@
       const F = L.filters || S;
       this._fo = Array.isArray(F.filterOrder) ? F.filterOrder.slice() : [];
       this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
-      // Info behind the wine name in the list: order + what is shown (this device only)
-      const I = L.info || {};
+      // Info behind the wine name in the list: order + what is shown (central for all devices, overridable per device)
+      const I = L.info || { order: S.infoOrder, show: S.infoShow };
       this._io = Array.isArray(I.order) ? I.order.slice() : [];
       this._is = new Set(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']);
     }
@@ -831,8 +831,9 @@
     }
     _priceOnly(pr) { const m = String(pr || '').match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
     _setInfo(order, show) {
-      this._local.info = { order, show };
-      this._saveState(); this._applyEff();
+      if (this._local.info) { this._local.info = { order, show }; this._saveState(); }
+      else { this._shared.infoOrder = order; this._shared.infoShow = show; this._saveSettings(); }
+      this._applyEff();
     }
     _setLang(v) {
       if (this._local.language !== undefined) { this._local.language = v; this._saveState(); }
@@ -1920,7 +1921,7 @@
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
-        sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw(null, 'device')) +
+        sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw('info')) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
@@ -1936,8 +1937,8 @@
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())).join(',') : '-');
       try {
         await this._call('settings',
-          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0') },
-          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }) });
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
         this._setErr = '';
       } catch (e) {
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
@@ -2488,7 +2489,7 @@
     },
     scope(t) {
       const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
-      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : k === 'info' ? { order: this._io.slice(), show: Array.from(this._is) } : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
       else if (t.dataset.v === 'all' && dev) delete L[k];
       this._saveState();
       this._applyEff();

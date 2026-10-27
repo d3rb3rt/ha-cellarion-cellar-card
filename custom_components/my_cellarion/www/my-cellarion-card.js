@@ -1275,7 +1275,11 @@
           '<circle cx="7" cy="8.2" r=".6" fill="#fff" opacity=".9"/><circle cx="9" cy="6.4" r=".5" fill="#fff" opacity=".9"/><circle cx="7.6" cy="4.6" r=".5" fill="#fff" opacity=".9"/><circle cx="8.8" cy="3.2" r=".4" fill="#fff" opacity=".9"/>'],
         dessert: ['M5 4h6c.1 2.8-.7 4.8-3 5.1-2.3-.3-3.1-2.3-3-5.1z', 'M5.1 5.4h5.8c0 2-.8 3.5-2.9 3.7-2.1-.2-2.9-1.7-2.9-3.7z', 9.1, ''],
       };
-      G['rosé'] = G.white; G.fortified = G.dessert; G.other = G.dessert;
+      G['rosé'] = G.white; G.fortified = G.dessert;
+      if (type === 'other') { // Other (not wine): three dots instead of a glass
+        return `<svg class="tsp" viewBox="0 0 16 16" width="16" height="16"${title ? ` role="img" aria-label="${esc(title)}"` : ' aria-hidden="true"'}>` +
+          `<circle cx="2.8" cy="8" r="1.7" fill="${col}"/><circle cx="8" cy="8" r="1.7" fill="${col}"/><circle cx="13.2" cy="8" r="1.7" fill="${col}"/></svg>`;
+      }
       const g = G[type] || G.white;
       return `<svg class="tsp" viewBox="0 0 16 16" width="16" height="16"${title ? ` role="img" aria-label="${esc(title)}"` : ' aria-hidden="true"'}>` +
         `<path d="${g[0]}" fill="${col}" stroke="${col}" stroke-width="1" stroke-linejoin="round"/>${g[3]}` +

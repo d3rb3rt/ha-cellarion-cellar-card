@@ -795,8 +795,8 @@
       return v >= 0.8 && v <= 2.5 ? Math.round(v * 100) / 100 : 1;
     }
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
-    // Setting 'show Other in the list' (this device only, default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen or a search term is entered
-    _showOther() { return !(this._local && this._local.hideOther); }
+    // Setting 'show Other in the list' (central for all devices, overridable per device; default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen or a search term is entered
+    _showOther() { const L = this._local || {}, S = this._shared || {}; return !(L.hideOther !== undefined ? L.hideOther : S.hideOther); }
     _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')) && !norm(this._f.q || '').trim(); } // a search term always finds Other items too
     _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
     _applyMode() { const m = this._mode(); if (m === 'auto') this.removeAttribute('data-mode'); else this.setAttribute('data-mode', m); }
@@ -1913,7 +1913,7 @@
         row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), sw(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
         row(t('set2.fullw'), t('set2.fullwSub'), sw(null, 'device'), chkOpt('fullw', '', this._fullw(), t('set.on'))) +
         grp(t('set2.grpList')) +
-        row(t('set2.showOther'), t('set2.showOtherSub'), sw(null, 'device'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
+        row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw(null, 'device')) +
@@ -1932,8 +1932,8 @@
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())).join(',') : '-');
       try {
         await this._call('settings',
-          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0') },
-          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }) });
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0') },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }) });
         this._setErr = '';
       } catch (e) {
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
@@ -2482,7 +2482,7 @@
     },
     scope(t) {
       const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
-      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
       else if (t.dataset.v === 'all' && dev) delete L[k];
       this._saveState();
       this._applyEff();
@@ -2491,7 +2491,12 @@
         this._renderAll(); this._renderSet();
       });
     },
-    showother() { this._local.hideOther = this._showOther(); this._saveState(); this._renderAll(); this._renderSet(); },
+    showother() {
+      const hide = this._showOther(); // now shown -> hide
+      if (this._local.hideOther !== undefined) { this._local.hideOther = hide; this._saveState(); }
+      else { this._shared.hideOther = hide; this._saveSettings(); }
+      this._renderAll(); this._renderSet();
+    },
     fullw() { this._local.fullw = !this._fullw(); this._saveState(); this._renderAll(); this._renderSet(); this._azWidth(); },
     mode(t) { this._local.mode = t.dataset.v; this._applyMode(); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg(); },
     scale(t) { this._scale = this._clampScale(Number(t.dataset.v) / 100); this._applyScale(); this._saveState(); this._renderDlg(); },

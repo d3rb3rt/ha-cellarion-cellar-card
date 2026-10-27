@@ -1921,7 +1921,8 @@
     // The filter choice applies to all devices: save it in Home Assistant, report errors only quietly
     async _saveSettings() {
       const S = this._shared || {};
-      const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x)).join(',') : '-');
+      // encodeURIComponent laesst ! ' ( ) * ~ stehen; die Shell-Zeile der Dev-Vorlage entfernt alles ausser [A-Za-z0-9%,._-] -> Klammern mitkodieren
+      const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())).join(',') : '-');
       try {
         await this._call('settings',
           { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0') },

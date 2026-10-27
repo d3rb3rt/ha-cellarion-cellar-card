@@ -992,7 +992,8 @@
         // Predicates (Kabinett, Spätlese ...) before the vineyard rank
         { const pr = (x) => (/kabinett|sp[aä]tlese|auslese|eiswein|qualit[aä]tswein|landwein/i.test(x) ? 0 : 1); o._cls = o._cls.map((x, i) => [x, i]).sort((a, b) => pr(a[0]) - pr(b[0]) || a[1] - b[1]).map((x) => x[0]); }
         o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
-          (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type]].join(' '));
+          (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type],
+          Object.values(o.p || {}).map((v) => (Array.isArray(v) ? v.join(' ') : v)).join(' ')].join(' '));
         return o;
       });
       const count = (get) => {

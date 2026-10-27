@@ -792,7 +792,7 @@
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
     // Setting 'show Other in the list' (central for all devices, overridable per device; default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen or a search term is entered
     _showOther() { const L = this._local || {}, S = this._shared || {}; return !(L.hideOther !== undefined ? L.hideOther : S.hideOther); }
-    _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')) && !norm(this._f.q || '').trim(); } // a search term always finds Other items too
+    _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')) && !norm(this._f.q || '').trim() && !this._allDefs().some((d) => d.personal && this._fs(d.id).size); } // a search term, the Other type or a chosen personal-field value always finds Other items too
     _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
     _applyMode() { const m = this._mode(); if (m === 'auto') this.removeAttribute('data-mode'); else this.setAttribute('data-mode', m); }
     _applyScale() {
@@ -1061,7 +1061,8 @@
       const f = this._f;
       const toks = norm(f.q).split(/\s+/).filter(Boolean);
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
-      const noOther = skip !== 'types' && this._hideOther(); // the type pulldown itself still counts Other, so it can be chosen
+      const skipDef = skip && this._allDefs().find((d) => d.id === skip);
+      const noOther = skip !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
       return this._data.bottles.filter((b) => {
         if (noOther && b._type === 'other') return false;
         for (const d of act) if (![].concat(d.get(b)).some((v) => f[d.id].has(v))) return false;

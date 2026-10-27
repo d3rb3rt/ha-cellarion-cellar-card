@@ -2181,7 +2181,9 @@
         `<span class="d2pill${multi ? ' hot' : ''}"${multi ? ` title="${esc(t('det.morePlaces', { n: groups.size - 1 }))}" aria-label="${esc(t('det.morePlaces', { n: groups.size - 1 }))}"` : ''}>${multi ? '+' + (groups.size - 1) + ' ' : ''}${sectionOpen ? '▾' : '▴'}</span></button>` +
         `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button>` +
         (this._edUrl(sel) ? `<a class="btn clink" href="${esc(this._edUrl(sel))}" target="_blank" rel="noopener" title="${esc(t('det.editIn'))}"><span>${esc(t('det.openIn'))}</span><img class="clogo" src="${CEL_LOGO}" alt="" width="10" height="24"></a>` : '') + `</div>`;
-      const img = info && info.image ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(info.image)}" onerror="this.remove()">` : '';
+      // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
+      const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
+      const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = (sel.grapes || []).join(', ');
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       return `<div class="d2hero">${img}${main}</div>${maturity}${about}${noteHtml}${botsSec}${actBar}`;

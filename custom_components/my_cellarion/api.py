@@ -14,6 +14,7 @@ import time
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import aiohttp
 
@@ -272,7 +273,18 @@ async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,
         out["image"] = img
     if mcp is not None:
         try:
-            out.update(profile_from_get_bottle(await mcp.tool("get_bottle", {"bottle_id": bottle_id})))
+            got = await mcp.tool("get_bottle", {"bottle_id": bottle_id})
+            out.update(profile_from_get_bottle(got))
+            if "image" not in out:
+                # An own photo that is not the default image only shows up in the photo list of get_bottle
+                for ph in ((got.get("photos") or {}).get("items") or []):
+                    try:
+                        img = await fetch_image(urlsplit(ph.get("url") or "").path)
+                    except Exception:  # the image is a nicety
+                        img = None
+                    if img:
+                        out["image"] = img
+                        break
         except Exception as err:  # the extras are optional
             _LOGGER.debug("get_bottle extras unavailable: %s", err)
     return out

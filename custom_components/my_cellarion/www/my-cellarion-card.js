@@ -733,6 +733,8 @@
     connectedCallback() {
       this._onVis = this._onVis || (() => { if (!document.hidden && this._hass && this._cfg && this._built) this._openSync(); });
       this._onResize = this._onResize || (() => this._fit());
+      this._af = false;
+      clearTimeout(this._afTimer); this._afTimer = setTimeout(() => this._autoFocus(), 400);
       document.addEventListener('visibilitychange', this._onVis);
       window.addEventListener('resize', this._onResize);
       this._onPop = this._onPop || (() => this._hpop());
@@ -1424,6 +1426,16 @@
         const ni = this._head.querySelector('input[type=search]');
         if (ni) { ni.focus(); try { ni.setSelectionRange(pos, pos); } catch (e) { /* egal */ } }
       }
+      this._autoFocus();
+    }
+
+    // The page always starts with the focus in the search field (once per display of the card)
+    _autoFocus() {
+      if (this._af || !this._head) return;
+      const ni = this._head.querySelector('input[type=search]');
+      if (!ni) return;
+      try { ni.focus({ preventScroll: true }); } catch (e) { /* egal */ }
+      if (this.shadowRoot.activeElement === ni) this._af = true;
     }
 
     // The parts of a place (rack, shelf, side) are separated by a tiny pipe; the dot separates the infos

@@ -44,6 +44,7 @@ INVENTORY = {
         "w2": {"name": "Cremant", "type": "sparkling", "grapes": []},
         "w3": {"name": "Barolo", "country": "Italy", "region": None},
         "w5": {"name": "Unplaced"},
+        "w6": {"name": "Villa Magra", "type": None, "category": "other", "grapes": ["Frantoio"]},  # not wine: type is null, category is "other"
     },
     "bottles": [
         {"id": "a" * 24, "wine": "w1", "cellar": "c1", "vintage": "2019", "price": 24.5, "currency": "EUR", "purchaseLocation": "Lobenberg",
@@ -56,6 +57,7 @@ INVENTORY = {
         {"id": "c" * 24, "wine": "w3", "cellar": "c1", "vintage": "2015", "window": {"drinkFrom": 2020},
          "location": {"rack": "r2", "rackName": "S", "position": 9, "shelf": 2, "row": 1, "col": 1}, "personal": []},
         {"id": "d" * 24, "wine": "w5", "cellar": "c1", "vintage": "2020", "window": {}, "location": None, "place": None, "personal": []},
+        {"id": "9" * 24, "wine": "w6", "cellar": "c1", "vintage": "2025", "window": {}, "location": None, "personal": []},
         {"id": "e" * 24, "wine": "w1", "cellar": "c2", "vintage": "2018", "window": {}, "location": None, "personal": []},  # shared cellar: left out
         {"id": "f" * 24, "wine": "w3", "cellar": "c1", "vintage": "2010", "window": {},
          "location": {"rack": "r2", "rackName": "S", "position": 99, "shelf": None, "row": None, "col": None}, "personal": []},

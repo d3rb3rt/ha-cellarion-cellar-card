@@ -81,7 +81,7 @@ def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | No
         "name": w.get("name"),
         "producer": w.get("producer"),
         "vintage": bottle.get("vintage") or "NV",
-        "type": w.get("type"),
+        "type": w.get("type") or ("other" if w.get("category") == "other" else None),  # "Other" category (not wine): type is null
         "colour": w.get("colour"),
         "country": w.get("country"),
         "region": w.get("region"),

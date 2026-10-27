@@ -1636,9 +1636,9 @@
         if (d.id === 'price') return this._priceOnly(pr);
         if (d.id === 'cls') return b._cls && b._cls.length ? this._hl(b._cls.join(', ')) : '';
         if (d.id === 'region') return b.region ? this._hl(b.region) : '';
-        if (d.id === 'grape') return b.grapes && b.grapes.length ? esc(b.grapes.join(', ')) : '';
+        if (d.id === 'grape') return b.grapes && b.grapes.length ? this._hl(b.grapes.join(', ')) : '';
         const v = b.p && b.p[d.label];
-        return v ? esc([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
+        return v ? this._hl([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
       };
       const swap = this._sort === 'producer' && b.producer;
       const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]

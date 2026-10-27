@@ -2367,7 +2367,7 @@
       const ids = () => Array.from(list.children).map((r) => r.dataset.id);
       const before = ids().join('\n');
       row.classList.add('drag');
-      try { g.setPointerCapture(e.pointerId); } catch (x) { /* no pointer capture: the events still come in over the grip */ }
+      list.style.userSelect = 'none'; // no text selection while dragging
       const move = (ev) => {
         const y = ev.clientY;
         let prev = row.previousElementSibling;
@@ -2378,14 +2378,16 @@
         if (sh) { const r = sh.getBoundingClientRect(); if (y < r.top + 48) sh.scrollTop -= 14; else if (y > r.bottom - 48) sh.scrollTop += 14; }
       };
       const end = () => {
-        g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', end); g.removeEventListener('pointercancel', end);
+        window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); window.removeEventListener('pointercancel', end);
+        list.style.userSelect = '';
         row.classList.remove('drag');
         const now = ids();
         if (now.join('\n') === before) return;
         if (list.dataset.g === 'f') { this._setFilters(now, Array.from(this._fh)); this._renderHead(); this._renderSet(); }
         else { this._setInfo(now, Array.from(this._is)); this._renderSet(); this._renderAll(); }
       };
-      g.addEventListener('pointermove', move); g.addEventListener('pointerup', end); g.addEventListener('pointercancel', end);
+      // Listen on the window, not on the grip: moving the row in the DOM releases pointer capture, so a drag bound to the grip stopped after one swap (mouse)
+      window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
     }
     _onWz(act, t) {
       if (act === 'wzclose') { if (!this._wz.busy) { this._wz = null; this._renderDlg(); } }

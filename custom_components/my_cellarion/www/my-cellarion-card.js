@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'sinv' }, { id: 'vlocl' }] : [];
+  const FLAGS = BACKEND === 'dev' ? [] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -183,11 +183,6 @@
     }
     :host([data-hdr2]) .search input::placeholder { color: color-mix(in srgb, var(--cb-text) 62%, transparent); }
     :host([data-hdr2]) .search input:focus { border-color: var(--cb-on); }
-    /* flag sinv (with hdr2): inverted search, light field with dark text */
-    :host([data-hdr2][data-sinv]) .search input { background: color-mix(in srgb, var(--cb-text) 90%, var(--cb-card)); color: var(--cb-card); border-color: transparent; }
-    :host([data-hdr2][data-sinv]) .search input::placeholder { color: color-mix(in srgb, var(--cb-card) 60%, transparent); }
-    :host([data-hdr2][data-sinv]) .search::before { background: color-mix(in srgb, var(--cb-card) 75%, transparent); }
-    :host([data-hdr2][data-sinv]) .search .x { color: var(--cb-card); }
     :host([data-hdr2]) .search.has input { border-color: var(--cb-on); box-shadow: 0 0 0 1px var(--cb-on) inset; } /* active search: ring like an active filter, also without focus */
     .search .x {
       position: absolute; right: 2px; top: 0; width: var(--cb-chip-h, 40px); height: var(--cb-chip-h, 40px);
@@ -297,11 +292,11 @@
       .vrow .vprl { order: 1; }
       .vrow .vmid { order: 2; }
     }
-    /* flag vlocl (wide view): location in the expanded vintages left-aligned instead of right-aligned */
+    /* wide view: location in the expanded vintages left-aligned (formerly flag vlocl) */
     @media (min-width: 601px) {
-      :host([data-vlocl]) .vrow .vmid { align-items: flex-start; text-align: left; }
-      :host([data-vlocl]) .vrow .locs { justify-content: flex-start; }
-      :host([data-vlocl]) .vrow .vprl::before { content: none; }
+      :host .vrow .vmid { align-items: flex-start; text-align: left; }
+      :host .vrow .locs { justify-content: flex-start; }
+      :host .vrow .vprl::before { content: none; }
     }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
@@ -1246,8 +1241,6 @@
       if (!this._built) return;
       if (this._keep()) this._saveState();
       this._applyMode();
-      this.toggleAttribute('data-sinv', this._flag('sinv'));
-      this.toggleAttribute('data-vlocl', this._flag('vlocl'));
       this.toggleAttribute('data-fullw', this._fullw());
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();

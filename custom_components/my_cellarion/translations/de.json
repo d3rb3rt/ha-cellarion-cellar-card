@@ -98,6 +98,10 @@
         "keep_state": {
           "name": "Keep filters on reload",
           "description": "Keep the last filters and sorting when the page reloads."
+        },
+        "hide_other": {
+          "name": "Sonstige ausblenden",
+          "description": "Einträge ohne Wein (Kategorie Other) aus der Liste ausblenden, außer bei Suche oder Typ-Filter."
         }
       }
     },

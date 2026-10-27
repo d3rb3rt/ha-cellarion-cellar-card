@@ -35,6 +35,9 @@ settings:
     keep_state:
       selector:
         boolean:
+    hide_other:
+      selector:
+        boolean:
 producer_sort:
   fields:
     name:

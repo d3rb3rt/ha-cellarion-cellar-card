@@ -92,4 +92,5 @@ def test_inventory_matches_development_setup(tmp_path, capsys):
     for d in (dev, integ):
         d.pop("generated", None)
     assert integ == dev
-    assert dev["total"] == 5 and dev["racks"] == ["R", "S"] and dev["fields"] == ["Lage", "Stil"]
+    assert dev["total"] == 6 and dev["racks"] == ["R", "S"] and dev["fields"] == ["Lage", "Stil"]
+    assert [b["type"] for b in dev["bottles"] if b["name"] == "Villa Magra"] == ["other"]  # category "other" is delivered as type "other"

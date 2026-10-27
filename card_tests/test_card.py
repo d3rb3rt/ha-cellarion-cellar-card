@@ -104,7 +104,7 @@ def test_header_layout(card):
 def test_detail_dialog_has_edit_link(card):
     page = card()
     click(page, ".wrow[data-act=detail]")
-    href = page.evaluate("c.shadowRoot.querySelector('.dlg a.dx').href")
+    href = page.evaluate("c.shadowRoot.querySelector('.dlg a.clink').href")
     assert re.fullmatch(r"https://cellarion\.example/cellars/c0ffee000000000000000001/vintages/w\d+/(\d{4}|NV)", href)
 
 
@@ -190,11 +190,12 @@ def test_settings_page_marks_fixed_and_switchable_scopes(card):
     assert count(page, ".setv2") == 1
     assert count(page, "[data-act=fdelask]") == 0  # data fields are managed in Cellarion, not in the card
     assert count(page, ".sone") >= 3  # settings with a single possible scope show only their icon, no switch
-    assert count(page, ".sscopeb button.sw2") == 1  # the collapsed Filter section keeps a real switch
-    click(page, ".sscopeb button.sw2")
+    assert count(page, ".sscopeb button.sw2") == 2  # the collapsed Filter and Info sections keep a real switch
+    first = ".sscopeb button.sw2[data-k=filters]"
+    click(page, first)
     page.wait_for_timeout(300)
     assert count(page, ".sscopeb button.sw2.dev") == 1
-    click(page, ".sscopeb button.sw2")
+    click(page, first)
     page.wait_for_timeout(300)
     assert count(page, ".sscopeb button.sw2.dev") == 0
     assert page.errors == []

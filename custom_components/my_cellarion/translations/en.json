@@ -102,6 +102,14 @@
         "hide_other": {
           "name": "Hide Other items",
           "description": "Hide items that are not wine (Other category) from the list unless searched or filtered by type."
+        },
+        "info_order": {
+          "name": "Info order",
+          "description": "Order of the info shown behind the wine name in the list."
+        },
+        "info_show": {
+          "name": "Info shown",
+          "description": "Which info is shown behind the wine name in the list."
         }
       }
     },

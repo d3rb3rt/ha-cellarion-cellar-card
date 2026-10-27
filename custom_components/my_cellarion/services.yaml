@@ -38,6 +38,12 @@ settings:
     hide_other:
       selector:
         boolean:
+    info_order:
+      selector:
+        object:
+    info_show:
+      selector:
+        object:
 producer_sort:
   fields:
     name:

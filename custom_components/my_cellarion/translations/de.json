@@ -102,6 +102,14 @@
         "hide_other": {
           "name": "Sonstige ausblenden",
           "description": "Einträge ohne Wein (Kategorie Other) aus der Liste ausblenden, außer bei Suche oder Typ-Filter."
+        },
+        "info_order": {
+          "name": "Reihenfolge der Info",
+          "description": "Reihenfolge der Angaben hinter dem Weinnamen in der Liste."
+        },
+        "info_show": {
+          "name": "Angezeigte Info",
+          "description": "Welche Angaben hinter dem Weinnamen in der Liste stehen."
         }
       }
     },

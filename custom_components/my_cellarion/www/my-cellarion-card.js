@@ -173,6 +173,7 @@
       font-size: var(--cb-chip-font, 14px); outline: none;
     }
     .search input:focus { border-color: var(--cb-on); }
+    .search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; } /* the card has its own clear button */
     /* flag hdr2: the search stands out (lighter fill, stronger border); color-mix follows the theme text color, so it also works in light themes */
     :host([data-hdr2]) .search input { background: color-mix(in srgb, var(--cb-text) 22%, var(--cb-card)); border-color: color-mix(in srgb, var(--cb-text) 30%, transparent); padding-left: 40px; }
     :host([data-hdr2]) .search::before {

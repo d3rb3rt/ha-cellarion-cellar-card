@@ -1044,6 +1044,7 @@
         { id: 'types', label: t('filter.types'), defs: TYPES, dot: '--w-', get: (b) => b._type },
         { id: 'grape', label: t('filter.grape'), get: (b) => b.grapes || [] },
         { id: 'region', label: t('filter.region'), get: (b) => b.region },
+        { id: 'appellation', label: t('filter.appellation'), get: (b) => b.appellation || null },
         { id: 'producer', label: t('filter.producer'), get: (b) => b.producer, sort: byProd },
         { id: 'status', label: t('filter.status'), defs: STATUS, dot: '--s-', get: (b) => (b._status === 'window' ? 'peak' : b._status) },
         { id: 'cls', label: t('filter.cls'), get: (b) => b._cls || [] },

@@ -18,6 +18,7 @@
  "filter.types": "Typ",
  "filter.grape": "Rebsorte",
  "filter.region": "Region",
+ "filter.appellation": "Appellation",
  "filter.producer": "Winzer",
  "filter.status": "Reife",
  "filter.cls": "Einstufung",

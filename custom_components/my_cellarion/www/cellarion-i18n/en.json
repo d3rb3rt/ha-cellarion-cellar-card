@@ -18,6 +18,7 @@
  "filter.types": "Type",
  "filter.grape": "Grape",
  "filter.region": "Region",
+ "filter.appellation": "Appellation",
  "filter.producer": "Producer",
  "filter.status": "Maturity",
  "filter.cls": "Classification",

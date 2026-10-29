@@ -92,7 +92,7 @@ cellar value, bottles per type and the top country, producer, region and grape.
 - Tap a **type bar** (or a similar row) to close the overview and filter the list by it, for example only the sparkling
   wines.
 - Tap a **tile** to see that breakdown in more detail.
-- The numbers follow your data: items from the *Other* category are counted in the cellar total, but not as wines.
+- The overview counts everything in the cellar, including items from the *Other* category that are hidden from the list.
 
 <p align="center">
   <img src="docs/statistics.png?v=1.0.0" alt="Statistics overview" width="340">

@@ -1914,10 +1914,10 @@
         row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), sw(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
         row(t('set2.fullw'), t('set2.fullwSub'), sw(null, 'device'), chkOpt('fullw', '', this._fullw(), t('set.on'))) +
         grp(t('set2.grpList')) +
-        row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         sec('info', t('set.info'), t('set2.sumInfo', { n: idefs.filter((d) => this._is.has(d.id)).length }), infoBody, sw('info')) +
+        row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +

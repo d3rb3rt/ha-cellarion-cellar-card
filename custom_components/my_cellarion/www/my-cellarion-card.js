@@ -4,13 +4,13 @@
  * region, grape and your own data fields), sorting and a flat view. Tap a vintage for details (your data, register profile,
  * storage places, note); "Take out" asks which bottle and why, then confirms before the bottle is consumed.
  *
- * Data comes from the services of the My Cellarion integration (my_cellarion.read and others). The Cellarion API token is
+ * Data comes from the services of the Cellar Card for Cellarion integration (my_cellarion.read and others). The Cellarion API token is
  * never sent to the browser.
  *
  * Configuration (YAML, all optional):
  *   type: custom:my-cellarion-card
  *   key: bestand                  # key for the remembered view and sorting (per browser)
- *   title: My Cellarion           # title above the card (default: none, the cellar name is shown by the page header)
+ *   title: Wine cellar           # title above the card (default: none, the cellar name is shown by the page header)
  *   view: wine                    # start view: wine (grouped) or flat; the last choice is remembered
  *   refresh_seconds: 300          # re-read the cached inventory this often (default 300, 0 = never)
  *   refresh_on_open: true         # fetch fresh data from Cellarion when the card opens or becomes visible (at most once a minute)
@@ -28,7 +28,7 @@
  * cellarion-accent, cellarion-on-text, cellarion-chip-bg, cellarion-seg-bg,
  * cellarion-wine-red/white/rose/sparkling/dessert/fortified, cellarion-maturity-notready/early/peak/late/over.
  *
- * Source of truth: https://github.com/d3rb3rt/my-cellarion-ha
+ * Source of truth: https://github.com/d3rb3rt/ha-cellarion-cellar-card
  */
 (function () {
   // ---------- Language (i18n) ----------
@@ -38,7 +38,7 @@
   // Cache key of the language files: the same ?v=N as the card resource, so changes take effect at once
   const CARD_V = ((document.currentScript && /[?&]v=([\w.-]+)/.exec(document.currentScript.src)) || [])[1] || String(Date.now());
   // Folder the card was loaded from: cellarion-i18n/ lives next to it (works for /local/ and for the integration)
-  // Data source of this file: 'dev' = own development setup, 'integration' = services of the My Cellarion integration (set by tools/sync_card.sh in the integration repo)
+  // Data source of this file: 'dev' = own development setup, 'integration' = services of the Cellar Card for Cellarion integration (set by tools/sync_card.sh in the integration repo)
   const BACKEND = 'integration';
   const SCRIPT_DIR = (((document.currentScript && document.currentScript.src) || '').split('?')[0].replace(/[^/]*$/, '')) || '/local/';
   const I18N = { lang: 'en', dict: {}, pr: new Intl.PluralRules('en'), files: {} };
@@ -918,7 +918,7 @@
         if (out.error) throw new Error(out.error);
         return out;
       }
-      throw new Error('My Cellarion integration not found');
+      throw new Error('Cellar Card for Cellarion integration not found');
     }
     async _load() {
       if (!this._hass) return;
@@ -1019,7 +1019,7 @@
       };
       this._setHeader();
     }
-    // Append the cellar name to the HA page header (toolbar), e.g. "My Cellarion - HK4" (option header_cellar: false turns it off)
+    // Append the cellar name to the HA page header (toolbar), e.g. "Wine cellar - HK4" (option header_cellar: false turns it off)
     _setHeader() {
       try {
         if (this._cfg.header_cellar === false || !this._data || !this._data.cellar) return;
@@ -2540,7 +2540,7 @@
   window.customCards = window.customCards || [];
   window.customCards.push({
     type: 'my-cellarion-card',
-    name: 'My Cellarion',
+    name: 'Cellar Card for Cellarion',
     description: 'Wine cellar inventory with search, filters, detail view and take-out (Cellarion).',
   });
 })();

@@ -20,7 +20,7 @@ REASONS = ["drank", "gifted", "sold", "other"]
 def _hub(hass: HomeAssistant) -> Hub:
     entries = [e for e in hass.config_entries.async_entries(DOMAIN) if e.state is ConfigEntryState.LOADED]
     if not entries:
-        raise ServiceValidationError("My Cellarion is not set up")
+        raise ServiceValidationError("Cellar Card for Cellarion is not set up")
     return entries[0].runtime_data
 
 

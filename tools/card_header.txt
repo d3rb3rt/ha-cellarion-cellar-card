@@ -4,13 +4,13 @@
  * region, grape and your own data fields), sorting and a flat view. Tap a vintage for details (your data, register profile,
  * storage places, note); "Take out" asks which bottle and why, then confirms before the bottle is consumed.
  *
- * Data comes from the services of the My Cellarion integration (my_cellarion.read and others). The Cellarion API token is
+ * Data comes from the services of the Cellar Card for Cellarion integration (my_cellarion.read and others). The Cellarion API token is
  * never sent to the browser.
  *
  * Configuration (YAML, all optional):
  *   type: custom:my-cellarion-card
  *   key: bestand                  # key for the remembered view and sorting (per browser)
- *   title: My Cellarion           # title above the card (default: none, the cellar name is shown by the page header)
+ *   title: Wine cellar           # title above the card (default: none, the cellar name is shown by the page header)
  *   view: wine                    # start view: wine (grouped) or flat; the last choice is remembered
  *   refresh_seconds: 300          # re-read the cached inventory this often (default 300, 0 = never)
  *   refresh_on_open: true         # fetch fresh data from Cellarion when the card opens or becomes visible (at most once a minute)
@@ -28,5 +28,5 @@
  * cellarion-accent, cellarion-on-text, cellarion-chip-bg, cellarion-seg-bg,
  * cellarion-wine-red/white/rose/sparkling/dessert/fortified, cellarion-maturity-notready/early/peak/late/over.
  *
- * Source of truth: https://github.com/d3rb3rt/my-cellarion-ha
+ * Source of truth: https://github.com/d3rb3rt/ha-cellarion-cellar-card
  */

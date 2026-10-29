@@ -1,4 +1,4 @@
-# My Cellarion
+# Cellar Card for Cellarion
 
 A Home Assistant dashboard card, and the data integration behind it, for [Cellarion](https://cellarion.app):
 browse your whole cellar at a glance, filter it, see where each bottle lies and take a bottle out, right from a dashboard.
@@ -55,14 +55,14 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 
 ## Install
 
-1. HACS → ⋮ → **Custom repositories** → `https://github.com/d3rb3rt/my-cellarion-ha`, category **Integration**.
-2. Install **My Cellarion** and restart Home Assistant.
+1. HACS → ⋮ → **Custom repositories** → `https://github.com/d3rb3rt/ha-cellarion-cellar-card`, category **Integration**.
+2. Install **Cellar Card for Cellarion** and restart Home Assistant.
 3. In Cellarion create an API token (Settings → API tokens) with scope **read**, plus **consume** if you want to take
    bottles out from the card.
-4. Home Assistant → Settings → Devices & services → **Add integration** → **My Cellarion**. Enter the server address
+4. Home Assistant → Settings → Devices & services → **Add integration** → **Cellar Card for Cellarion**. Enter the server address
    (`https://cellarion.app` for the hosted service) and the token. If your account has several cellars you choose one; you can
    change it later under **Configure**.
-5. The card is registered automatically. Edit a dashboard, add the card **My Cellarion**, or use YAML:
+5. The card is registered automatically. Edit a dashboard, add the card **Cellar Card for Cellarion**, or use YAML:
 
 ```yaml
 type: custom:my-cellarion-card
@@ -142,7 +142,7 @@ account has several cellars, which one is shown.
 
 ```yaml
 type: custom:my-cellarion-card
-title: My Cellarion        # default: none, the cellar name is shown in the page header
+title: Wine cellar         # default: none, the cellar name is shown in the page header
 language: de               # default: language of the Home Assistant user
 view: wine                 # start view: wine (grouped) or flat
 refresh_seconds: 300       # re-read the cached inventory this often (0 = never)
@@ -185,7 +185,7 @@ data:
   browser. The integration registers the card as a dashboard resource itself; if your dashboards are in YAML mode, add
   `/my-cellarion-files/my-cellarion-card.js` as a module resource by hand.
 - **An error or an empty list.** Check the token (scope **read**) and the server address; reconfigure under
-  *Devices & services → My Cellarion*.
+  *Devices & services → Cellar Card for Cellarion*.
 - **Take out does nothing / is refused.** The token needs the **consume** scope as well.
 - **A new bottle does not appear yet.** Use the refresh button in the card, or lower the refresh interval under
   **Configure**.

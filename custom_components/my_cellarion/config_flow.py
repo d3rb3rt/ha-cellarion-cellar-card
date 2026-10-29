@@ -51,7 +51,7 @@ def _cellar_selector(cellars: list[dict[str, str]]) -> SelectSelector:
 
 
 class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Set up My Cellarion with a Cellarion API token (scope read; add consume to take bottles out)."""
+    """Set up Cellar Card for Cellarion with a Cellarion API token (scope read; add consume to take bottles out)."""
 
     VERSION = 1
     _url: str = ""
@@ -59,7 +59,7 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
     _cellars: list[dict[str, str]] = []
 
     def _create(self, cellar_id: str) -> ConfigFlowResult:
-        return self.async_create_entry(title="My Cellarion", data={CONF_URL: self._url, CONF_TOKEN: self._token, CONF_CELLAR_ID: cellar_id})
+        return self.async_create_entry(title="Cellar Card for Cellarion", data={CONF_URL: self._url, CONF_TOKEN: self._token, CONF_CELLAR_ID: cellar_id})
 
     async def async_step_cellar(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Several cellars in the account: choose the one to show."""

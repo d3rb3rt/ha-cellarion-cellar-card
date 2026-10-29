@@ -1,4 +1,4 @@
-"""Constants for My Cellarion."""
+"""Constants for Cellar Card for Cellarion."""
 
 DOMAIN = "my_cellarion"
 

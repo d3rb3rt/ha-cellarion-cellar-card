@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "My Cellarion",
+        "title": "Cellar Card for Cellarion",
         "description": "Create an API token in Cellarion (Settings → API tokens) with the scope \"read\", plus \"consume\" if you want to take bottles out from the card.",
         "data": {
           "url": "Cellarion address",
@@ -17,7 +17,7 @@
         }
       },
       "cellar": {
-        "title": "My Cellarion",
+        "title": "Cellar Card for Cellarion",
         "description": "Your account has several cellars. Choose the one to show.",
         "data": {
           "cellar_id": "Cellar"
@@ -31,14 +31,14 @@
       "no_cellar": "The account has no cellar."
     },
     "abort": {
-      "single_instance_allowed": "My Cellarion is already set up.",
+      "single_instance_allowed": "Cellar Card for Cellarion is already set up.",
       "reauth_successful": "The new token is saved."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "My Cellarion",
+        "title": "Cellar Card for Cellarion",
         "data": {
           "scan_interval": "Refresh interval (seconds)",
           "cellar_id": "Cellar"

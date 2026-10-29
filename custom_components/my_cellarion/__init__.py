@@ -1,4 +1,4 @@
-"""My Cellarion: inventory browser card and the services behind it for Cellarion (cellarion.app)."""
+"""Cellar Card for Cellarion: inventory browser card and the services behind it for Cellarion (cellarion.app)."""
 
 from __future__ import annotations
 

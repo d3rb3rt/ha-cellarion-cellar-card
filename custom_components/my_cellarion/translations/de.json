@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "My Cellarion",
+        "title": "Cellar Card for Cellarion",
         "description": "Lege in Cellarion (Einstellungen → API-Tokens) einen Token mit dem Bereich „read“ an, dazu „consume“, wenn du Flaschen aus der Karte entnehmen willst.",
         "data": {
           "url": "Cellarion-Adresse",
@@ -17,7 +17,7 @@
         }
       },
       "cellar": {
-        "title": "My Cellarion",
+        "title": "Cellar Card for Cellarion",
         "description": "Dein Konto hat mehrere Keller. Wähle den, der angezeigt werden soll.",
         "data": {
           "cellar_id": "Keller"
@@ -31,14 +31,14 @@
       "no_cellar": "Das Konto hat keinen Keller."
     },
     "abort": {
-      "single_instance_allowed": "My Cellarion ist bereits eingerichtet.",
+      "single_instance_allowed": "Cellar Card for Cellarion ist bereits eingerichtet.",
       "reauth_successful": "Der neue Token ist gespeichert."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "My Cellarion",
+        "title": "Cellar Card for Cellarion",
         "data": {
           "scan_interval": "Aktualisierungsintervall (Sekunden)",
           "cellar_id": "Keller"

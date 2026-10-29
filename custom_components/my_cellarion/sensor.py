@@ -35,7 +35,7 @@ class TotalBottles(SensorEntity):
         self._entry_id = entry_id
         self._attr_unique_id = f"{entry_id}_total_bottles"
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry_id)}, name="My Cellarion", entry_type=DeviceEntryType.SERVICE)
+            identifiers={(DOMAIN, entry_id)}, name="Cellar Card for Cellarion", entry_type=DeviceEntryType.SERVICE)
 
     @property
     def native_value(self) -> int | None:

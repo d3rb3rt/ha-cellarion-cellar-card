@@ -65,10 +65,27 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 5. The card is registered automatically. Edit a dashboard, add the card **Cellar Card for Cellarion**, or use YAML:
 
 ```yaml
-type: custom:my-cellarion-card
+type: custom:cellarion-cellar-card
 ```
 
 The card works best in a view with a single full-width card (panel view), where it fills the whole page.
+
+## Upgrading from 1.x
+
+Version 2.0 gives everything one consistent name, which is a breaking change:
+
+| 1.x | 2.0 |
+|---|---|
+| integration `my_cellarion` | `cellarion_cellar_card` |
+| services `my_cellarion.*` | `cellarion_cellar_card.*` |
+| sensor `sensor.my_cellarion_total_bottles` | `sensor.cellarion_cellar_card_total_bottles` |
+| card `custom:my-cellarion-card` | `custom:cellarion-cellar-card` (the old tag still works) |
+
+Home Assistant treats the new domain as a new integration, so: remove the old integration under *Devices & services*, update
+the repository in HACS (the address is now `https://github.com/d3rb3rt/ha-cellarion-cellar-card`), restart, and add
+**Cellar Card for Cellarion** again with your token. Card settings kept in the integration (filters, producer sort words,
+…) start empty and can be set up again in the card. Update automations and scripts that call the old services or the old
+sensor.
 
 ## Using the card
 
@@ -141,7 +158,7 @@ account has several cellars, which one is shown.
 ## Card options (all optional)
 
 ```yaml
-type: custom:my-cellarion-card
+type: custom:cellarion-cellar-card
 title: Wine cellar         # default: none, the cellar name is shown in the page header
 language: de               # default: language of the Home Assistant user
 view: wine                 # start view: wine (grouped) or flat
@@ -151,7 +168,7 @@ height: 600px              # fixed height; default: fills the rest of the window
 flush: true                # no frame, for use inside another card
 ```
 
-The full list is at the top of `custom_components/my_cellarion/www/my-cellarion-card.js`. Colours can be overridden in
+The full list is at the top of `custom_components/cellarion_cellar_card/www/cellarion-cellar-card.js`. Colours can be overridden in
 your theme with `cellarion-accent`, `cellarion-chip-bg`, `cellarion-wine-red`/`-white`/`-rose`, `cellarion-maturity-peak`
 and friends (also listed there).
 
@@ -161,18 +178,18 @@ The card uses these services; they work in automations and scripts too.
 
 | Service | What it does |
 |---|---|
-| `my_cellarion.read` | Returns the cached inventory and the shared card settings. |
-| `my_cellarion.refresh` | Fetches the inventory from Cellarion now. |
-| `my_cellarion.sync` | Refreshes only if the cache is older than `max_age` seconds. |
-| `my_cellarion.bottle` | Note, purchase, rating, register profile and label image of one bottle (`id`). |
-| `my_cellarion.consume_bottle` | Marks a bottle as consumed: `bottle_id`, `reason` (`drank`, `gifted`, `sold`, `other`), optional `rating` (0–100) and `note`. Needs the **consume** scope. |
-| `my_cellarion.settings` | Saves the card settings shared by all devices. |
-| `my_cellarion.producer_sort` | Sets the sort word of a producer (`name`, `index`; `-1` removes it). |
+| `cellarion_cellar_card.read` | Returns the cached inventory and the shared card settings. |
+| `cellarion_cellar_card.refresh` | Fetches the inventory from Cellarion now. |
+| `cellarion_cellar_card.sync` | Refreshes only if the cache is older than `max_age` seconds. |
+| `cellarion_cellar_card.bottle` | Note, purchase, rating, register profile and label image of one bottle (`id`). |
+| `cellarion_cellar_card.consume_bottle` | Marks a bottle as consumed: `bottle_id`, `reason` (`drank`, `gifted`, `sold`, `other`), optional `rating` (0–100) and `note`. Needs the **consume** scope. |
+| `cellarion_cellar_card.settings` | Saves the card settings shared by all devices. |
+| `cellarion_cellar_card.producer_sort` | Sets the sort word of a producer (`name`, `index`; `-1` removes it). |
 
 Example: take a bottle out from a script, for instance behind a button or a voice command.
 
 ```yaml
-action: my_cellarion.consume_bottle
+action: cellarion_cellar_card.consume_bottle
 data:
   bottle_id: 0123456789abcdef01234567   # bottle id from Cellarion
   reason: drank
@@ -183,7 +200,7 @@ data:
 
 - **The card does not show up in the card picker.** Restart Home Assistant after installing, then hard-refresh the
   browser. The integration registers the card as a dashboard resource itself; if your dashboards are in YAML mode, add
-  `/my-cellarion-files/my-cellarion-card.js` as a module resource by hand.
+  `/cellarion-cellar-card-files/cellarion-cellar-card.js` as a module resource by hand.
 - **An error or an empty list.** Check the token (scope **read**) and the server address; reconfigure under
   *Devices & services → Cellar Card for Cellarion*.
 - **Take out does nothing / is refused.** The token needs the **consume** scope as well.
@@ -194,7 +211,7 @@ data:
 ## Privacy
 
 Only your own Cellarion server (or cellarion.app) is contacted, from your Home Assistant server. Label images are cached
-in `<config>/my_cellarion_img` and served without login to the browser, like other files in `www`. Personal data fields and
+in `<config>/cellarion_cellar_card_img` and served without login to the browser, like other files in `www`. Personal data fields and
 notes are shown only in the card, to whoever can open the dashboard.
 
 ## Development

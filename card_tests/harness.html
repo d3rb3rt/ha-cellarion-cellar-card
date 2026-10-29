@@ -1,12 +1,12 @@
 <!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#111;--primary-text-color:#eee;--card-background-color:#1c1c1c}</style></head><body>
 <div id="r" style="width:100%;height:600px"></div>
-<script src="www/my-cellarion-card.js"></script>
+<script src="www/cellarion-cellar-card.js"></script>
 <script>
 // Test harness: the card with a fake hass that answers every service call with the fixture inventory
 fetch('inventory.json').then(r => r.json()).then(inv => {
-  const hass = {states: {'sensor.my_cellarion_total_bottles': {state: '60', attributes: {updated: 't'}}}, language: 'de', user: {name: 'a'}, locale: {language: 'de'},
+  const hass = {states: {'sensor.cellarion_cellar_card_total_bottles': {state: '60', attributes: {updated: 't'}}}, language: 'de', user: {name: 'a'}, locale: {language: 'de'},
     callService: () => Promise.resolve({response: inv}), callWS: () => Promise.resolve({response: inv})};
-  const c = document.createElement('my-cellarion-card');
+  const c = document.createElement('cellarion-cellar-card');
   document.getElementById('r').appendChild(c); c.setConfig({}); c.hass = hass; window.c = c;
 });
 </script></body></html>

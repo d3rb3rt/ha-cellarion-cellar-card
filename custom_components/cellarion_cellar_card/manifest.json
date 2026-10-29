@@ -1,5 +1,5 @@
 {
-  "domain": "my_cellarion",
+  "domain": "cellarion_cellar_card",
   "name": "Cellar Card for Cellarion",
   "after_dependencies": ["lovelace"],
   "codeowners": ["@d3rb3rt"],
@@ -9,7 +9,7 @@
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/d3rb3rt/ha-cellarion-cellar-card/issues",
-  "loggers": ["custom_components.my_cellarion"],
+  "loggers": ["custom_components.cellarion_cellar_card"],
   "requirements": [],
   "single_config_entry": true,
   "version": "1.0.0"

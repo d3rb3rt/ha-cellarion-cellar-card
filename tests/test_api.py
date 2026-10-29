@@ -4,7 +4,7 @@ import pathlib
 import sys
 import types
 
-PKG = pathlib.Path(__file__).parent.parent / "custom_components" / "my_cellarion"
+PKG = pathlib.Path(__file__).parent.parent / "custom_components" / "cellarion_cellar_card"
 pkg = types.ModuleType("mc")
 pkg.__path__ = [str(PKG)]
 sys.modules["mc"] = pkg

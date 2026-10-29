@@ -160,7 +160,7 @@ class McpClient:
 
     async def start(self) -> None:
         await self._rpc("initialize", {"protocolVersion": "2025-06-18", "capabilities": {},
-                                       "clientInfo": {"name": "ha-my-cellarion", "version": "0.1"}})
+                                       "clientInfo": {"name": "ha-cellarion-cellar-card", "version": "2.0"}})
         await self._rpc("notifications/initialized", notify=True)
 
     async def _rpc(self, method: str, params: JsonDict | None = None, notify: bool = False) -> JsonDict | None:

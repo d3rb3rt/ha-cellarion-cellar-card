@@ -19,7 +19,7 @@ import pytest
 DEV = os.environ.get("CEL_DEV_BESTAND")
 pytestmark = pytest.mark.skipif(not DEV, reason="CEL_DEV_BESTAND not set")
 
-PKG = pathlib.Path(__file__).parent.parent / "custom_components" / "my_cellarion"
+PKG = pathlib.Path(__file__).parent.parent / "custom_components" / "cellarion_cellar_card"
 pkg = types.ModuleType("mcp_par")
 pkg.__path__ = [str(PKG)]
 sys.modules["mcp_par"] = pkg

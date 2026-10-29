@@ -4,7 +4,7 @@ name: Release
 on:
   push:
     branches: [main]
-    paths: [custom_components/my_cellarion/manifest.json]
+    paths: [custom_components/cellarion_cellar_card/manifest.json]
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          v="v$(jq -r .version custom_components/my_cellarion/manifest.json)"
+          v="v$(jq -r .version custom_components/cellarion_cellar_card/manifest.json)"
           if gh release view "$v" >/dev/null 2>&1; then
             echo "$v already released"
           else

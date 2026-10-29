@@ -6,7 +6,7 @@ from homeassistant.data_entry_flow import FlowResultType
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.my_cellarion.const import DOMAIN
+from custom_components.cellarion_cellar_card.const import DOMAIN
 
 CELLARS = {"cellars": [{"_id": "c1", "name": "HK4"}]}
 RACKS = {"racks": [{"_id": "r1", "name": "Cabinet", "typeConfig": {"shelfRows": [1, 1]}}]}
@@ -36,7 +36,7 @@ async def setup(hass, aioclient_mock):
     mock_api(aioclient_mock)
     e = entry()
     e.add_to_hass(hass)
-    with patch("custom_components.my_cellarion.async_register_frontend", AsyncMock()):
+    with patch("custom_components.cellarion_cellar_card.async_register_frontend", AsyncMock()):
         assert await hass.config_entries.async_setup(e.entry_id)
         await hass.async_block_till_done()
     return e
@@ -46,7 +46,7 @@ async def test_flow_creates_entry(hass, aioclient_mock):
     aioclient_mock.get("https://cellarion.example/api/cellars", json=CELLARS)
     r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     assert r["type"] is FlowResultType.FORM
-    with patch("custom_components.my_cellarion.async_setup_entry", return_value=True):
+    with patch("custom_components.cellarion_cellar_card.async_setup_entry", return_value=True):
         r = await hass.config_entries.flow.async_configure(r["flow_id"], {"url": "https://cellarion.example/", "token": " cel_x "})
     assert r["type"] is FlowResultType.CREATE_ENTRY
     assert r["data"] == {"url": "https://cellarion.example", "token": "cel_x", "cellar_id": "c1"}
@@ -57,7 +57,7 @@ async def test_flow_asks_for_the_cellar_when_there_are_several(hass, aioclient_m
     r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     r = await hass.config_entries.flow.async_configure(r["flow_id"], {"url": "https://cellarion.example", "token": "cel_x"})
     assert r["type"] is FlowResultType.FORM and r["step_id"] == "cellar"
-    with patch("custom_components.my_cellarion.async_setup_entry", return_value=True):
+    with patch("custom_components.cellarion_cellar_card.async_setup_entry", return_value=True):
         r = await hass.config_entries.flow.async_configure(r["flow_id"], {"cellar_id": "c2"})
     assert r["type"] is FlowResultType.CREATE_ENTRY and r["data"]["cellar_id"] == "c2"
 
@@ -119,17 +119,17 @@ async def test_consume_posts_to_cellarion(hass, aioclient_mock):
 async def test_sensor_updates_when_inventory_changes(hass, aioclient_mock):
     e = await setup(hass, aioclient_mock)
     await hass.async_block_till_done()
-    st = hass.states.get("sensor.my_cellarion_total_bottles")
+    st = hass.states.get("sensor.cellarion_cellar_card_total_bottles")
     assert st is not None and st.state == "1"
     first = st.attributes["updated"]
     await e.runtime_data.refresh()
     await hass.async_block_till_done()
-    assert hass.states.get("sensor.my_cellarion_total_bottles").attributes["updated"] == first  # unchanged
+    assert hass.states.get("sensor.cellarion_cellar_card_total_bottles").attributes["updated"] == first  # unchanged
     changed = {"cellar": "HK4", "total": 0, "racks": [], "fields": [], "bottles": []}
-    with patch("custom_components.my_cellarion.api.build_inventory", AsyncMock(return_value=changed)):
+    with patch("custom_components.cellarion_cellar_card.api.build_inventory", AsyncMock(return_value=changed)):
         await e.runtime_data.refresh()
     await hass.async_block_till_done()
-    st = hass.states.get("sensor.my_cellarion_total_bottles")
+    st = hass.states.get("sensor.cellarion_cellar_card_total_bottles")
     assert st.state == "0" and st.attributes["updated"] != first
 
 
@@ -165,7 +165,7 @@ async def test_rack_layout_is_read_again_after_a_day(hass, aioclient_mock):
 
 
 async def test_old_server_without_inventory_endpoint_gives_a_clear_error(hass, aioclient_mock):
-    from custom_components.my_cellarion.hub import CellarionError, Hub
+    from custom_components.cellarion_cellar_card.hub import CellarionError, Hub
 
     hub = Hub(hass, "x", "https://cellarion.example", "cel_x")
     aioclient_mock.get(INV_URL, status=404)

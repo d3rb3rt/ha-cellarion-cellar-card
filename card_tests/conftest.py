@@ -1,4 +1,4 @@
-"""Card tests: the built card (custom_components/my_cellarion/www) in headless Chromium with a fake hass.
+"""Card tests: the built card (custom_components/cellarion_cellar_card/www) in headless Chromium with a fake hass.
 
 Run separately from the integration tests:  python -m pytest card_tests
 Needs `pip install pytest playwright` and a Chromium (`playwright install chromium`).
@@ -14,7 +14,7 @@ import pytest
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
 HERE = pathlib.Path(__file__).parent
-WWW = HERE.parent / "custom_components" / "my_cellarion" / "www"
+WWW = HERE.parent / "custom_components" / "cellarion_cellar_card" / "www"
 
 
 @pytest.fixture(scope="session")

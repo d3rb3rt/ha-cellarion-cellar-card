@@ -1,14 +1,14 @@
 /*
- * my-cellarion-card: browse your Cellarion wine cellar in Home Assistant.
+ * cellarion-cellar-card: browse your Cellarion wine cellar in Home Assistant.
  * Lists all bottles grouped by wine with their vintages, with search, filters (type, maturity, rack, vintage, producer,
  * region, grape and your own data fields), sorting and a flat view. Tap a vintage for details (your data, register profile,
  * storage places, note); "Take out" asks which bottle and why, then confirms before the bottle is consumed.
  *
- * Data comes from the services of the Cellar Card for Cellarion integration (my_cellarion.read and others). The Cellarion API token is
+ * Data comes from the services of the Cellar Card for Cellarion integration (cellarion_cellar_card.read and others). The Cellarion API token is
  * never sent to the browser.
  *
  * Configuration (YAML, all optional):
- *   type: custom:my-cellarion-card
+ *   type: custom:cellarion-cellar-card
  *   key: bestand                  # key for the remembered view and sorting (per browser)
  *   title: Wine cellar           # title above the card (default: none, the cellar name is shown by the page header)
  *   view: wine                    # start view: wine (grouped) or flat; the last choice is remembered
@@ -17,7 +17,7 @@
  *   height: 600px                 # fixed height (default: fills the rest of the window)
  *   flush: true                   # no frame and border (for use inside a combined card)
  *   language: de                  # card language (default: language of the Home Assistant user); files in cellarion-i18n/<language>.json
- *   i18n_path: /my-cellarion-files/cellarion-i18n/   # folder with the language files
+ *   i18n_path: /cellarion-cellar-card-files/cellarion-i18n/   # folder with the language files
  *   header_cellar: false          # do not append the cellar name to the page header
  *   row_h / row_font / title_font / chip_font / chip_h / font_scale   # sizes in px (font_scale is a factor)
  *

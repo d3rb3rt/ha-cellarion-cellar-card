@@ -1,14 +1,14 @@
 /*
- * my-cellarion-card: browse your Cellarion wine cellar in Home Assistant.
+ * cellarion-cellar-card: browse your Cellarion wine cellar in Home Assistant.
  * Lists all bottles grouped by wine with their vintages, with search, filters (type, maturity, rack, vintage, producer,
  * region, grape and your own data fields), sorting and a flat view. Tap a vintage for details (your data, register profile,
  * storage places, note); "Take out" asks which bottle and why, then confirms before the bottle is consumed.
  *
- * Data comes from the services of the Cellar Card for Cellarion integration (my_cellarion.read and others). The Cellarion API token is
+ * Data comes from the services of the Cellar Card for Cellarion integration (cellarion_cellar_card.read and others). The Cellarion API token is
  * never sent to the browser.
  *
  * Configuration (YAML, all optional):
- *   type: custom:my-cellarion-card
+ *   type: custom:cellarion-cellar-card
  *   key: bestand                  # key for the remembered view and sorting (per browser)
  *   title: Wine cellar           # title above the card (default: none, the cellar name is shown by the page header)
  *   view: wine                    # start view: wine (grouped) or flat; the last choice is remembered
@@ -17,7 +17,7 @@
  *   height: 600px                 # fixed height (default: fills the rest of the window)
  *   flush: true                   # no frame and border (for use inside a combined card)
  *   language: de                  # card language (default: language of the Home Assistant user); files in cellarion-i18n/<language>.json
- *   i18n_path: /my-cellarion-files/cellarion-i18n/   # folder with the language files
+ *   i18n_path: /cellarion-cellar-card-files/cellarion-i18n/   # folder with the language files
  *   header_cellar: false          # do not append the cellar name to the page header
  *   row_h / row_font / title_font / chip_font / chip_h / font_scale   # sizes in px (font_scale is a factor)
  *
@@ -680,7 +680,7 @@
   class CellarionBestandCard extends HTMLElement {
     setConfig(config) {
       this._cfg = Object.assign({}, config || {});
-      this._key = 'my-cellarion:' + (this._cfg.key || 'bestand');
+      this._key = 'cellarion-cellar-card:' + (this._cfg.key || 'bestand');
       const st = this._loadState();
       this._view = this._cfg.view === 'flat' ? 'flat' : 'wine';
       this._local = st.local && typeof st.local === 'object' ? st.local : {};
@@ -710,7 +710,7 @@
       this._hass = hass;
       if (!this._cfg) return;
       if (first) this._start();
-      const ent = this._cfg.count_entity || 'sensor.my_cellarion_total_bottles';
+      const ent = this._cfg.count_entity || 'sensor.cellarion_cellar_card_total_bottles';
       const st = hass.states && hass.states[ent];
       // Integration: the sensor's `updated` attribute changes whenever the hub saw a change in Cellarion
       const val = st ? (this._integ() ? st.state + '|' + ((st.attributes && st.attributes.updated) || '') : st.state) : undefined;
@@ -904,7 +904,7 @@
       const [domain, service] = String(name).split('.');
       return { domain, service };
     }
-    // Data source: the services of the my_cellarion integration (response directly as an object).
+    // Data source: the services of the cellarion_cellar_card integration (response directly as an object).
     // Only the development setup has an additional connection through its own services ("dev-only" block below).
     _integ() { return BACKEND === 'integration'; }
     // kind: read | sync | refresh | settings | fielddel | winzer | bottle. sh = data for the development setup's service, int = data for the integration's service.
@@ -913,7 +913,7 @@
       let res;
       if (this._integ()) {
         const name = { read: 'read', sync: 'sync', refresh: 'refresh', settings: 'settings', fielddel: 'delete_field', winzer: 'producer_sort', bottle: 'bottle' }[kind];
-        res = await this._hass.callWS({ type: 'call_service', domain: 'my_cellarion', service: name, service_data: int || {}, return_response: true });
+        res = await this._hass.callWS({ type: 'call_service', domain: 'cellarion_cellar_card', service: name, service_data: int || {}, return_response: true });
         const out = (res && res.response) || {};
         if (out.error) throw new Error(out.error);
         return out;
@@ -2306,7 +2306,7 @@
       d.busy = true; d.err = '';
       this._renderDlg();
       try {
-        const { domain, service } = this._svc(this._cfg.consume_service || 'my_cellarion.consume_bottle');
+        const { domain, service } = this._svc(this._cfg.consume_service || 'cellarion_cellar_card.consume_bottle');
         await this._hass.callService(domain, service, { bottle_id: sel.id, reason: d.reason });
       } catch (e) {
         d.busy = false;
@@ -2536,10 +2536,12 @@
     reloadask() { if (!this._busy) { this._cfm = true; this._renderDlg(); } }, // like pulling down on the phone: ask first
   };
 
-  if (!customElements.get('my-cellarion-card')) customElements.define('my-cellarion-card', CellarionBestandCard);
+  if (!customElements.get('cellarion-cellar-card')) customElements.define('cellarion-cellar-card', CellarionBestandCard);
+  // Tag of the 1.x versions, kept so existing dashboards keep working
+  if (!customElements.get('my-cellarion-card')) customElements.define('my-cellarion-card', class extends CellarionBestandCard {});
   window.customCards = window.customCards || [];
   window.customCards.push({
-    type: 'my-cellarion-card',
+    type: 'cellarion-cellar-card',
     name: 'Cellar Card for Cellarion',
     description: 'Wine cellar inventory with search, filters, detail view and take-out (Cellarion).',
   });

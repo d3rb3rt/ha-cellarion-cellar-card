@@ -81,11 +81,14 @@ Version 2.0 gives everything one consistent name, which is a breaking change:
 | sensor `sensor.my_cellarion_total_bottles` | `sensor.cellarion_cellar_card_total_bottles` |
 | card `custom:my-cellarion-card` | `custom:cellarion-cellar-card` (the old tag still works) |
 
-Home Assistant treats the new domain as a new integration, so: remove the old integration under *Devices & services*, update
-the repository in HACS (the address is now `https://github.com/d3rb3rt/ha-cellarion-cellar-card`), restart, and add
-**Cellar Card for Cellarion** again with your token. Card settings kept in the integration (filters, producer sort words,
-…) start empty and can be set up again in the card. Update automations and scripts that call the old services or the old
-sensor.
+Home Assistant treats the new domain as a new integration, so after updating the repository in HACS (the address is now
+`https://github.com/d3rb3rt/ha-cellarion-cellar-card`) and restarting, add **Cellar Card for Cellarion** under *Devices &
+services*. If the old *My Cellarion* entry is still there, the setup offers to **take over the old setup**: it carries over
+the Cellarion address, token, cellar, refresh interval and the card settings kept in the integration (filters, producer sort
+words, …), and removes the old entry. You do not need to enter the token again. If you decline, or the old entry is already
+gone, set it up as described under Install.
+
+Update automations and scripts that call the old services or the old sensor by hand; they are not changed for you.
 
 ## Using the card
 

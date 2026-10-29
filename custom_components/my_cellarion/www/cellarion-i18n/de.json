@@ -290,5 +290,8 @@
  "set2.fields": "Datenfelder aus Cellarion",
  "set2.fieldsSub": "Persönliche Felder. Löschen entfernt das Feld samt allen Werten in Cellarion.",
  "flag.setv2": "Neue Einstellungen (Test)",
- "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen."
+ "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen.",
+ "notice.renamed": "Diese Integration wird in Cellar Card for Cellarion umbenannt (Version 2.0, inkompatible Änderung). Entferne sie in Home Assistant, bevor du aktualisierst.",
+ "notice.more": "Schritte",
+ "notice.dismiss": "Ausblenden"
 }

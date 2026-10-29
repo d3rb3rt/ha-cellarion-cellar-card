@@ -137,5 +137,11 @@
         }
       }
     }
+  },
+  "issues": {
+    "renamed": {
+      "title": "This integration is being renamed to Cellar Card for Cellarion",
+      "description": "Version 2.0 renames the integration to **Cellar Card for Cellarion** (new domain `cellarion_cellar_card`, new services, sensor and card tag). This is a breaking change.\n\nBefore you update to 2.0: remove this integration under *Settings → Devices & services*. Then update in HACS (the repository is now `d3rb3rt/ha-cellarion-cellar-card`), restart Home Assistant and add **Cellar Card for Cellarion** again with your token. Update automations and scripts that call `my_cellarion.*` services or use `sensor.my_cellarion_total_bottles`. The steps are described under the link."
+    }
   }
 }

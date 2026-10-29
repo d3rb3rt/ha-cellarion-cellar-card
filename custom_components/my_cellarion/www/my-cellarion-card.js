@@ -147,6 +147,10 @@
       font-size: var(--cb-row-font, 14px);
     }
     .head { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--cb-line); }
+    .rename { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; padding: 8px 12px; border-radius: 8px; background: var(--warning-color, #e8a33d); color: #000; font-size: 13px; line-height: 1.35; }
+    .rename[hidden] { display: none; }
+    .rename a { color: inherit; font-weight: 600; }
+    .rename button { flex: none; margin-left: auto; border: 0; background: transparent; color: inherit; font-size: 18px; cursor: pointer; padding: 0 4px; }
     .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .title { font-size: var(--cb-title-font, 18px); font-weight: 600; margin-right: 8px; }
     .stand { color: var(--cb-sub); font-size: 12px; }
@@ -1155,6 +1159,7 @@
         <style>${CSS}</style>
         <ha-card class="${c.flush ? 'flush' : ''}" style="${c.height ? 'height:' + esc(c.height) + ';' : ''}">
           <div class="wrap" style="${vars}${this._scale !== 1 ? 'zoom:' + this._scale + ';' : ''}">
+            <div class="rename" hidden></div>
             <div class="head"></div>
             <div class="az" hidden></div>
             <div class="ptr"></div>
@@ -1164,6 +1169,19 @@
           </div>
         </ha-card>`;
       this._head = this.shadowRoot.querySelector('.head');
+      { // last 1.x release: notice that 2.0 renames the integration (dismissed per browser)
+        const el = this.shadowRoot.querySelector('.rename');
+        let gone = false;
+        try { gone = localStorage.getItem('my-cellarion:rename-notice') === '1'; } catch (e) { /* storage unavailable */ }
+        if (el && !gone) {
+          el.innerHTML = `<span>${esc(t('notice.renamed'))} <a href="https://github.com/d3rb3rt/ha-cellarion-cellar-card#upgrading-from-1x" target="_blank" rel="noopener">${esc(t('notice.more'))}</a></span><button type="button" aria-label="${esc(t('notice.dismiss'))}" title="${esc(t('notice.dismiss'))}">×</button>`;
+          el.hidden = false;
+          el.querySelector('button').addEventListener('click', () => {
+            el.hidden = true;
+            try { localStorage.setItem('my-cellarion:rename-notice', '1'); } catch (e) { /* ignore */ }
+          });
+        }
+      }
       this._listEl = this.shadowRoot.querySelector('.list');
       this._azEl = this.shadowRoot.querySelector('.az');
       this._ptr = this.shadowRoot.querySelector('.ptr');

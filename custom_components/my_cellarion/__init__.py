@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.typing import ConfigType
 
@@ -35,6 +36,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> bool:
     """Set up one Cellarion account."""
     await async_register_frontend(hass)
+
+    # Last 1.x release: tell users that 2.0 renames the integration (new domain, services, sensor and card tag)
+    ir.async_create_issue(
+        hass, DOMAIN, "renamed", is_fixable=False, severity=ir.IssueSeverity.WARNING, translation_key="renamed",
+        learn_more_url="https://github.com/d3rb3rt/ha-cellarion-cellar-card#upgrading-from-1x")
 
     cellar_id = entry.options.get(CONF_CELLAR_ID) or entry.data.get(CONF_CELLAR_ID)  # none: the first cellar (older entries)
     hub = Hub(hass, entry.entry_id, entry.data[CONF_URL], entry.data[CONF_TOKEN], cellar_id)
@@ -66,3 +72,8 @@ async def _reload(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> None:
 async def async_unload_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> bool:
     """Unload the sensor; the timers and the stream task are cancelled by HA."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> None:
+    """The rename notice is no longer needed once the integration has been removed."""
+    ir.async_delete_issue(hass, DOMAIN, "renamed")

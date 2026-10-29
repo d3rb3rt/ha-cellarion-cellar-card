@@ -290,5 +290,8 @@
  "set2.fields": "Data fields from Cellarion",
  "set2.fieldsSub": "Personal fields. Deleting removes the field and all its values in Cellarion.",
  "flag.setv2": "New settings (test)",
- "flag.setv2Sub": "Plain settings page with groups and collapsed lists."
+ "flag.setv2Sub": "Plain settings page with groups and collapsed lists.",
+ "notice.renamed": "This integration is being renamed to Cellar Card for Cellarion (version 2.0, breaking change). Remove it in Home Assistant before you update.",
+ "notice.more": "Steps",
+ "notice.dismiss": "Hide"
 }

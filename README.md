@@ -89,9 +89,10 @@ The card works best in a view with a single full-width card (panel view), where 
 The chart icon in the card header opens an overview of the cellar: bottles, wines, countries, producers, oldest vintage,
 cellar value, bottles per type and the top country, producer, region and grape.
 
-- Tap a **type bar** (or a similar row) to close the overview and filter the list by it, for example only the sparkling
-  wines.
-- Tap a **tile** to see that breakdown in more detail.
+- **Everything in the overview is linked.** Tap a **type bar** (or a similar row) to close the overview and filter the list
+  by it, for example only the sparkling wines.
+- Tap a **tile** (wines, countries, producers, oldest vintage, cellar value, top country, …) to see that breakdown in more
+  detail.
 - The overview counts everything in the cellar, including items from the *Other* category that are hidden from the list.
 
 <p align="center">

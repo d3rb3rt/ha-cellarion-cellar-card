@@ -34,6 +34,7 @@ class TotalBottles(SensorEntity):
         self._hub = hub
         self._entry_id = entry_id
         self._attr_unique_id = f"{entry_id}_total_bottles"
+        self.entity_id = "sensor.my_cellarion_total_bottles"  # the card watches this id, independent of the device name
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)}, name="Cellar Card for Cellarion", entry_type=DeviceEntryType.SERVICE)
 

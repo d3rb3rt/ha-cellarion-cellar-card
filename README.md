@@ -98,8 +98,9 @@ Assistant) or to **this device only** (stored in the browser).
 
 **List**
 - *Info in the list*: which facts appear under each wine name, and in which order.
-- *Show Other in the list*: items that are not wine (olive oil, …) are always found by search; this switch also lists them
-  normally.
+- *Show Other in the list*: drinks that are not wine (beer, cider, …) live in Cellarion's
+  [Other category](https://cellarion.app/blog/other-category). They are always found by search; this switch also lists
+  them normally.
 
 **Storage**
 - *Storage locations*, per rack: count shelves from the top or the bottom, and show the position as left/middle/right, as

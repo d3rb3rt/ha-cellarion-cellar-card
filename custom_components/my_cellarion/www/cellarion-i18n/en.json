@@ -270,6 +270,7 @@
  "set2.showOtherSub": "Items that are not wine (Other category, e.g. olive oil) always appear in the list. Off: only when searching or when \"Other\" is chosen in the type filter.",
  "set2.fullw": "Force full width",
  "set2.fullwSub": "Applies to this browser only: list, header and alphabet bar use the whole width (wide view).",
+ "set2.grpFilters": "Filters",
  "set2.grpList": "List",
  "set2.grpPlaces": "Storage",
  "set2.grpData": "Data",

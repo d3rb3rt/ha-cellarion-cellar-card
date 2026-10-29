@@ -270,6 +270,7 @@
  "set2.showOtherSub": "Einträge ohne Wein (Kategorie Other, z. B. Olivenöl) erscheinen immer in der Liste. Aus: nur bei einem Suchbegriff oder wenn im Typ-Filter „Sonstige“ gewählt ist.",
  "set2.fullw": "Volle Breite erzwingen",
  "set2.fullwSub": "Gilt nur für diesen Browser: Liste, Kopfbereich und Buchstabenleiste nutzen die ganze Breite (breite Ansicht).",
+ "set2.grpFilters": "Filter",
  "set2.grpList": "Liste",
  "set2.grpPlaces": "Lagerorte",
  "set2.grpData": "Daten",

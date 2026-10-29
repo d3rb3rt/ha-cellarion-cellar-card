@@ -7,18 +7,18 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 > setup. It does what it says there, but if that is not your thing, please don't install it. Issues and ideas are welcome.
 
 <p align="center">
-  <img src="docs/list.png?v=1.0.0" alt="Inventory grouped by wine" width="820"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=1.0.0" alt="Inventory grouped by wine" width="820"><br>
   <em>The inventory, grouped by wine, with search, filters and an A–Z index.</em>
 </p>
 
 <p align="center">
-  <img src="docs/filters.png?v=1.0.0" alt="Filter dropdown with counts" width="820"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/filters.png?v=1.0.0" alt="Filter dropdown with counts" width="820"><br>
   <em>Every filter shows how many wines, vintages and bottles match.</em>
 </p>
 
 <p align="center">
-  <img src="docs/detail.png?v=1.0.0" alt="Bottle details with label image" width="380">
-  <img src="docs/phone.png?v=1.0.0" alt="Phone layout" width="300"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/detail.png?v=1.0.0" alt="Bottle details with label image" width="380">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/phone.png?v=1.0.0" alt="Phone layout" width="300"><br>
   <em>Bottle details with label image, drink window, profile and storage places · the same card on a phone.</em>
 </p>
 
@@ -116,8 +116,8 @@ cellar value, bottles per type and the top country, producer, region and grape.
 - The overview counts everything in the cellar, including items from the *Other* category that are hidden from the list.
 
 <p align="center">
-  <img src="docs/statistics.png?v=1.0.0" alt="Statistics overview" width="340">
-  <img src="docs/statistics-detail.png?v=1.0.0" alt="Statistics detail: producers with bottle counts" width="340"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics.png?v=1.0.0" alt="Statistics overview" width="340">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics-detail.png?v=1.0.0" alt="Statistics detail: producers with bottle counts" width="340"><br>
   <em>The overview · the detail view behind the "Producers" tile.</em>
 </p>
 
@@ -151,8 +151,8 @@ Assistant) or to **this device only** (stored in the browser).
   "Ansgar Clüsserath"). It drives the producer sorting and the A–Z index. Tap a word to set it, tap again to undo.
 
 <p align="center">
-  <img src="docs/settings.png?v=1.0.0" alt="Settings" width="360">
-  <img src="docs/producers.png?v=1.0.0" alt="Edit producers" width="360">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings.png?v=1.0.0" alt="Settings" width="360">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/producers.png?v=1.0.0" alt="Edit producers" width="360">
 </p>
 
 Under the integration's **Configure** in Home Assistant you set the refresh interval of the background update and, if your

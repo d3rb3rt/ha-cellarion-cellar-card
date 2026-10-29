@@ -92,13 +92,13 @@ cellar value, bottles per type and the top country, producer, region and grape.
 - **Everything in the overview is linked.** Tap a **type bar** (or a similar row) to close the overview and filter the list
   by it, for example only the sparkling wines.
 - Tap a **tile** (wines, countries, producers, oldest vintage, cellar value, top country, …) to see that breakdown in more
-  detail.
+  detail, for example the producers with their bottle counts. Tap an entry there to filter the list by it.
 - The overview counts everything in the cellar, including items from the *Other* category that are hidden from the list.
 
 <p align="center">
   <img src="docs/statistics.png?v=1.0.0" alt="Statistics overview" width="340">
-  <img src="docs/statistics-filter.png?v=1.0.0" alt="List filtered to sparkling wines after tapping a type bar" width="560"><br>
-  <em>The overview · the list after tapping "Sparkling".</em>
+  <img src="docs/statistics-detail.png?v=1.0.0" alt="Statistics detail: producers with bottle counts" width="340"><br>
+  <em>The overview · the detail view behind the "Producers" tile.</em>
 </p>
 
 ## Settings

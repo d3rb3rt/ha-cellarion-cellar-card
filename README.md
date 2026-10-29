@@ -78,6 +78,9 @@ The card works best in a view with a single full-width card (panel view), where 
 - **A–Z bar** jumps to a letter and follows the current sorting. Sorted by producer, the letter is the producer's sort word
   (see below).
 - A wine with several vintages shows them when you tap the row; tap a vintage for the details.
+- **Vintage colours show maturity**, based on your drink window (or Cellarion's curated one):
+  blue = not ready yet, teal = in the window, before the peak, green = at its peak, orange = in the window, past the peak,
+  red = past the window. The same colours are used in the drink-window bar in the details.
 - **Details**: *Take out …* asks for the reason and confirms before anything is written. *Edit in Cellarion* opens the
   bottle in the Cellarion app.
 

@@ -171,3 +171,61 @@ async def test_old_server_without_inventory_endpoint_gives_a_clear_error(hass, a
     aioclient_mock.get(INV_URL, status=404)
     with pytest.raises(CellarionError, match="v1.275"):
         await hub.refresh()
+
+
+# ----- taking over a 1.x setup (integration "my_cellarion") -----
+
+OLD_ID = "old1"
+
+
+async def _old_entry(hass, with_settings=True):
+    from homeassistant.helpers.storage import Store
+    old = MockConfigEntry(domain="my_cellarion", entry_id=OLD_ID, title="My Cellarion",
+                          data={"url": "https://cellarion.example", "token": "cel_old", "cellar_id": "c1"},
+                          options={"scan_interval": 900})
+    old.add_to_hass(hass)
+    if with_settings:
+        await Store(hass, 1, f"my_cellarion.settings.{OLD_ID}").async_save({"winzerSort": {"Fritz Haag": 1}, "language": "de"})
+    return old
+
+
+async def test_flow_offers_the_takeover_and_carries_everything_over(hass, aioclient_mock):
+    from homeassistant.helpers.storage import Store
+    mock_api(aioclient_mock)
+    await _old_entry(hass)
+    r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    assert r["type"] is FlowResultType.FORM and r["step_id"] == "takeover"
+    with patch("custom_components.cellarion_cellar_card.async_register_frontend", AsyncMock()):
+        r = await hass.config_entries.flow.async_configure(r["flow_id"], {"takeover": True})
+        await hass.async_block_till_done()
+    assert r["type"] is FlowResultType.CREATE_ENTRY
+    new = hass.config_entries.async_entries(DOMAIN)[0]
+    assert new.data == {"url": "https://cellarion.example", "token": "cel_old", "cellar_id": "c1"}  # marker removed after setup
+    assert new.options == {"scan_interval": 900}
+    assert hass.config_entries.async_entries("my_cellarion") == []  # the old entry is gone
+    assert (await Store(hass, 1, f"cellarion_cellar_card.settings.{new.entry_id}").async_load())["winzerSort"] == {"Fritz Haag": 1}
+    assert await Store(hass, 1, f"my_cellarion.settings.{OLD_ID}").async_load() is None  # old settings removed
+
+
+async def test_flow_takeover_without_saved_settings(hass, aioclient_mock):
+    mock_api(aioclient_mock)
+    await _old_entry(hass, with_settings=False)
+    r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    with patch("custom_components.cellarion_cellar_card.async_register_frontend", AsyncMock()):
+        r = await hass.config_entries.flow.async_configure(r["flow_id"], {"takeover": True})
+        await hass.async_block_till_done()
+    assert r["type"] is FlowResultType.CREATE_ENTRY
+    assert hass.config_entries.async_entries("my_cellarion") == []
+
+
+async def test_flow_declining_the_takeover_goes_to_the_normal_form_and_keeps_the_old_entry(hass, aioclient_mock):
+    await _old_entry(hass)
+    r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    r = await hass.config_entries.flow.async_configure(r["flow_id"], {"takeover": False})
+    assert r["type"] is FlowResultType.FORM and r["step_id"] == "user"
+    assert len(hass.config_entries.async_entries("my_cellarion")) == 1
+
+
+async def test_flow_without_an_old_entry_has_no_takeover_step(hass):
+    r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    assert r["step_id"] == "user"

@@ -12,6 +12,7 @@ import voluptuous as vol
 
 from homeassistant.helpers.selector import SelectOptionDict, SelectSelector, SelectSelectorConfig, SelectSelectorMode
 
+from .migrate import legacy_entries, takeover_data
 from .const import (
     CONF_CELLAR_ID, CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DEFAULT_SCAN_INTERVAL, DEFAULT_URL, DOMAIN, MIN_SCAN_INTERVAL, USER_AGENT,
 )
@@ -57,6 +58,7 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
     _url: str = ""
     _token: str = ""
     _cellars: list[dict[str, str]] = []
+    _declined = False
 
     def _create(self, cellar_id: str) -> ConfigFlowResult:
         return self.async_create_entry(title="Cellar Card for Cellarion", data={CONF_URL: self._url, CONF_TOKEN: self._token, CONF_CELLAR_ID: cellar_id})
@@ -68,7 +70,21 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="cellar", data_schema=vol.Schema({vol.Required(CONF_CELLAR_ID): _cellar_selector(self._cellars)}))
 
+    async def async_step_takeover(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """A 1.x setup exists: offer to carry over address, token, cellar and card settings."""
+        olds = legacy_entries(self.hass)
+        if user_input is not None:
+            if user_input["takeover"] and olds:
+                old = olds[0]
+                options = {k: v for k, v in old.options.items() if k in (CONF_SCAN_INTERVAL, CONF_CELLAR_ID)}
+                return self.async_create_entry(title="Cellar Card for Cellarion", data=takeover_data(old), options=options)
+            self._declined = True
+            return await self.async_step_user()
+        return self.async_show_form(step_id="takeover", data_schema=vol.Schema({vol.Required("takeover", default=True): bool}))
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is None and not self._declined and legacy_entries(self.hass):
+            return await self.async_step_takeover()
         errors: dict[str, str] = {}
         if user_input is not None:
             url = user_input[CONF_URL].strip().rstrip("/")

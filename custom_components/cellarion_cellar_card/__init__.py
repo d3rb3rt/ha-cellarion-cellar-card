@@ -14,6 +14,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import CONF_CELLAR_ID, CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .frontend import async_register_frontend
+from .migrate import async_complete_takeover
 from .hub import CellarionAuthError, CellarionError, Hub
 from .services import async_setup_services
 
@@ -34,6 +35,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) -> bool:
     """Set up one Cellarion account."""
+    await async_complete_takeover(hass, entry)
     await async_register_frontend(hass)
 
     cellar_id = entry.options.get(CONF_CELLAR_ID) or entry.data.get(CONF_CELLAR_ID)  # none: the first cellar (older entries)

@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 from homeassistant.util.hass_dict import HassKey
 
-from .const import CARD_FILENAME, DOMAIN, FRONTEND_URL_BASE, IMAGE_DIR_NAME, IMAGE_URL_BASE
+from .const import CARD_FILENAME, DOMAIN, FRONTEND_URL_BASE, IMAGE_DIR_NAME, IMAGE_URL_BASE, LEGACY_FRONTEND_URL_BASE
 
 _LOGGER = logging.getLogger(__name__)
 REGISTERED: HassKey[bool] = HassKey(f"{DOMAIN}_frontend_registered")
@@ -40,11 +40,17 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
         if not resources.loaded:
             await resources.async_load()
             resources.loaded = True
-        for item in resources.async_items():
-            if item.get("url", "").split("?")[0] == card_url:
+        found = False
+        for item in list(resources.async_items()):
+            url = item.get("url", "").split("?")[0]
+            if url == card_url:
+                found = True
                 if item["url"] != versioned and hasattr(resources, "async_update_item"):
                     await resources.async_update_item(item["id"], {"url": versioned})
-                return
+            elif url.startswith(LEGACY_FRONTEND_URL_BASE + "/") and hasattr(resources, "async_delete_item"):
+                await resources.async_delete_item(item["id"])  # the 1.x resource, now a dead link
+        if found:
+            return
         if hasattr(resources, "async_create_item"):
             await resources.async_create_item({"res_type": "module", "url": versioned})
         else:

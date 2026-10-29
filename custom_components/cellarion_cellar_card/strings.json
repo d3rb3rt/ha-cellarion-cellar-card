@@ -22,6 +22,13 @@
         "data": {
           "cellar_id": "Cellar"
         }
+      },
+      "takeover": {
+        "title": "Take over your existing setup",
+        "description": "Cellar Card for Cellarion 2 replaces the earlier version (My Cellarion). Take over its Cellarion address, token, cellar and card settings, and remove the old entry?",
+        "data": {
+          "takeover": "Take over the old setup"
+        }
       }
     },
     "error": {

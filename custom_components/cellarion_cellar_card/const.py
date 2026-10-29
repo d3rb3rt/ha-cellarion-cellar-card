@@ -7,6 +7,7 @@ CONF_URL = "url"
 CONF_TOKEN = "token"
 CONF_CELLAR_ID = "cellar_id"
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_TAKEN_OVER = "taken_over_from"  # id of the 1.x entry whose settings are carried over on first setup
 DEFAULT_URL = "https://cellarion.app"
 DEFAULT_SCAN_INTERVAL = 3600  # seconds; only a safety net, changes arrive through the event stream
 MIN_SCAN_INTERVAL = 300
@@ -33,3 +34,9 @@ STREAM_RETRY_MAX = 300
 def signal_updated(entry_id: str) -> str:
     """Dispatcher signal sent when the inventory changed (the sensor listens)."""
     return f"{DOMAIN}_updated_{entry_id}"
+
+
+# Names used by 1.x (integration "my_cellarion"), needed to take over an existing setup
+LEGACY_DOMAIN = "my_cellarion"
+LEGACY_STORAGE_KEY = "my_cellarion.settings"
+LEGACY_FRONTEND_URL_BASE = "/my-cellarion-files"

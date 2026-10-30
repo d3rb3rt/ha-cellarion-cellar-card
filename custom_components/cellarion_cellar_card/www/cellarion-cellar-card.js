@@ -1511,8 +1511,8 @@
             if (!m.size && !set.size) return '';
             const mm = m;
             const items = d.defs ? this._optsK(d.defs, m, set) : (d.clsg !== undefined || (d.id === 'cls' && this._flag('clsfilter'))) ? this._optsCls(mm, set, d.id === 'cls' && this._flagV('clsfilter') === 'cols') : this._opts(mm, set, d.sort || by);
-            if (d.id === 'grape' && this._fmR() && set.size) { const co = new Set(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => co.add(g))); items.forEach((o) => { if (o.v !== undefined) o.and = co.has(o.v); }); } // & only where the grape occurs together with the chosen ones
-            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), cols: d.id === 'cls' && this._flagV('clsfilter') === 'cols' };
+            if (d.id === 'grape' && this._fmR() && set.size) { const co = new Set(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => co.add(g))); items.forEach((o) => { if (o.v !== undefined) { o.and = co.has(o.v); const x = m.get(o.v); if (x) o.t = `${o.v} (${x.w})`; } }); } // & only where the grape occurs together with the chosen ones; behind the name only the number of wines
+            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: d.id === 'grape' && this._fmR() && set.size ? t('dd.countHintW') : t('dd.countHint'), cols: d.id === 'cls' && this._flagV('clsfilter') === 'cols' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;

@@ -149,7 +149,7 @@
     .head { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--cb-line); }
     .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .title { font-size: var(--cb-title-font, 18px); font-weight: 600; margin-right: 8px; }
-    .cname .sel.cnsel { min-height: 30px; max-width: 100%; padding: 0 4px 0 10px; border-color: transparent; background: none; box-shadow: none; font-size: 15px; font-weight: 600; letter-spacing: .02em; text-overflow: ellipsis; } /* cellar name as a pulldown (several cellars) */
+    .cname .sel.cnsel { min-height: 34px; max-width: 100%; padding: 0 8px 0 14px; border: 1px solid color-mix(in srgb, var(--cb-on) 45%, transparent); background: color-mix(in srgb, var(--cb-on) 14%, transparent); box-shadow: none; font-size: 16px; font-weight: 700; letter-spacing: .02em; text-overflow: ellipsis; } /* cellar name as a pulldown (several cellars): tinted pill, set apart from the outlined filter pills */
     .ctag { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid var(--cb-line); border-radius: 8px; font-size: .85em; font-weight: 500; color: var(--cb-sub); } /* cellar tag in front of a place (all cellars together) */
     .stand { color: var(--cb-sub); font-size: 12px; }
     [hidden] { display: none !important; }

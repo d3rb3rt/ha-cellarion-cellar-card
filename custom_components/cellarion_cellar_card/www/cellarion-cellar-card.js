@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = BACKEND === 'dev' ? [] : [];
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'clsfilter', opts: ['groups', 'cols'] }] : [];
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -212,6 +212,9 @@
     /* The filter and sort pick list looks like the settings dropdown list: own surface, visible border, rows of the same height with thin separators */
     .ddpop .ddi { min-height: 40px; border-top: 0; border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .ddpop .ddi:last-child { border-bottom: 0; }
+    .ddpop .ddcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); align-items: start; }
+    .ddpop .ddcol + .ddcol { border-left: 1px solid color-mix(in srgb, var(--cb-text) 25%, transparent); }
+    .ddpop .ddgh { padding: 8px 12px 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--cb-sub); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .ddpop .ddsep { height: 0; border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--cb-text) 40%, transparent); }
     .filt2 { display: flex; flex-wrap: wrap; gap: 8px 40px; align-items: center; }
     .row-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -1358,7 +1361,7 @@
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
     // Classification pick list grouped like Cellarion: vineyard rank, ripeness / predicate, ageing, other; fixed order inside a group, a line between groups
-    _optsCls(map, selected) {
+    _optsCls(map, selected, cols) {
       const G = [
         ['grosses gewächs', 'grosse lage', 'vdp grosse lage', 'erste lage', 'vdp erste lage', 'ortswein', 'vdp ortswein', 'gutswein', 'vdp gutswein', 'grand cru', 'premier cru'],
         ['landwein', 'qualitätswein', 'steinfeder', 'federspiel', 'smaragd', 'kabinett', 'spätlese', 'auslese', 'beerenauslese', 'trockenbeerenauslese', 'eiswein'],
@@ -1369,7 +1372,7 @@
       const all = Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0])).map((x) => ({ x, p: pos(x[0]) }))
         .sort((a, b) => a.p[0] - b.p[0] || a.p[1] - b.p[1] || de.compare(a.x[0], b.x[0]));
       const out = [];
-      all.forEach((e, i) => { if (i && all[i - 1].p[0] !== e.p[0]) out.push({ sep: true }); out.push(opt(e.x)); });
+      all.forEach((e, i) => { if (!cols && i && all[i - 1].p[0] !== e.p[0]) out.push({ sep: true }); out.push(cols ? Object.assign(opt(e.x), { g: e.p[0] }) : opt(e.x)); });
       return out;
     }
     // Own pick menu instead of the native Android list (it was sometimes black, sometimes transparent, shifted when zooming and pulled in the navigation bar)
@@ -1377,12 +1380,13 @@
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
       el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint">${esc(d.hint)}</div>` : '') +
-        `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`;
+        (d.cols ? `<div class="ddlist ddcols">` + [0, 1, 2, 3].map((g) => { const its = d.items.filter((o) => o.g === g); return its.length ? `<div class="ddcol"><div class="ddgh">${esc(t('cls.g' + g))}</div>` + its.map((o) => `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div>` : ''; }).join('') + `</div></div>` : `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`);
       el.hidden = false;
       const pop = el.firstElementChild, an = this._ddAnchor;
       if (!an || !an.isConnected) { pop.classList.add('c'); return; }
       const ov = el.getBoundingClientRect(), a = an.getBoundingClientRect(), m = 8;
-      const w = Math.min(Math.max(a.width, 220), 360, ov.width - 2 * m);
+      const ncol = d.cols ? new Set(d.items.map((o) => o.g)).size : 1;
+      const w = Math.min(Math.max(a.width, 220), d.cols ? 220 * ncol : 360, ov.width - 2 * m);
       // left half of the page: flush with the chip's left edge, right half: flush with its right edge
       const rightHalf = (a.left + a.right) / 2 - ov.left > ov.width / 2;
       const left = Math.max(m, Math.min(rightHalf ? a.right - ov.left - w : a.left - ov.left, ov.width - w - m));
@@ -1452,8 +1456,8 @@
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';
-            const items = d.defs ? this._optsK(d.defs, m, set) : d.id === 'cls' ? this._optsCls(m, set) : this._opts(m, set, d.sort || by);
-            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint') };
+            const items = d.defs ? this._optsK(d.defs, m, set) : d.id === 'cls' && this._flag('clsfilter') ? this._optsCls(m, set, this._flagV('clsfilter') === 'cols') : this._opts(m, set, d.sort || by);
+            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), cols: d.id === 'cls' && this._flagV('clsfilter') === 'cols' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
@@ -1982,7 +1986,7 @@
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
-        (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
+        (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }

@@ -295,5 +295,14 @@
  "set2.fields": "Data fields from Cellarion",
  "set2.fieldsSub": "Personal fields. Deleting removes the field and all its values in Cellarion.",
  "flag.setv2": "New settings (test)",
- "flag.setv2Sub": "Plain settings page with groups and collapsed lists."
+ "flag.setv2Sub": "Plain settings page with groups and collapsed lists.",
+ "cls.g0": "Vineyard rank",
+ "cls.g1": "Ripeness",
+ "cls.g2": "Ageing",
+ "cls.g3": "Other",
+ "flag.clsfilter": "Classification filter (test)",
+ "flag.clsfilterSub": "Off: as before. Groups: one list ordered by rank, ripeness, ageing and other. Columns: wide list with the groups side by side.",
+ "flag.clsfilter.off": "Off",
+ "flag.clsfilter.groups": "Groups",
+ "flag.clsfilter.cols": "Columns"
 }

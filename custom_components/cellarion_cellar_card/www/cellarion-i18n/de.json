@@ -295,5 +295,14 @@
  "set2.fields": "Datenfelder aus Cellarion",
  "set2.fieldsSub": "Persönliche Felder. Löschen entfernt das Feld samt allen Werten in Cellarion.",
  "flag.setv2": "Neue Einstellungen (Test)",
- "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen."
+ "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen.",
+ "cls.g0": "Lage",
+ "cls.g1": "Prädikat",
+ "cls.g2": "Reifung",
+ "cls.g3": "Sonstige",
+ "flag.clsfilter": "Klassifikationsfilter (Test)",
+ "flag.clsfilterSub": "Aus: wie bisher. Gruppen: eine Liste, nach Lage, Prädikat, Reifung und Sonstige geordnet. Spalten: breite Liste mit den Gruppen nebeneinander.",
+ "flag.clsfilter.off": "Aus",
+ "flag.clsfilter.groups": "Gruppen",
+ "flag.clsfilter.cols": "Spalten"
 }

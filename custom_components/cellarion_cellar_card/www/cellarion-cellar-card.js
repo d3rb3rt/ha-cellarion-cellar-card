@@ -1508,14 +1508,18 @@
           (sortInSum ? '' : sortBtn) +
           stat + reload + gear + `</div>`;
         const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id));
-        const defs = this._showHid ? vis.concat(hid) : vis.concat(hid.filter((d) => this._fs(d.id).size));
+        // Hidden filters (settings) only count when there is something to choose right now (or a value is chosen): no greyed-out ones behind the "..." button, and no button when it would only open greyed-out ones
+        const useful = (d) => { if (this._fs(d.id).size) return true; const m = cnt3(d.id, d.get); return m.size > 0 && !(m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length); };
+        const hidUse = hid.filter(useful);
+        const moreBtn = hidUse.some((d) => !this._fs(d.id).size);
+        const defs = this._showHid ? vis.concat(hidUse) : vis.concat(hid.filter((d) => this._fs(d.id).size));
         const t3 = {};
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
         const by = (x, y) => de.compare(x[0], y[0]);
         // Filters without options under the current selection stay in place, greyed out (instead of disappearing); filters that have no values at all stay hidden
         const anyV = {};
         const hasAny = (d) => anyV[d.id] !== undefined ? anyV[d.id] : (anyV[d.id] = this._data.bottles.some((b) => [].concat(d.get(b)).some((v) => v)));
-        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (hid.length ? 1 : 0);
+        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0);
         this._nChips = nChips;
         html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
           defs.map((d) => {
@@ -1528,7 +1532,7 @@
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size,
               sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' ? ' & ' : ', ') : '' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-          }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
+          }).join('') + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
         const pills = defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {

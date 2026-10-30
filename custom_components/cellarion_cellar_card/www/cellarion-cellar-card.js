@@ -1086,6 +1086,8 @@
     // ---------- Filters, groups, sorting ----------
     // skip: leave out a filter group (for the counts in the pick lists: only the other filters apply)
     _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
+    // Add a filter value; tiers of one classification group replace each other (choosing Auslese replaces Kabinett)
+    _fsAdd(id, v) { const S = this._fs(id); if (id === 'cls') { const g = this._clsPos(v)[0]; if (g < 3) Array.from(S).forEach((x) => { if (this._clsPos(x)[0] === g) S.delete(x); }); } S.add(v); }
     // All possible filters: fixed ones (type ... place) plus one per personal data field (automatically from the cache)
     _allDefs() {
       const byProd = (a, b) => de.compare(this._pkey(a[0]), this._pkey(b[0]));
@@ -1374,11 +1376,6 @@
       for (let g = 0; g < G.length; g++) { const i = G[g].indexOf(k); if (i >= 0) return [g, i]; }
       return [G.length, 0];
     }
-    // Tiers of one group exclude each other (a wine is either Kabinett or Auslese): once one is chosen, the others of that group are not offered
-    _clsFree(map, selected) {
-      const used = new Set(Array.from(selected || []).map((v) => this._clsPos(v)[0]).filter((g) => g < 3));
-      return new Map(Array.from(map.entries()).filter((x) => !used.has(this._clsPos(x[0])[0]) || (selected && selected.has(x[0]))));
-    }
     // Classification pick list grouped like Cellarion: vineyard rank, ripeness / predicate, ageing, other; fixed order inside a group, a line between groups
     _optsCls(map, selected, cols) {
       const pos = (v) => this._clsPos(v);
@@ -1471,7 +1468,7 @@
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';
-            const mm = d.id === 'cls' ? this._clsFree(m, set) : m;
+            const mm = m;
             const items = d.defs ? this._optsK(d.defs, m, set) : d.id === 'cls' && this._flag('clsfilter') ? this._optsCls(mm, set, this._flagV('clsfilter') === 'cols') : this._opts(mm, set, d.sort || by);
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), cols: d.id === 'cls' && this._flagV('clsfilter') === 'cols' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
@@ -2550,7 +2547,7 @@
       const s = e.target && e.target.dataset && e.target.dataset.sel;
       if (!s) return;
       if (s === 'sort') { this._sort = e.target.value; this._saveState(); }
-      else if (e.target.value) { this._fs(s).add(e.target.value); }
+      else if (e.target.value) { this._fsAdd(s, e.target.value); }
       this._renderAll();
     }
     _onInput(e) {
@@ -2572,7 +2569,7 @@
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
       this._dd = null;
-      if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fs(id).add(v); }
+      if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fsAdd(id, v); }
       this._renderDlg(); this._renderAll();
     },
     detail(t) {
@@ -2590,7 +2587,7 @@
       const g = t.dataset.g, v = t.dataset.v;
       this._stat = null;
       this._f = { q: '' }; // only the filter of the tap, earlier filters are cleared
-      if (g === 'q') this._f.q = v; else this._fs(g).add(v);
+      if (g === 'q') this._f.q = v; else this._fsAdd(g, v);
       // A single wine and vintage as result: straight to its detail page
       const keys = new Set(this._filtered().map((b) => (b.wine || b.name) + '|' + String(b.vintage || 'NV')));
       if (keys.size === 1) {

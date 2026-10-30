@@ -1132,7 +1132,10 @@
       return this._data.bottles.filter((b) => {
         if (noOther && b._type === 'other') return false;
         // Classification: any of the chosen tiers of one group (rank, ripeness, ageing, other), but every group with a choice must match; other filters: any of the chosen values
-        for (const d of act) { const vals = [].concat(d.get(b)); if (this._flag('fmode')) { const sel = f[d.id]; if (this._fmAnd() && this._fMulti(d.id) ? !Array.from(sel).every((v) => vals.includes(v)) : !vals.some((v) => sel.has(v))) return false; continue; } if (d.id === 'cls' ? !this._clsGroups(f[d.id]).every((grp) => grp.some((v) => vals.includes(v))) : !vals.some((v) => f[d.id].has(v))) return false; }
+        if (this._flag('fmode') && act.length) { // filter mode: OR = a bottle matching any chosen value of any filter, AND = all filters together (and all values of the multi-value filters)
+          if (this._fmAnd()) { for (const d of act) { const vals = [].concat(d.get(b)), sel = f[d.id]; if (this._fMulti(d.id) ? !Array.from(sel).every((v) => vals.includes(v)) : !vals.some((v) => sel.has(v))) return false; } }
+          else if (!act.some((d) => [].concat(d.get(b)).some((v) => f[d.id].has(v)))) return false;
+        } else for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'cls' ? !this._clsGroups(f[d.id]).every((grp) => grp.some((v) => vals.includes(v))) : !vals.some((v) => f[d.id].has(v))) return false; }
         for (const t of toks) if (!b._hay.includes(t)) return false;
         return true;
       });

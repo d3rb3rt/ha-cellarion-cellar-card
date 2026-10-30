@@ -48,7 +48,16 @@ async def _check(hass, url: str, token: str) -> str | None:
 
 def _cellar_selector(cellars: list[dict[str, str]]) -> SelectSelector:
     return SelectSelector(SelectSelectorConfig(
-        options=[SelectOptionDict(value=c["id"], label=c["name"]) for c in cellars], mode=SelectSelectorMode.DROPDOWN))
+        options=[SelectOptionDict(value=c["id"], label=c["name"]) for c in cellars], mode=SelectSelectorMode.DROPDOWN, multiple=True))
+
+
+def _split_ids(value: str | None) -> list[str]:
+    """The stored cellar setting (comma separated ids, empty = all own cellars) as a list."""
+    return [x.strip() for x in (value or "").split(",") if x.strip()]
+
+
+def _join_ids(ids: list[str] | None) -> str:
+    return ",".join(ids or [])
 
 
 class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -64,11 +73,11 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(title="Cellar Card for Cellarion", data={CONF_URL: self._url, CONF_TOKEN: self._token, CONF_CELLAR_ID: cellar_id})
 
     async def async_step_cellar(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Several cellars in the account: choose the one to show."""
+        """Several cellars in the account: choose which to show (none chosen = all of your own cellars)."""
         if user_input is not None:
-            return self._create(user_input[CONF_CELLAR_ID])
+            return self._create(_join_ids(user_input.get(CONF_CELLAR_ID)))
         return self.async_show_form(
-            step_id="cellar", data_schema=vol.Schema({vol.Required(CONF_CELLAR_ID): _cellar_selector(self._cellars)}))
+            step_id="cellar", data_schema=vol.Schema({vol.Optional(CONF_CELLAR_ID): _cellar_selector(self._cellars)}))
 
     async def async_step_takeover(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """A 1.x setup exists: offer to carry over address, token, cellar and card settings."""
@@ -130,11 +139,16 @@ class MyCellarionConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class MyCellarionOptionsFlow(OptionsFlow):
-    """Refresh interval and, when the account has several cellars, which one is shown."""
+    """Refresh interval and, when the account has several cellars, which ones are shown (the first is the start cellar)."""
+
+    _several = False
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
+            data = dict(user_input)
+            if CONF_CELLAR_ID in data or self._several:
+                data[CONF_CELLAR_ID] = _join_ids(data.get(CONF_CELLAR_ID))
+            return self.async_create_entry(data=data)
         entry = self.config_entry
         schema: dict[Any, Any] = {
             vol.Required(
@@ -142,7 +156,9 @@ class MyCellarionOptionsFlow(OptionsFlow):
             ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
         }
         _, cellars = await _cellars(self.hass, entry.data[CONF_URL], entry.data[CONF_TOKEN])
-        if len(cellars) > 1:
-            current = entry.options.get(CONF_CELLAR_ID) or entry.data.get(CONF_CELLAR_ID) or cellars[0]["id"]
-            schema[vol.Required(CONF_CELLAR_ID, default=current)] = _cellar_selector(cellars)
+        self._several = len(cellars) > 1
+        if self._several:
+            current = entry.options[CONF_CELLAR_ID] if CONF_CELLAR_ID in entry.options else entry.data.get(CONF_CELLAR_ID)
+            known = {c["id"] for c in cellars}
+            schema[vol.Optional(CONF_CELLAR_ID, description={"suggested_value": [i for i in _split_ids(current) if i in known]})] = _cellar_selector(cellars)
         return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))

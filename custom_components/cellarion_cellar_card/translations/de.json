@@ -18,9 +18,12 @@
       },
       "cellar": {
         "title": "Cellar Card for Cellarion",
-        "description": "Dein Konto hat mehrere Keller. Wähle den, der angezeigt werden soll.",
+        "description": "Dein Konto hat mehrere Keller. Wähle, welche angezeigt werden sollen.",
         "data": {
           "cellar_id": "Keller"
+        },
+        "data_description": {
+          "cellar_id": "Leer lassen, um alle deine eigenen Keller anzuzeigen. Bei mehreren Kellern bietet die Karte ein Auswahlmenü; der zuerst gewählte ist der Startkeller. Mit dir geteilte Keller sind nur dabei, wenn du sie hier auswählst."
         }
       },
       "takeover": {
@@ -49,6 +52,9 @@
         "data": {
           "scan_interval": "Aktualisierungsintervall (Sekunden)",
           "cellar_id": "Keller"
+        },
+        "data_description": {
+          "cellar_id": "Leer lassen, um alle deine eigenen Keller anzuzeigen. Bei mehreren Kellern bietet die Karte ein Auswahlmenü; der zuerst gewählte ist der Startkeller. Mit dir geteilte Keller sind nur dabei, wenn du sie hier auswählst."
         }
       }
     }

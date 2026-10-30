@@ -18,9 +18,12 @@
       },
       "cellar": {
         "title": "Cellar Card for Cellarion",
-        "description": "Your account has several cellars. Choose the one to show.",
+        "description": "Your account has several cellars. Choose which ones to show.",
         "data": {
-          "cellar_id": "Cellar"
+          "cellar_id": "Cellars"
+        },
+        "data_description": {
+          "cellar_id": "Leave empty to show all of your own cellars. With several cellars the card offers a pulldown; the first one chosen is the start cellar. Cellars shared with you are only included when you pick them here."
         }
       },
       "takeover": {
@@ -48,7 +51,10 @@
         "title": "Cellar Card for Cellarion",
         "data": {
           "scan_interval": "Refresh interval (seconds)",
-          "cellar_id": "Cellar"
+          "cellar_id": "Cellars"
+        },
+        "data_description": {
+          "cellar_id": "Leave empty to show all of your own cellars. With several cellars the card offers a pulldown; the first one chosen is the start cellar. Cellars shared with you are only included when you pick them here."
         }
       }
     }

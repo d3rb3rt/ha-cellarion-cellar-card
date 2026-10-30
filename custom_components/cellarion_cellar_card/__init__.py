@@ -38,7 +38,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyCellarionConfigEntry) 
     await async_complete_takeover(hass, entry)
     await async_register_frontend(hass)
 
-    cellar_id = entry.options.get(CONF_CELLAR_ID) or entry.data.get(CONF_CELLAR_ID)  # none: the first cellar (older entries)
+    cellar_id = entry.options[CONF_CELLAR_ID] if CONF_CELLAR_ID in entry.options else entry.data.get(CONF_CELLAR_ID)  # comma separated ids; empty or none: all own cellars
     hub = Hub(hass, entry.entry_id, entry.data[CONF_URL], entry.data[CONF_TOKEN], cellar_id)
     await hub.async_load()
     entry.runtime_data = hub

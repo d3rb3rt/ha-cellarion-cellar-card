@@ -26,6 +26,8 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 
 - **Inventory grouped by wine** with vintages, bottle counts, price and the places each vintage is stored. Search, A–Z index,
   sorting (wine or producer) and a flat view.
+- **Several cellars**: with more than one cellar the cellar name in the header becomes a pulldown (one cellar, or *All
+  cellars* together with a cellar tag on each place). The choice is remembered per device. Settings and filters are shared by all cellars.
 - **Filters** with live counts: type, grape, region, appellation, producer, maturity, vintage, price, storage rack and
   **every personal data field you keep in Cellarion** (they appear as filters automatically). Choose which filters are
   shown and in which order.
@@ -60,8 +62,9 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 3. In Cellarion create an API token (Settings → API tokens) with scope **read**, plus **consume** if you want to take
    bottles out from the card.
 4. Home Assistant → Settings → Devices & services → **Add integration** → **Cellar Card for Cellarion**. Enter the server address
-   (`https://cellarion.app` for the hosted service) and the token. If your account has several cellars you choose one; you can
-   change it later under **Configure**.
+   (`https://cellarion.app` for the hosted service) and the token. If your account has several cellars you choose which to show
+   (leave it empty for all of your own cellars; the first one chosen is the start cellar); you can change it later under **Configure**.
+   Cellars shared with you are only included when you pick them there.
 5. The card is registered automatically. Edit a dashboard, add the card **Cellar Card for Cellarion**, or use YAML:
 
 ```yaml

@@ -388,7 +388,7 @@
     .rmap.big .rm-lanes { gap: 2px; }
     .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
     .rbtn { display: none; }
-    @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
+    @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
     .rmap.big .rm-n { font-size: .8em; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }

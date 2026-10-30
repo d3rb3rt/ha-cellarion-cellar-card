@@ -1097,7 +1097,7 @@
     _cellarSel(cl) {
       if (cl.length < 2) return cl[0].id;
       const v = this._local && this._local.cellar;
-      return v === 'all' || cl.some((c) => c.id === v) ? v : cl[0].id;
+      return v === 'all' || cl.some((c) => c.id === v) ? v : 'all'; // no choice yet (or the chosen cellar is gone): all cellars together
     }
     // Several cellars shown together: places carry their cellar
     _allCellars() { return !!(this._data && this._data.multi && this._data.cellarSel === 'all'); }
@@ -1466,7 +1466,7 @@
       if (multi) {
         const items = d.cellars.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), I18N.lang, { sensitivity: 'base', numeric: true })) // alphabetical; the start cellar stays the first one delivered
           .map((x) => ({ v: x.id, t: `${x.name} (${x.n})` }));
-        items.push({ sep: true }, { v: 'all', t: `${t('cellar.all')} (${d.cellars.reduce((n, x) => n + x.n, 0)})` });
+        items.unshift({ v: 'all', t: `${t('cellar.all')} (${d.cellars.reduce((n, x) => n + x.n, 0)})` }, { sep: true }); // all cellars on top, the single cellars below
         const cur = items.find((o) => o.v === d.cellarSel) || items[0];
         this._ddItems.cellarsel = { label: t('cellar.title'), items, cur: cur.t, curV: cur.v };
       }

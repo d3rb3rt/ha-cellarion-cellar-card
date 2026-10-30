@@ -1363,14 +1363,25 @@
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
-    // Classification pick list grouped like Cellarion: vineyard rank, ripeness / predicate, ageing, other; fixed order inside a group, a line between groups
-    _optsCls(map, selected, cols) {
+    // Group of a classification tier: [0 vineyard rank, 1 ripeness / predicate, 2 ageing, 3 other, index inside the group]
+    _clsPos(v) {
       const G = [
         ['grosses gewächs', 'grosse lage', 'vdp grosse lage', 'erste lage', 'vdp erste lage', 'ortswein', 'vdp ortswein', 'gutswein', 'vdp gutswein', 'grand cru', 'premier cru'],
         ['landwein', 'qualitätswein', 'steinfeder', 'federspiel', 'smaragd', 'kabinett', 'spätlese', 'auslese', 'beerenauslese', 'trockenbeerenauslese', 'eiswein'],
         ['reserve', 'reserva', 'riserva', 'gran reserva'],
       ];
-      const pos = (v) => { const k = String(v).toLowerCase(); for (let g = 0; g < G.length; g++) { const i = G[g].indexOf(k); if (i >= 0) return [g, i]; } return [G.length, 0]; };
+      const k = String(v).toLowerCase();
+      for (let g = 0; g < G.length; g++) { const i = G[g].indexOf(k); if (i >= 0) return [g, i]; }
+      return [G.length, 0];
+    }
+    // Tiers of one group exclude each other (a wine is either Kabinett or Auslese): once one is chosen, the others of that group are not offered
+    _clsFree(map, selected) {
+      const used = new Set(Array.from(selected || []).map((v) => this._clsPos(v)[0]).filter((g) => g < 3));
+      return new Map(Array.from(map.entries()).filter((x) => !used.has(this._clsPos(x[0])[0]) || (selected && selected.has(x[0]))));
+    }
+    // Classification pick list grouped like Cellarion: vineyard rank, ripeness / predicate, ageing, other; fixed order inside a group, a line between groups
+    _optsCls(map, selected, cols) {
+      const pos = (v) => this._clsPos(v);
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       const all = Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0])).map((x) => ({ x, p: pos(x[0]) }))
         .sort((a, b) => a.p[0] - b.p[0] || a.p[1] - b.p[1] || de.compare(a.x[0], b.x[0]));
@@ -1460,7 +1471,8 @@
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return '';
-            const items = d.defs ? this._optsK(d.defs, m, set) : d.id === 'cls' && this._flag('clsfilter') ? this._optsCls(m, set, this._flagV('clsfilter') === 'cols') : this._opts(m, set, d.sort || by);
+            const mm = d.id === 'cls' ? this._clsFree(m, set) : m;
+            const items = d.defs ? this._optsK(d.defs, m, set) : d.id === 'cls' && this._flag('clsfilter') ? this._optsCls(mm, set, this._flagV('clsfilter') === 'cols') : this._opts(mm, set, d.sort || by);
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), cols: d.id === 'cls' && this._flagV('clsfilter') === 'cols' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +

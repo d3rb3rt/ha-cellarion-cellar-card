@@ -203,8 +203,6 @@
  "det.rackSmall": "Zurück zu den Details",
  "det.rackPrev": "Vorheriger Schrank",
  "det.rackNext": "Nächster Schrank",
- "flag.rackbtn": "Schrank nur per Button (Test)",
- "flag.rackbtnSub": "Zeigt in den Details kein kleines Regalbild, nur einen Schrank-Button in der unteren Leiste, der die große Ansicht öffnet. Wirkt auch ohne das Schrankbild-Flag.",
  "loc.slot": "Platz {n}",
  "set.racks": "Lagerplätze",
  "set.racksSub": "Anzeige je Regal",
@@ -297,7 +295,5 @@
  "set2.fields": "Datenfelder aus Cellarion",
  "set2.fieldsSub": "Persönliche Felder. Löschen entfernt das Feld samt allen Werten in Cellarion.",
  "flag.setv2": "Neue Einstellungen (Test)",
- "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen.",
- "flag.rackmap": "Schrankbild (Test)",
- "flag.rackmapSub": "Zeigt in den Details einer Flasche den Schrank mit allen Fächern; die Plätze dieses Jahrgangs sind hervorgehoben, die gewählte Flasche kräftig."
+ "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen."
 }

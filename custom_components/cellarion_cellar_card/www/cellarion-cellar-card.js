@@ -387,6 +387,7 @@
     .rmap .rm-c { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--cb-line); box-sizing: border-box; }
     .rmap .rm-c.f { background: color-mix(in srgb, var(--cb-text) 30%, transparent); border-color: transparent; }
     .rmap .rm-c.m { background: color-mix(in srgb, var(--cb-on) 55%, transparent); border-color: var(--cb-on); }
+    .rmap .rm-c[data-act] { cursor: pointer; }
     .rmap .rm-c.s { background: var(--cb-on); border-color: var(--cb-on); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cb-on) 40%, transparent); }
     .d2h { font-size: .7em; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); }
     .d2ne { display: inline-block; margin-left: 4px; font-size: .8em; color: var(--cb-sub); border: 1px solid var(--cb-line); border-radius: 8px; padding: 0 4px; vertical-align: middle; }
@@ -2092,7 +2093,9 @@
     // Rack picture (flag rackmap): shelves from top to bottom, filled = any bottle, tinted = this vintage, solid = the selected bottle
     _rackMap(sel, bottles) {
       const geo = (this._data && this._data.rackGeo) || {};
-      const racks = Array.from(new Set(bottles.map((b) => b.where && b.where.rack).filter((r) => r && geo[r])));
+      // only the rack of the selected place (the place choice in the bar decides which rack is shown)
+      const rk0 = sel.where && sel.where.rack;
+      const racks = rk0 && geo[rk0] ? [rk0] : [];
       if (!racks.length) return '';
       const mine = new Set(bottles.map((b) => b.id));
       return racks.map((rk) => {
@@ -2110,7 +2113,8 @@
             for (let c = 1; c <= cols; c++) {
               const b = occ.get(f + '|' + l + '|' + c);
               const cls = b ? (b.id === sel.id ? 'f m s' : mine.has(b.id) ? 'f m' : 'f') : '';
-              cells += `<i class="rm-c ${cls.replace('f m s', 's').replace('f m', 'm')}"${b ? ` title="${esc(b.name + (b.vintage ? ' ' + b.vintage : ''))}"` : ''}></i>`;
+              const own = b && mine.has(b.id); // bottles of this vintage: a tap starts the take-out for that bottle
+              cells += `<i class="rm-c ${cls.replace('f m s', 's').replace('f m', 'm')}"${b ? ` title="${esc(b.name + (b.vintage ? ' ' + b.vintage : ''))}"` : ''}${own ? ` data-act="dtake" data-id="${esc(b.id)}"` : ''}></i>`;
             }
             lanes += `<div class="rm-lane" style="grid-template-columns:repeat(${cols},8px)">${cells}</div>`;
           }
@@ -2336,6 +2340,7 @@
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }
       else if (act === 'dask') { d.step = 'confirm'; d.err = ''; }
+      else if (act === 'dtake') { d.sel = el.dataset.id; d.more = false; d.botsOpen = false; d.step = 'confirm'; d.err = ''; } // tap on a bottle in the rack picture
       else if (act === 'dback') { if (!d.busy) d.step = 'view'; }
       else if (act === 'dagain') { d.step = 'view'; d.more = false; }
       else if (act === 'dreason') d.reason = el.dataset.v;

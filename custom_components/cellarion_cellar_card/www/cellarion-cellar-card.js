@@ -383,10 +383,12 @@
     .rmap .rm-zoom { flex: none; background: none; border: 1px solid var(--cb-line); border-radius: 6px; color: var(--cb-sub); padding: 3px 5px; cursor: pointer; display: inline-flex; }
     .rm-row.rm-bigrow { align-items: flex-start; }
     .rm-bigrow .rm-col { gap: 10px; }
-    .rmap.big { --rc: 28px; }
+    .rmap.big { --rc: 22px; }
     .rmap.big .rm-lane { gap: 2px; }
     .rmap.big .rm-lanes { gap: 2px; }
-    .rmap.big .rm-c { width: 28px; height: 28px; border-width: 2px; }
+    .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
+    .rbtn { display: none; }
+    @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
     .rmap.big .rm-n { font-size: .8em; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
@@ -2252,6 +2254,7 @@
         `<button class="d2sel" data-act="dbots" aria-expanded="${sectionOpen}" aria-haspopup="listbox"><span class="d2st"><span class="d2sub" style="color:var(--cb-text);font-weight:600">${esc(_rk)} · <span class="bw">${esc(_cnt)}</span><span class="bi" title="${esc(_cnt)}" aria-label="${esc(_cnt)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 2h4v2.5c0 1 .6 1.6 1.2 2.6C16 8.3 16.5 9.5 16.5 11V21a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V11c0-1.5.5-2.7 1.3-3.9C9.4 6.1 10 5.5 10 4.5z"/></svg>${_nRack}</span></span>${_places ? `<span class="loc">${esc(_places)}</span>` : ''}</span>` +
         `<span class="d2pill${multi ? ' hot' : ''}"${multi ? ` title="${esc(t('det.morePlaces', { n: groups.size - 1 }))}" aria-label="${esc(t('det.morePlaces', { n: groups.size - 1 }))}"` : ''}>${multi ? '+' + (groups.size - 1) + ' ' : ''}${sectionOpen ? '▾' : '▴'}</span></button>` +
         `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button>` +
+        (this._flag('rackmap') && sel.where && sel.where.rack ? `<button class="btn rbtn round" data-act="drack" aria-pressed="${!!(d && d.rackBig)}" title="${esc(t('det.rackBig'))}" aria-label="${esc(t('det.rackBig'))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M9 3v18M15 3v18"/></svg></button>` : '') +
         (this._edUrl(sel) ? `<a class="btn clink" href="${esc(this._edUrl(sel))}" target="_blank" rel="noopener" title="${esc(t('det.editIn'))}"><span>${esc(t('det.openIn'))}</span><img class="clogo" src="${CEL_LOGO}" alt="" width="10" height="24"></a>` : '') + `</div>`;
       // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;

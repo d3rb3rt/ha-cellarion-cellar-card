@@ -387,8 +387,9 @@
     .rmap.big .rm-lane { gap: 2px; }
     .rmap.big .rm-lanes { gap: 2px; }
     .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
-    .rbtn { display: none; }
-    @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
+    .rbtn { display: inline-flex; align-items: center; justify-content: center; }
+    .rbtn[aria-pressed="true"] { background: var(--cb-on); color: var(--cb-on-text); }
+    @media (max-width: 600px) { .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
     .rmap.big .rm-n { font-size: .8em; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
@@ -2142,7 +2143,7 @@
           }
           shelves += `<div class="rm-shelf" style="--ln:${g.rows[f - 1]}"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
         }
-        const zoom = `<button class="rm-zoom" data-act="drack" aria-pressed="${!!big}" title="${esc(t(big ? 'det.rackSmall' : 'det.rackBig'))}" aria-label="${esc(t(big ? 'det.rackSmall' : 'det.rackBig'))}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>${big ? '<path d="M8 10.5h5"/>' : '<path d="M8 10.5h5M10.5 8v5"/>'}</svg></button>`;
+        const zoom = '';
         return `<div class="rmap${big ? ' big' : ''}"><div class="rm-head"><div class="rm-name">${esc(rk)}</div>${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
       }).join('');
     }
@@ -2263,7 +2264,7 @@
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       const bigMap = this._flag('rackmap') && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>` : maturity + about + noteHtml}${botsSec}${actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${maturity + about + noteHtml}${botsSec}${actBar}`;
     }
     _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)

@@ -1857,8 +1857,9 @@
     _statData() {
       const d = this._data;
       if (!d) return null;
-      if (this._statC && this._statC.d === d) return this._statC.v;
-      const bs = d.bottles;
+      const noOther = !this._showOther(); // the statistics follow the setting "show Other in the list": off = Other items (not wine) are left out here too
+      if (this._statC && this._statC.d === d && this._statC.no === noOther) return this._statC.v;
+      const bs = noOther ? d.bottles.filter((b) => b._type !== 'other') : d.bottles;
       const grp = (get) => {
         const m = new Map();
         bs.forEach((b) => [].concat(get(b)).forEach((v) => { if (v) m.set(v, (m.get(v) || 0) + 1); }));
@@ -1901,7 +1902,7 @@
         regionsOf, priceBands: pb, byTypeVal: arr(byTypeVal), valBy: { producer: arr(vb.producer), country: arr(vb.country), region: arr(vb.region), vintage: arr(vb.vintage) },
         oldest: vint.size ? Math.min(...Array.from(vint.keys()).map(Number)) : null,
       };
-      this._statC = { d, v };
+      this._statC = { d, v, no: noOther };
       return v;
     }
     // Page content: {title, sections: [{head, rows: [{label, n, text, go | filter [g, v], dot}]}], more}

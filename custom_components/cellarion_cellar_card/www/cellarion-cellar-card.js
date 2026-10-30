@@ -392,10 +392,10 @@
     .rmap .rm-head .rm-name { margin: 0; font-size: .85em; color: var(--cb-text); white-space: nowrap; }
     .rm-row.rm-bigrow { align-items: flex-start; }
     .rm-bigrow .rm-col { gap: 10px; }
-    .rmap.big { --rc: 22px; }
+    .rmap.big { --rc: 18px; }
     .rmap.big .rm-lane { gap: 2px; }
     .rmap.big .rm-lanes { gap: 2px; }
-    .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
+    .rmap.big .rm-c { width: 18px; height: 18px; border-width: 2px; }
     .rbtn { display: inline-flex; align-items: center; justify-content: center; }
     .rbtn[aria-pressed="true"] { background: var(--cb-on); color: var(--cb-on-text); }
     .rmap .rm-head { width: 100%; }

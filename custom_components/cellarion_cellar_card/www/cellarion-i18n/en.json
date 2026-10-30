@@ -305,5 +305,10 @@
  "flag.clsfilter.off": "Off",
  "flag.clsfilter.groups": "Groups",
  "flag.clsfilter.cols": "Columns",
- "filter.and": "and"
+ "filter.and": "and",
+ "flag.fmode": "Filter mode (test)",
+ "flag.fmodeSub": "The first filter pill switches between OR and AND. OR: several values are alternatives, all lists stay open. AND: values must all apply and the lists narrow down; single-value filters and classification groups replace the previous pick.",
+ "filter.modeOr": "OR",
+ "filter.modeAnd": "AND",
+ "filter.modeTip": "Filter mode: OR or AND"
 }

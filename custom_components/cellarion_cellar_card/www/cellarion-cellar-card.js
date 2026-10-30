@@ -381,10 +381,16 @@
     .rmap .rm-head { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 3px; }
     .rmap .rm-head .rm-name { margin: 0; }
     .rmap .rm-zoom { flex: none; background: none; border: 1px solid var(--cb-line); border-radius: 6px; color: var(--cb-sub); padding: 3px 5px; cursor: pointer; display: inline-flex; }
-    .rmap.big { --rc: 30px; align-self: center; align-items: center; }
-    .rmap.big .rm-c { border-width: 2px; }
+    .rm-row.rm-bigrow { align-items: stretch; flex: 1 1 auto; height: min(62vh, 560px); min-height: 320px; }
+    .rm-bigrow .rm-col { gap: 10px; overflow-y: auto; }
+    .rmap.big { --rc: 1fr; width: 200px; align-self: stretch; }
+    .rmap.big .rm-head { flex: none; }
+    .rmap.big .rm-rack { flex: 1 1 0; min-height: 0; width: auto; }
+    .rmap.big .rm-shelf { flex: var(--ln) 1 0; min-height: 0; }
+    .rmap.big .rm-lanes { flex: 1; min-height: 0; }
+    .rmap.big .rm-lane { flex: 1; min-height: 0; }
+    .rmap.big .rm-c { width: auto; height: 100%; max-width: 100%; aspect-ratio: 1; justify-self: center; align-self: center; border-width: 2px; }
     .rmap.big .rm-n { font-size: .8em; }
-    .rm-row.rm-bigrow { justify-content: center; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
     .rmap .rm-shelf { display: flex; align-items: stretch; gap: 4px; }
@@ -2135,7 +2141,7 @@
             }
             lanes += `<div class="rm-lane" style="grid-template-columns:repeat(${cols},var(--rc,8px))">${cells}</div>`;
           }
-          shelves += `<div class="rm-shelf"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
+          shelves += `<div class="rm-shelf" style="--ln:${g.rows[f - 1]}"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
         }
         const zoom = `<button class="rm-zoom" data-act="drack" aria-pressed="${!!big}" title="${esc(t(big ? 'det.rackSmall' : 'det.rackBig'))}" aria-label="${esc(t(big ? 'det.rackSmall' : 'det.rackBig'))}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>${big ? '<path d="M8 10.5h5"/>' : '<path d="M8 10.5h5M10.5 8v5"/>'}</svg></button>`;
         return `<div class="rmap${big ? ' big' : ''}"><div class="rm-head"><div class="rm-name">${esc(rk)}</div>${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
@@ -2255,7 +2261,9 @@
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = (sel.grapes || []).join(', ');
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
-      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? (d && d.rackBig && this._rackMap(sel, bottles, true) ? `<div class="rm-row rm-bigrow">${this._rackMap(sel, bottles, true)}</div>` : `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>`) : maturity + about + noteHtml}${botsSec}${actBar}`;
+      const bigMap = this._flag('rackmap') && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
+      if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>` : maturity + about + noteHtml}${botsSec}${actBar}`;
     }
     _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)

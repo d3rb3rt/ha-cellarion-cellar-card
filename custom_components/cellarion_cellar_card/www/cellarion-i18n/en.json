@@ -316,5 +316,6 @@
  "flag.fmode.replace": "Replace",
  "flag.clsfilter.split": "Per type",
  "filter.andAdd": "Add as a further condition (AND)",
- "dd.countHintW": "(Wines)"
+ "dd.countHintW": "(Wines)",
+ "dd.selected": "Selected"
 }

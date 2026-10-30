@@ -214,8 +214,7 @@
     .ddpop .ddi:last-child { border-bottom: 0; }
     .ddpop .ddcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); align-items: stretch; }
     .ddpop .ddcol { display: flex; flex-direction: column; min-width: 0; }
-    .ddpop .ddcol .ddi:last-child { border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
-    .ddpop .ddcol:last-child .ddi:last-child, .ddpop .ddcols:not(:has(.ddcol + .ddcol)) .ddi:last-child { border-bottom: 0; }
+    .ddpop .ddcol .ddi { border-bottom: 0; }
     .ddpop .ddcol + .ddcol { border-left: 1px solid color-mix(in srgb, var(--cb-text) 25%, transparent); }
     .ddpop .ddgh { padding: 8px 12px 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--cb-sub); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .ddpop .ddsep { height: 0; border-top: 0; border-bottom: 2px solid color-mix(in srgb, var(--cb-text) 40%, transparent); }

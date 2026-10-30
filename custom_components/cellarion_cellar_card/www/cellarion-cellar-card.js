@@ -389,8 +389,8 @@
     .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
     .rbtn { display: none; }
     .rmap:not(.big) { cursor: pointer; }
-    .rmap.big .rm-head { cursor: pointer; }
-    .rmap .rm-x { color: var(--cb-sub); font-size: .8em; border: 1px solid var(--cb-line); border-radius: 6px; padding: 1px 6px; }
+    .rmap .rm-nav { flex: none; min-width: 36px; min-height: 36px; font-size: 1.4em; line-height: 1; background: var(--cb-chip); color: var(--cb-text); border: 0; border-radius: 8px; cursor: pointer; }
+    .rmap .rm-x { flex: none; min-height: 36px; min-width: 36px; color: var(--cb-sub); background: none; font-size: .9em; border: 1px solid var(--cb-line); border-radius: 8px; cursor: pointer; }
     .rbtn[aria-pressed="true"] { background: var(--cb-on); color: var(--cb-on-text); }
     @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
     .rmap.big .rm-n { font-size: .8em; }
@@ -2116,8 +2116,37 @@
     // Detail view ("view" only): orders the details like Cellarion (wine, maturity, profile, my entry, own fields, bottles)
     // Link to the vintage in Cellarion (opens the web app)
     _edUrl(b) { return this._data && this._data.cellarId && b && b.wine ? `${this._data.url}/cellars/${encodeURIComponent(this._data.cellarId)}/vintages/${encodeURIComponent(b.wine)}/${encodeURIComponent(b.vintage || 'NV')}` : ''; }
+    // Racks that hold bottles of the open wine+vintage (stable order, for switching in the large view)
+    _rackList(bottles) {
+      const geo = (this._data && this._data.rackGeo) || {};
+      const out = [];
+      bottles.forEach((b) => { const r = b.where && b.where.rack; if (r && geo[r] && !out.includes(r)) out.push(r); });
+      return out.sort((a, b) => de.compare(a, b));
+    }
+    _rackStep(dir) {
+      const d = this._det; if (!d) return;
+      const bottles = this._detBottles(), sel = bottles.find((b) => b.id === d.sel) || bottles[0];
+      const list = this._rackList(bottles); if (list.length < 2 || !sel) return;
+      const i = Math.max(0, list.indexOf(sel.where && sel.where.rack));
+      const rk = list[(i + dir + list.length) % list.length];
+      const nb = bottles.find((b) => b.where && b.where.rack === rk);
+      if (nb) { d.sel = nb.id; d.more = false; d.botsOpen = false; this._renderDlg(); }
+    }
+    // Swipe left/right over the large rack picture switches the rack
+    _swipe() {
+      const m = this._dlg && this._dlg.querySelector ? this._dlg.querySelector('.rmap.big') : this.shadowRoot.querySelector('.rmap.big');
+      if (!m || m._sw) return;
+      m._sw = 1;
+      let x0 = 0, y0 = 0;
+      m.addEventListener('touchstart', (e) => { const t0 = e.touches[0]; x0 = t0.clientX; y0 = t0.clientY; }, { passive: true });
+      m.addEventListener('touchend', (e) => {
+        const t0 = e.changedTouches[0], dx = t0.clientX - x0, dy = t0.clientY - y0;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > 1.8 * Math.abs(dy)) this._rackStep(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    }
     // Rack picture (flag rackmap): shelves from top to bottom, filled = any bottle, tinted = this vintage, solid = the selected bottle
     _rackMap(sel, bottles, big) {
+      const rl = this._rackList(bottles);
       const geo = (this._data && this._data.rackGeo) || {};
       // only the rack of the selected place (the place choice in the bar decides which rack is shown)
       const rk0 = sel.where && sel.where.rack;
@@ -2146,8 +2175,10 @@
           }
           shelves += `<div class="rm-shelf" style="--ln:${g.rows[f - 1]}"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
         }
-        const zoom = big ? '<span class="rm-x">✕</span>' : '';
-        return `<div class="rmap${big ? ' big' : ''}"${big ? '' : ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackBig'))}"`}><div class="rm-head"${big ? ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackSmall'))}"` : ''}><div class="rm-name">${esc(rk)}</div>${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
+        const nav = (dir, ch) => `<button class="rm-nav" data-act="drnav" data-dir="${dir}" aria-label="${esc(t(dir < 0 ? 'det.rackPrev' : 'det.rackNext'))}">${ch}</button>`;
+        const multiR = big && rl.length > 1;
+        const zoom = big ? `<button class="rm-x" data-act="drack" aria-label="${esc(t('det.rackSmall'))}" title="${esc(t('det.rackSmall'))}">✕</button>` : '';
+        return `<div class="rmap${big ? ' big' : ''}"${big ? '' : ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackBig'))}"`}><div class="rm-head">${multiR ? nav(-1, '‹') : ''}<div class="rm-name">${esc(rk)}${multiR ? ` · ${rl.indexOf(rk) + 1}/${rl.length}` : ''}</div>${multiR ? nav(1, '›') : ''}${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
       }).join('');
     }
     _viewV2(sel, bottles, info) {
@@ -2269,7 +2300,7 @@
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
       return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>` : maturity + about + noteHtml}${botsSec}${actBar}`;
     }
-    _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
+    _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); this._swipe(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)
     _dlgTop() {
       const el = this._dlg;
@@ -2367,6 +2398,7 @@
       if (act === 'dclose') { if (!d.busy) { this._det = null; this._renderDlg(); } return; }
       if (act === 'dsel') { d.sel = el.dataset.id; d.more = false; d.botsOpen = false; }
       else if (act === 'drack') d.rackBig = !d.rackBig;
+      else if (act === 'drnav') { this._rackStep(Number(el.dataset.dir) || 1); return; }
       else if (act === 'dmore') d.more = !d.more;
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }

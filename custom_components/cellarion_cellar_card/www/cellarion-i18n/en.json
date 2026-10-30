@@ -201,6 +201,8 @@
  "loc.row": "Row {n}",
  "det.rackBig": "Show rack large",
  "det.rackSmall": "Back to details",
+ "det.rackPrev": "Previous rack",
+ "det.rackNext": "Next rack",
  "loc.slot": "Slot {n}",
  "set.racks": "Storage locations",
  "set.racksSub": "Display per rack",

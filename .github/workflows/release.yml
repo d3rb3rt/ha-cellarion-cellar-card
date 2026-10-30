@@ -1,10 +1,14 @@
 name: Release
 
-# Creates a GitHub release (and its tag) whenever the version in manifest.json changes on main.
+# Creates a GitHub release (and its tag) when the version in manifest.json changes on main.
+# Notes: docs/release-notes/<tag>.md if present, else the commit subjects since the previous tag.
+# Changing the notes file of the current version on main updates the existing release.
 on:
   push:
     branches: [main]
-    paths: [custom_components/cellarion_cellar_card/manifest.json]
+    paths:
+      - custom_components/cellarion_cellar_card/manifest.json
+      - docs/release-notes/*.md
   workflow_dispatch:
 
 permissions:
@@ -15,13 +19,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create release if the tag is new
+        with:
+          fetch-depth: 0
+      - name: Create or update the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -eu
           v="v$(jq -r .version custom_components/cellarion_cellar_card/manifest.json)"
-          if gh release view "$v" >/dev/null 2>&1; then
-            echo "$v already released"
+          file="docs/release-notes/$v.md"
+          prev="$(git tag --list 'v*' --sort=-v:refname | grep -vx "$v" | head -n 1 || true)"
+          notes="$(mktemp)"
+          if [ -f "$file" ]; then
+            cp "$file" "$notes"
           else
-            gh release create "$v" --target "$GITHUB_SHA" --title "$v" --generate-notes
+            git log "${prev:+$prev..}HEAD" --no-merges --format='%s' \
+              | grep -viE '^(release |merge |synced )|not visible' \
+              | awk '!seen[$0]++' | sed 's/^/- /' > "$notes" || true
+          fi
+          if [ -n "$prev" ]; then
+            printf '\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n' \
+              "$GITHUB_REPOSITORY" "$prev" "$v" >> "$notes"
+          fi
+          if gh release view "$v" >/dev/null 2>&1; then
+            if [ -f "$file" ]; then
+              gh release edit "$v" --notes-file "$notes"
+            else
+              echo "$v already released"
+            fi
+          else
+            gh release create "$v" --target "$GITHUB_SHA" --title "$v" --notes-file "$notes"
           fi

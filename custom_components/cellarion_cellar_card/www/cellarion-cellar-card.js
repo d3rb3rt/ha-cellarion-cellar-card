@@ -1114,7 +1114,8 @@
       const noOther = skip !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
       return this._data.bottles.filter((b) => {
         if (noOther && b._type === 'other') return false;
-        for (const d of act) if (![].concat(d.get(b)).some((v) => f[d.id].has(v))) return false;
+        // Classification: all chosen tiers must apply (rank AND ripeness); all other filters: any of the chosen values
+        for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'cls' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }
         for (const t of toks) if (!b._hay.includes(t)) return false;
         return true;
       });

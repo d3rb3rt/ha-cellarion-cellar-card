@@ -375,17 +375,18 @@
     .d2chips span em { font-style: normal; color: var(--cb-sub); margin-right: 4px; }
     .d2txt { line-height: 1.4; }
     .d2mine { border-left: 2px solid var(--cb-line); padding-left: 10px; margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
-    .rmap { margin-top: 10px; }
-    .rmap .rm-name { font-size: .8em; color: var(--cb-sub); margin-bottom: 4px; }
-    .rmap .rm-rack { display: flex; flex-direction: column; gap: 5px; max-width: 280px; border: 1px solid var(--cb-line); border-radius: 8px; padding: 6px; }
-    .rmap .rm-shelf { display: flex; align-items: stretch; gap: 6px; }
-    .rmap .rm-n { flex: none; width: 1.4em; text-align: right; font-size: .7em; color: var(--cb-sub); align-self: center; }
-    .rmap .rm-lanes { flex: 1; display: flex; flex-direction: column; gap: 2px; border-bottom: 2px solid var(--cb-line); padding-bottom: 3px; }
-    .rmap .rm-lane { display: grid; gap: 2px; }
-    .rmap .rm-c { aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--cb-line); box-sizing: border-box; }
+    .rmap { float: right; margin: 0 0 8px 14px; }
+    .rmap + .rmap { clear: right; }
+    .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
+    .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
+    .rmap .rm-shelf { display: flex; align-items: stretch; gap: 4px; }
+    .rmap .rm-n { flex: none; width: 1em; text-align: right; font-size: .6em; color: var(--cb-sub); align-self: center; }
+    .rmap .rm-lanes { display: flex; flex-direction: column; gap: 1px; border-bottom: 2px solid var(--cb-line); padding-bottom: 2px; }
+    .rmap .rm-lane { display: grid; gap: 1px; }
+    .rmap .rm-c { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--cb-line); box-sizing: border-box; }
     .rmap .rm-c.f { background: color-mix(in srgb, var(--cb-text) 30%, transparent); border-color: transparent; }
     .rmap .rm-c.m { background: color-mix(in srgb, var(--cb-on) 55%, transparent); border-color: var(--cb-on); }
-    .rmap .rm-c.s { background: var(--cb-on); border-color: var(--cb-on); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cb-on) 35%, transparent); }
+    .rmap .rm-c.s { background: var(--cb-on); border-color: var(--cb-on); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cb-on) 40%, transparent); }
     .d2h { font-size: .7em; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); }
     .d2ne { display: inline-block; margin-left: 4px; font-size: .8em; color: var(--cb-sub); border: 1px solid var(--cb-line); border-radius: 8px; padding: 0 4px; vertical-align: middle; }
     .d2act { align-items: stretch; flex-wrap: nowrap; justify-content: space-between; }
@@ -2110,7 +2111,7 @@
               const cls = b ? (b.id === sel.id ? 'f m s' : mine.has(b.id) ? 'f m' : 'f') : '';
               cells += `<i class="rm-c ${cls.replace('f m s', 's').replace('f m', 'm')}"${b ? ` title="${esc(b.name + (b.vintage ? ' ' + b.vintage : ''))}"` : ''}></i>`;
             }
-            lanes += `<div class="rm-lane" style="grid-template-columns:repeat(${cols},1fr)">${cells}</div>`;
+            lanes += `<div class="rm-lane" style="grid-template-columns:repeat(${cols},8px)">${cells}</div>`;
           }
           shelves += `<div class="rm-shelf"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
         }

@@ -301,5 +301,6 @@
  "cls.g2": "Reifung",
  "cls.g3": "Sonstige",
  "filter.andAdd": "Als weitere Bedingung hinzufügen (UND)",
+ "dd.clear": "Auswahl aufheben",
  "dd.selected": "Gewählt"
 }

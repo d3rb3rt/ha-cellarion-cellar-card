@@ -301,5 +301,6 @@
  "cls.g2": "Ageing",
  "cls.g3": "Other",
  "filter.andAdd": "Add as a further condition (AND)",
+ "dd.clear": "Clear selection",
  "dd.selected": "Selected"
 }

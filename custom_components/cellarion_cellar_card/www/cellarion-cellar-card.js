@@ -203,7 +203,10 @@
     .dlg.dd { display: block; background: transparent; }
     .ddpop { position: absolute; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; border-radius: 6px; background: color-mix(in srgb, var(--cb-text) 14%, var(--cb-card)); border: 1px solid color-mix(in srgb, var(--cb-text) 40%, transparent); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
     .ddpop.c { top: 50%; left: 50%; width: min(300px, calc(100% - 32px)); transform: translate(-50%, -50%); max-height: 70%; }
-    .ddpop .ddsel { flex: none; padding: 7px 12px; font-size: 13px; color: var(--cb-text); background: color-mix(in srgb, var(--cb-on) 14%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ddpop .ddsel { display: flex; align-items: center; gap: 8px; flex: none; padding: 7px 12px; font-size: 13px; color: var(--cb-text); background: color-mix(in srgb, var(--cb-on) 14%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ddpop .ddselt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .ddpop .ddx { flex: none; width: 28px; height: 28px; min-width: 0; min-height: 0; padding: 0 0 2px; border: 0; border-radius: 50%; background: transparent; color: var(--cb-text); font-size: 20px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+    .ddpop .ddx:hover { background: color-mix(in srgb, var(--cb-text) 14%, transparent); }
     .ddpop .ddhint { flex: none; padding: 6px 12px; font-size: 12px; color: var(--cb-sub); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .ddpop .ddlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     .ddi { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 0; border-top: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
@@ -1403,7 +1406,7 @@
     _renderDd() {
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
-      el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint">${esc(d.hint)}</div>` : '') + (d.sel ? `<div class="ddsel">${esc(t('dd.selected'))}: <b>${esc(d.sel)}</b></div>` : '') +
+      el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint">${esc(d.hint)}</div>` : '') + (d.sel ? `<div class="ddsel"><span class="ddselt">${esc(t('dd.selected'))}: <b>${esc(d.sel)}</b></span><button type="button" class="ddx" data-act="ddclr" aria-label="${esc(t('dd.clear'))}">×</button></div>` : '') +
         (`<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : o.and ? `<div class="ddrow"><button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button><button type="button" class="ddand" data-act="ddand" data-v="${esc(o.v)}" title="${esc(t('filter.andAdd'))}" aria-label="${esc(t('filter.andAdd'))}">&amp;<small>(${o.nAnd})</small></button></div>` : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`);
       el.hidden = false;
       const pop = el.firstElementChild, an = this._ddAnchor;
@@ -2581,6 +2584,8 @@
     ddclose() { this._dd = null; this._renderDlg(); },
     // Replace option, grape list: the & button adds the grape as a further condition (the wine must have all chosen grapes)
     ddand(t) { const id = this._dd, v = t.dataset.v; this._dd = null; if (id) this._fs(id).add(v); this._renderDlg(); this._renderAll(); },
+    // Replace option: the x in the "Selected" line of the pick list clears this filter
+    ddclr() { const id = this._dd; this._dd = null; if (id && this._f[id]) this._f[id].clear(); this._renderDlg(); this._renderAll(); },
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
       this._dd = null;

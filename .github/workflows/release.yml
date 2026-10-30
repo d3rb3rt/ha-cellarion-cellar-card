@@ -3,6 +3,7 @@ name: Release
 # Creates a GitHub release (and its tag) when the version in manifest.json changes on main.
 # Notes: docs/release-notes/<tag>.md if present, else the commit subjects since the previous tag.
 # Changing the notes file of the current version on main updates the existing release.
+# Notes files of earlier versions (docs/release-notes/vX.Y.Z.md) update the release of that tag too, if it exists.
 on:
   push:
     branches: [main]
@@ -50,3 +51,23 @@ jobs:
           else
             gh release create "$v" --target "$GITHUB_SHA" --title "$v" --notes-file "$notes"
           fi
+      - name: Update the notes of earlier releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          cur="v$(jq -r .version custom_components/cellarion_cellar_card/manifest.json)"
+          for file in docs/release-notes/v*.md; do
+            [ -f "$file" ] || continue
+            v="$(basename "$file" .md)"
+            [ "$v" = "$cur" ] && continue
+            gh release view "$v" >/dev/null 2>&1 || continue
+            prev="$(git tag --list 'v*' --sort=v:refname | awk -v t="$v" '$0==t{print p; exit} {p=$0}')"
+            notes="$(mktemp)"
+            cp "$file" "$notes"
+            if [ -n "$prev" ]; then
+              printf '\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n' \
+                "$GITHUB_REPOSITORY" "$prev" "$v" >> "$notes"
+            fi
+            gh release edit "$v" --notes-file "$notes"
+          done

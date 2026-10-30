@@ -717,6 +717,8 @@
       .dsheet:not(.ddsheet):not(.csheet) { height: 100%; max-height: 100%; border-radius: 0; }
       .dtop { gap: 10px; }
       .dimg { width: 84px; max-height: 150px; }
+      .rmap.big { --rc: 24px; }
+      .rmap.big .rm-c { width: 24px; height: 24px; }
     }
   `;
 

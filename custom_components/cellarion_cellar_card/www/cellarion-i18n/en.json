@@ -302,5 +302,7 @@
  "cls.g3": "Other",
  "filter.andAdd": "Add as a further condition (AND)",
  "dd.clear": "Clear selection",
+ "flag.fgrey": "Grey out filters (test)",
+ "flag.fgreySub": "Filters with nothing to pick right now stay in place, greyed out, instead of disappearing.",
  "dd.selected": "Selected"
 }

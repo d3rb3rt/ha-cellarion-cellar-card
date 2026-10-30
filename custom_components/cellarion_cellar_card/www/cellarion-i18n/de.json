@@ -302,5 +302,7 @@
  "cls.g3": "Sonstige",
  "filter.andAdd": "Als weitere Bedingung hinzufügen (UND)",
  "dd.clear": "Auswahl aufheben",
+ "flag.fgrey": "Filter ausgrauen (Test)",
+ "flag.fgreySub": "Filter, die gerade nichts zur Auswahl haben, bleiben stehen und sind ausgegraut, statt zu verschwinden.",
  "dd.selected": "Gewählt"
 }

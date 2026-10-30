@@ -387,9 +387,12 @@
     .rmap.big .rm-lane { gap: 2px; }
     .rmap.big .rm-lanes { gap: 2px; }
     .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
-    .rbtn { display: inline-flex; align-items: center; justify-content: center; }
+    .rbtn { display: none; }
+    .rmap:not(.big) { cursor: pointer; }
+    .rmap.big .rm-head { cursor: pointer; }
+    .rmap .rm-x { color: var(--cb-sub); font-size: .8em; border: 1px solid var(--cb-line); border-radius: 6px; padding: 1px 6px; }
     .rbtn[aria-pressed="true"] { background: var(--cb-on); color: var(--cb-on-text); }
-    @media (max-width: 600px) { .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
+    @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
     .rmap.big .rm-n { font-size: .8em; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
@@ -2143,8 +2146,8 @@
           }
           shelves += `<div class="rm-shelf" style="--ln:${g.rows[f - 1]}"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
         }
-        const zoom = '';
-        return `<div class="rmap${big ? ' big' : ''}"><div class="rm-head"><div class="rm-name">${esc(rk)}</div>${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
+        const zoom = big ? '<span class="rm-x">✕</span>' : '';
+        return `<div class="rmap${big ? ' big' : ''}"${big ? '' : ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackBig'))}"`}><div class="rm-head"${big ? ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackSmall'))}"` : ''}><div class="rm-name">${esc(rk)}</div>${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
       }).join('');
     }
     _viewV2(sel, bottles, info) {
@@ -2264,7 +2267,7 @@
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       const bigMap = this._flag('rackmap') && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${maturity + about + noteHtml}${botsSec}${actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>` : maturity + about + noteHtml}${botsSec}${actBar}`;
     }
     _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)

@@ -378,6 +378,13 @@
     .rm-row { display: flex; gap: 14px; align-items: flex-start; }
     .rm-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
     .rmap { flex: none; display: flex; flex-direction: column; gap: 8px; }
+    .rmap .rm-head { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 3px; }
+    .rmap .rm-head .rm-name { margin: 0; }
+    .rmap .rm-zoom { flex: none; background: none; border: 1px solid var(--cb-line); border-radius: 6px; color: var(--cb-sub); padding: 3px 5px; cursor: pointer; display: inline-flex; }
+    .rmap.big { --rc: 30px; align-self: center; align-items: center; }
+    .rmap.big .rm-c { border-width: 2px; }
+    .rmap.big .rm-n { font-size: .8em; }
+    .rm-row.rm-bigrow { justify-content: center; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
     .rmap .rm-shelf { display: flex; align-items: stretch; gap: 4px; }
@@ -977,6 +984,16 @@
       const parts = [w.rack, t('loc.shelf', { n: rs.order === 'bottom' ? w.fach : w.fachen - w.fach + 1 })];
       if (rs.side === 'thirds' && w.platz) parts.push(t(['loc.left', 'loc.mid', 'loc.right'][Math.min(2, Math.floor((w.platz - 1) / ((w.cols || 6) / 3)))]));
       else if (rs.side === 'slot' && w.platz) parts.push(t('loc.slot', { n: w.platz }));
+      return parts.join(' · ');
+    }
+    // Exact position (independent of the display setting): rack, shelf, row (only if the shelf has several), slot
+    _exactPlace(b) {
+      const w = b.where;
+      if (!w || w.fach == null || !w.fachen) return '';
+      const rs = this._rs(w.rack), g = (this._data && this._data.rackGeo && this._data.rackGeo[w.rack]) || null;
+      const parts = [w.rack, t('loc.shelf', { n: rs.order === 'bottom' ? w.fach : w.fachen - w.fach + 1 })];
+      if (g && g.rows && g.rows[w.fach - 1] > 1 && w.lage) parts.push(t('loc.row', { n: w.lage }));
+      if (w.platz) parts.push(t('loc.slot', { n: w.platz }));
       return parts.join(' · ');
     }
     _setRack(name, key, val) {
@@ -2091,7 +2108,7 @@
     // Link to the vintage in Cellarion (opens the web app)
     _edUrl(b) { return this._data && this._data.cellarId && b && b.wine ? `${this._data.url}/cellars/${encodeURIComponent(this._data.cellarId)}/vintages/${encodeURIComponent(b.wine)}/${encodeURIComponent(b.vintage || 'NV')}` : ''; }
     // Rack picture (flag rackmap): shelves from top to bottom, filled = any bottle, tinted = this vintage, solid = the selected bottle
-    _rackMap(sel, bottles) {
+    _rackMap(sel, bottles, big) {
       const geo = (this._data && this._data.rackGeo) || {};
       // only the rack of the selected place (the place choice in the bar decides which rack is shown)
       const rk0 = sel.where && sel.where.rack;
@@ -2116,11 +2133,12 @@
               const own = b && mine.has(b.id); // bottles of this vintage: a tap starts the take-out for that bottle
               cells += `<i class="rm-c ${cls.replace('f m s', 's').replace('f m', 'm')}"${b ? ` title="${esc(b.name + (b.vintage ? ' ' + b.vintage : ''))}"` : ''}${own ? ` data-act="dtake" data-id="${esc(b.id)}"` : ''}></i>`;
             }
-            lanes += `<div class="rm-lane" style="grid-template-columns:repeat(${cols},8px)">${cells}</div>`;
+            lanes += `<div class="rm-lane" style="grid-template-columns:repeat(${cols},var(--rc,8px))">${cells}</div>`;
           }
           shelves += `<div class="rm-shelf"><span class="rm-n">${rs.order === 'bottom' ? f : n - f + 1}</span><div class="rm-lanes">${lanes}</div></div>`;
         }
-        return `<div class="rmap"><div class="rm-name">${esc(rk)}</div><div class="rm-rack">${shelves}</div></div>`;
+        const zoom = `<button class="rm-zoom" data-act="drack" aria-pressed="${!!big}" title="${esc(t(big ? 'det.rackSmall' : 'det.rackBig'))}" aria-label="${esc(t(big ? 'det.rackSmall' : 'det.rackBig'))}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>${big ? '<path d="M8 10.5h5"/>' : '<path d="M8 10.5h5M10.5 8v5"/>'}</svg></button>`;
+        return `<div class="rmap${big ? ' big' : ''}"><div class="rm-head"><div class="rm-name">${esc(rk)}</div>${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
       }).join('');
     }
     _viewV2(sel, bottles, info) {
@@ -2237,7 +2255,7 @@
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = (sel.grapes || []).join(', ');
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
-      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>` : maturity + about + noteHtml}${botsSec}${actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? (d && d.rackBig && this._rackMap(sel, bottles, true) ? `<div class="rm-row rm-bigrow">${this._rackMap(sel, bottles, true)}</div>` : `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>`) : maturity + about + noteHtml}${botsSec}${actBar}`;
     }
     _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)
@@ -2317,7 +2335,7 @@
       } else if (d.step === 'confirm') {
         const reasons = ['drank', 'gifted', 'sold', 'other'].map((v) => [v, t('reason.' + v)]);
         body = `<div class="dask">${esc(t('det.confirmTitle'))}</div>` +
-          `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : sel._loc)}</span></div>` +
+          `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : (this._exactPlace(sel) || sel._loc))}</span></div>` +
           `<div class="dsec">${esc(t('det.reason'))}</div><div class="row-chips">` +
           reasons.map(([v, l]) => `<button class="chip${d.reason === v ? ' on' : ''}" data-act="dreason" data-v="${v}">${l}</button>`).join('') + `</div>` +
           (d.err ? `<div class="derr">${esc(d.err)}</div>` : '') +
@@ -2336,6 +2354,7 @@
       if (!d) return;
       if (act === 'dclose') { if (!d.busy) { this._det = null; this._renderDlg(); } return; }
       if (act === 'dsel') { d.sel = el.dataset.id; d.more = false; d.botsOpen = false; }
+      else if (act === 'drack') d.rackBig = !d.rackBig;
       else if (act === 'dmore') d.more = !d.more;
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }

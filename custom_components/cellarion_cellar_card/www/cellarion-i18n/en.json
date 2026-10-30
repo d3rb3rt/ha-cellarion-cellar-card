@@ -290,5 +290,7 @@
  "set2.fields": "Data fields from Cellarion",
  "set2.fieldsSub": "Personal fields. Deleting removes the field and all its values in Cellarion.",
  "flag.setv2": "New settings (test)",
- "flag.setv2Sub": "Plain settings page with groups and collapsed lists."
+ "flag.setv2Sub": "Plain settings page with groups and collapsed lists.",
+ "flag.rackmap": "Rack picture (test)",
+ "flag.rackmapSub": "Shows the rack with all shelves in the bottle details; places of this vintage are highlighted, the selected bottle in solid color."
 }

@@ -203,6 +203,8 @@
  "det.rackSmall": "Zurück zu den Details",
  "det.rackPrev": "Vorheriger Schrank",
  "det.rackNext": "Nächster Schrank",
+ "flag.rackbtn": "Schrank nur per Button (Test)",
+ "flag.rackbtnSub": "Zeigt in den Details kein kleines Regalbild, nur einen Schrank-Button in der unteren Leiste, der die große Ansicht öffnet. Wirkt auch ohne das Schrankbild-Flag.",
  "loc.slot": "Platz {n}",
  "set.racks": "Lagerplätze",
  "set.racksSub": "Anzeige je Regal",

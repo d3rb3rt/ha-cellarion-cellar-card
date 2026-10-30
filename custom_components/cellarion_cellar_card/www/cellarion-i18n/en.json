@@ -203,6 +203,8 @@
  "det.rackSmall": "Back to details",
  "det.rackPrev": "Previous rack",
  "det.rackNext": "Next rack",
+ "flag.rackbtn": "Rack button only (test)",
+ "flag.rackbtnSub": "No small rack picture in the details, only a rack button in the bottom bar that opens the large view. Works without the rack picture flag.",
  "loc.slot": "Slot {n}",
  "set.racks": "Storage locations",
  "set.racksSub": "Display per rack",

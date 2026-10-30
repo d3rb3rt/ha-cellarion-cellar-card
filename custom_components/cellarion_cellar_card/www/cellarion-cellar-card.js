@@ -381,14 +381,14 @@
     .rmap .rm-head { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 3px; }
     .rmap .rm-head .rm-name { margin: 0; }
     .rmap .rm-zoom { flex: none; background: none; border: 1px solid var(--cb-line); border-radius: 6px; color: var(--cb-sub); padding: 3px 5px; cursor: pointer; display: inline-flex; }
-    .rm-row.rm-bigrow { align-items: stretch; flex: 1 1 auto; height: min(62vh, 560px); min-height: 320px; }
+    .rm-row.rm-bigrow { align-items: stretch; flex: 1 1 auto; min-height: min(62vh, 560px); }
     .rm-bigrow .rm-col { gap: 10px; overflow-y: auto; }
-    .rmap.big { --rc: 1fr; width: 200px; align-self: stretch; }
+    .rmap.big { --rc: 1fr; width: 230px; align-self: stretch; }
     .rmap.big .rm-head { flex: none; }
-    .rmap.big .rm-rack { flex: 1 1 0; min-height: 0; width: auto; }
-    .rmap.big .rm-shelf { flex: var(--ln) 1 0; min-height: 0; }
+    .rmap.big .rm-rack { flex: 1 1 0; width: auto; }
+    .rmap.big .rm-shelf { flex: var(--ln) 1 0; min-height: calc(var(--ln) * 26px + 8px); }
     .rmap.big .rm-lanes { flex: 1; min-height: 0; }
-    .rmap.big .rm-lane { flex: 1; min-height: 0; }
+    .rmap.big .rm-lane { flex: 1; min-height: 24px; }
     .rmap.big .rm-c { width: auto; height: 100%; max-width: 100%; aspect-ratio: 1; justify-self: center; align-self: center; border-width: 2px; }
     .rmap.big .rm-n { font-size: .8em; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }

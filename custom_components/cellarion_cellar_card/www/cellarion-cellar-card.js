@@ -2584,8 +2584,13 @@
     ddclose() { this._dd = null; this._renderDlg(); },
     // Replace option, grape list: the & button adds the grape as a further condition (the wine must have all chosen grapes)
     ddand(t) { const id = this._dd, v = t.dataset.v; this._dd = null; if (id) this._fs(id).add(v); this._renderDlg(); this._renderAll(); },
-    // Replace option: the x in the "Selected" line of the pick list clears this filter
-    ddclr() { const id = this._dd; this._dd = null; if (id && this._f[id]) this._f[id].clear(); this._renderDlg(); this._renderAll(); },
+    // Replace option: the x in the "Selected" line of the pick list clears this filter and keeps the list open
+    ddclr() { // the list stays open: refresh the filters, re-find the (possibly re-created) button and redraw the list
+      const id = this._dd; if (!id || !this._f[id]) return;
+      this._f[id].clear(); this._renderAll();
+      const an = this.shadowRoot.querySelector('[data-act="dd"][data-id="' + id + '"]'); if (an) this._ddAnchor = an;
+      this._renderDlg();
+    },
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
       this._dd = null;

@@ -1389,7 +1389,8 @@
       if (!an || !an.isConnected) { pop.classList.add('c'); return; }
       const ov = el.getBoundingClientRect(), a = an.getBoundingClientRect(), m = 8;
       const ncol = d.cols ? new Set(d.items.map((o) => o.g)).size : 1;
-      const w = Math.min(d.cols ? Math.max(a.width, 240 * ncol) : Math.max(a.width, 220), d.cols ? 240 * ncol : 360, ov.width - 2 * m);
+      const side = d.cols && ov.width - 2 * m >= 240 * ncol; // columns side by side only where they fit; otherwise the normal narrow list (groups stacked)
+      const w = Math.min(side ? 240 * ncol : Math.max(a.width, 220), side ? 240 * ncol : 360, ov.width - 2 * m);
       // left half of the page: flush with the chip's left edge, right half: flush with its right edge
       const rightHalf = (a.left + a.right) / 2 - ov.left > ov.width / 2;
       const left = Math.max(m, Math.min(rightHalf ? a.right - ov.left - w : a.left - ov.left, ov.width - w - m));

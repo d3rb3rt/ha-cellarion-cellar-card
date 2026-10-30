@@ -307,12 +307,13 @@
  "flag.clsfilter.cols": "Columns",
  "filter.and": "and",
  "flag.fmode": "Filter mode (test)",
- "flag.fmodeSub": "Switch: the first filter pill switches between OR and AND. Replace: filters work as before, but a pick replaces the chosen value (classification: the one of its group) and the list keeps showing the other values. Switch details: OR: a wine matches if it fits any chosen value of any filter, all lists stay open. AND: everything must apply together and the lists narrow down; single-value filters and classification groups replace the previous pick.",
+ "flag.fmodeSub": "Switch: the first filter pill switches between OR and AND. Replace: filters work as before, but a pick replaces the chosen value (classification: the one of its group) and the list keeps showing the other values. Replace: for grapes the & button in the list adds a further grape as AND. Switch details: OR: a wine matches if it fits any chosen value of any filter, all lists stay open. AND: everything must apply together and the lists narrow down; single-value filters and classification groups replace the previous pick.",
  "filter.modeOr": "OR",
  "filter.modeAnd": "AND",
  "filter.modeTip": "Filter mode: OR or AND",
  "flag.fmode.off": "Off",
  "flag.fmode.toggle": "Switch",
  "flag.fmode.replace": "Replace",
- "flag.clsfilter.split": "Per type"
+ "flag.clsfilter.split": "Per type",
+ "filter.andAdd": "Add as a further condition (AND)"
 }

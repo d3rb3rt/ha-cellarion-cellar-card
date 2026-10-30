@@ -1565,7 +1565,10 @@
       const tag = (k) => (C(k) ? `<span class="ctag">${esc(C(k))}</span>` : '');
       const cmp = (a, b) => (L(a[0]) === NO_LOC) - (L(b[0]) === NO_LOC) || de.compare(C(a[0]), C(b[0])) || de.compare(L(a[0]), L(b[0]));
       const m = new Map();
-      bottles.forEach((b) => { const k = (A ? (b._cn || '') + SEP : '') + b._loc; m.set(k, (m.get(k) || 0) + 1); });
+      // Phone: only the rack name in the list (no shelf, no left/middle/right); places of the same rack are counted together
+      const mob = !!(window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
+      const rk = (l) => (mob && l !== NO_LOC && l ? String(l).split(' · ')[0] : l);
+      bottles.forEach((b) => { const k = (A ? (b._cn || '') + SEP : '') + rk(b._loc); m.set(k, (m.get(k) || 0) + 1); });
       const inRow = brief === true;
       if (brief && m.size === 1) brief = 'one'; else brief = '';
       if (inRow && m.size > 1) {

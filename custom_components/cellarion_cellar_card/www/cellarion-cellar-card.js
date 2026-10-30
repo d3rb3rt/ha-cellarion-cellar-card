@@ -324,7 +324,9 @@
     .fgrp { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px; border: 1px solid color-mix(in srgb, var(--cb-text) 40%, transparent); border-radius: 16px; }
     .ddpop .ddrow { display: flex; align-items: stretch; border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .ddpop .ddrow .ddi { flex: 1 1 auto; border-bottom: 0; min-width: 0; }
-    .ddpop .ddand { flex: none; width: 44px; border: 0; border-right: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); background: transparent; color: var(--cb-text); font: inherit; font-weight: 700; cursor: pointer; }
+    .ddpop .ddand { flex: none; width: 34px; padding: 0; border: 0; background: transparent; color: var(--cb-sub); font: inherit; font-size: 18px; font-weight: 700; text-align: center; cursor: pointer; }
+    .ddpop .ddand.ddno { cursor: default; }
+    .ddpop .ddrow .ddi { padding-left: 2px; }
     .ddpop .ddand:active { background: var(--cb-chip); }
     .fand { font-size: 12px; color: var(--cb-sub); padding: 0 2px; }
     .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
@@ -1430,7 +1432,7 @@
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
       el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint">${esc(d.hint)}</div>` : '') +
-        (d.cols ? `<div class="ddlist ddcols">` + [0, 1, 2, 3].map((g) => { const its = d.items.filter((o) => o.g === g); return its.length ? `<div class="ddcol"><div class="ddgh">${esc(t('cls.g' + g))}</div>` + its.map((o) => `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div>` : ''; }).join('') + `</div></div>` : `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : o.and !== undefined ? `<div class="ddrow"><button type="button" class="ddand" data-act="ddand" data-v="${esc(o.v)}" title="${esc(t('filter.andAdd'))}" aria-label="${esc(t('filter.andAdd'))}">&amp;</button><button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button></div>` : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`);
+        (d.cols ? `<div class="ddlist ddcols">` + [0, 1, 2, 3].map((g) => { const its = d.items.filter((o) => o.g === g); return its.length ? `<div class="ddcol"><div class="ddgh">${esc(t('cls.g' + g))}</div>` + its.map((o) => `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div>` : ''; }).join('') + `</div></div>` : `<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : o.and !== undefined ? `<div class="ddrow">${o.and ? `<button type="button" class="ddand" data-act="ddand" data-v="${esc(o.v)}" title="${esc(t('filter.andAdd'))}" aria-label="${esc(t('filter.andAdd'))}">&amp;</button>` : '<span class="ddand ddno"></span>'}<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button></div>` : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`);
       el.hidden = false;
       const pop = el.firstElementChild, an = this._ddAnchor;
       if (!an || !an.isConnected) { pop.classList.add('c'); return; }
@@ -1509,7 +1511,7 @@
             if (!m.size && !set.size) return '';
             const mm = m;
             const items = d.defs ? this._optsK(d.defs, m, set) : (d.clsg !== undefined || (d.id === 'cls' && this._flag('clsfilter'))) ? this._optsCls(mm, set, d.id === 'cls' && this._flagV('clsfilter') === 'cols') : this._opts(mm, set, d.sort || by);
-            if (d.id === 'grape' && this._fmR() && set.size) items.forEach((o) => { if (o.v !== undefined) o.and = true; });
+            if (d.id === 'grape' && this._fmR() && set.size) { const co = new Set(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => co.add(g))); items.forEach((o) => { if (o.v !== undefined) o.and = co.has(o.v); }); } // & only where the grape occurs together with the chosen ones
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), cols: d.id === 'cls' && this._flagV('clsfilter') === 'cols' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +

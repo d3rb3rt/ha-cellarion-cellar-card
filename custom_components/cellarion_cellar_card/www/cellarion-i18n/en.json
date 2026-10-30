@@ -24,6 +24,8 @@
  "filter.cls": "Classification",
  "filter.vintage": "Vintage",
  "filter.racks": "Storage",
+ "cellar.title": "Cellar",
+ "cellar.all": "All cellars",
  "filter.shop": "Merchant",
  "sort.title": "Sort",
  "sort.name": "Wine A–Z",

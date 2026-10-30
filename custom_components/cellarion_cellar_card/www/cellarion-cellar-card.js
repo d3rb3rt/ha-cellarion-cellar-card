@@ -149,6 +149,8 @@
     .head { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--cb-line); }
     .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .title { font-size: var(--cb-title-font, 18px); font-weight: 600; margin-right: 8px; }
+    .cname .sel.cnsel { min-height: 30px; max-width: 100%; padding: 0 4px 0 10px; border-color: transparent; background: none; box-shadow: none; font-size: 15px; font-weight: 600; letter-spacing: .02em; text-overflow: ellipsis; } /* cellar name as a pulldown (several cellars) */
+    .ctag { display: inline-block; margin-right: 6px; padding: 0 6px; border: 1px solid var(--cb-line); border-radius: 8px; font-size: .85em; font-weight: 500; color: var(--cb-sub); } /* cellar tag in front of a place (all cellars together) */
     .stand { color: var(--cb-sub); font-size: 12px; }
     [hidden] { display: none !important; }
     button, select, input { font: inherit; color: inherit; }
@@ -1036,8 +1038,16 @@
       const year = new Date().getFullYear();
       const have = new Set((data.bottles || []).map((b) => b.id));
       this._gone.forEach((id) => { if (!have.has(id)) this._gone.delete(id); });
-      const bottles = (data.bottles || []).filter((b) => !this._gone.has(b.id)).map((b) => {
+      // Cellars: the cache lists all of them; the card shows one or all together (choice per device)
+      const cl = Array.isArray(data.cellars) && data.cellars.length ? data.cellars
+        : [{ id: data.cellarId || '', name: data.cellar || '', racks: data.racks || [], rackGeo: data.rackGeo || {} }];
+      const sel = this._cellarSel(cl), all = sel === 'all', multi = cl.length > 1;
+      const names = new Map(cl.map((c) => [c.id, c.name || '']));
+      const per = new Map();
+      (data.bottles || []).forEach((b) => { if (!this._gone.has(b.id)) { const k = b.cellar || cl[0].id; per.set(k, (per.get(k) || 0) + 1); } });
+      const bottles = (data.bottles || []).filter((b) => !this._gone.has(b.id) && (!multi || all || (b.cellar || cl[0].id) === sel)).map((b) => {
         const o = Object.assign({}, b);
+        o._cn = multi ? names.get(b.cellar || cl[0].id) || '' : '';
         o._status = statusOf(o, year);
         o._price = priceKey(o);
         o._loc = this._placeText(o) || o.location || NO_LOC;
@@ -1058,15 +1068,19 @@
       };
       const grapes = new Map();
       bottles.forEach((b) => (b.grapes || []).forEach((g) => grapes.set(g, (grapes.get(g) || 0) + 1)));
+      const cur = all ? null : (cl.find((c) => c.id === sel) || cl[0]);
       this._data = {
         generated: data.generated,
-        cellar: data.cellar || '',
-        cellarId: data.cellarId || '',
+        cellar: all ? t('cellar.all') : ((cur && cur.name) || data.cellar || ''),
+        cellarId: all ? '' : ((cur && cur.id) || data.cellarId || ''),
+        cellars: cl.map((c) => ({ id: c.id, name: c.name || '', n: per.get(c.id) || 0 })),
+        cellarSel: sel,
+        multi,
         url: String(data.url || 'https://cellarion.app').replace(/\/+$/, ''),
         fields: Array.isArray(data.fields) ? data.fields : [],
         bottles,
-        racks: data.racks || [],
-        rackGeo: data.rackGeo && typeof data.rackGeo === 'object' ? data.rackGeo : {},
+        racks: cur ? (cur.racks || []) : Array.from(new Set([].concat(...cl.map((c) => c.racks || [])))),
+        rackGeo: cur ? (cur.rackGeo || {}) : Object.assign({}, ...cl.map((c) => c.rackGeo || {})),
         facet: {
           type: count((b) => b._type),
           status: count((b) => b._status),
@@ -1079,6 +1093,14 @@
       };
       this._setHeader();
     }
+    // Chosen cellar of this device: a cellar id or 'all'. Only with several cellars; without a (valid) choice the first cellar.
+    _cellarSel(cl) {
+      if (cl.length < 2) return cl[0].id;
+      const v = this._local && this._local.cellar;
+      return v === 'all' || cl.some((c) => c.id === v) ? v : cl[0].id;
+    }
+    // Several cellars shown together: places carry their cellar
+    _allCellars() { return !!(this._data && this._data.multi && this._data.cellarSel === 'all'); }
     // Append the cellar name to the HA page header (toolbar), e.g. "Wine cellar - HK4" (option header_cellar: false turns it off)
     _setHeader() {
       try {
@@ -1439,9 +1461,20 @@
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`;
       const rlTxt = String(t('head.reload')).replace(/^\s*↻\s*/, '');
       const reload = `<button class="btn round rl" data-act="reloadask" title="${esc(this._busy ? t('head.loading') : rlTxt)}" aria-label="${esc(rlTxt)}" ${this._busy ? 'disabled' : ''}>${this._busy ? '…' : '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>'}</button>`;
-      const ttl = c.title || (c.header_cellar === false && this._data && this._data.cellar) || ''; // otherwise the cellar name is shown in the page header
+      // Several cellars: the cellar name becomes a pulldown (one cellar or all together)
+      const multi = !!(d && d.multi);
+      if (multi) {
+        const items = d.cellars.map((x) => ({ v: x.id, t: `${x.name} (${x.n})` }));
+        items.push({ sep: true }, { v: 'all', t: `${t('cellar.all')} (${d.cellars.reduce((n, x) => n + x.n, 0)})` });
+        const cur = items.find((o) => o.v === d.cellarSel) || items[0];
+        this._ddItems.cellarsel = { label: t('cellar.title'), items, cur: cur.t, curV: cur.v };
+      }
+      const ttl = c.title || (!multi && c.header_cellar === false && this._data && this._data.cellar) || ''; // otherwise the cellar name is shown in the page header
       const cname = this._flagV('hdr') === 'c' && this._data && this._data.cellar ? this._data.cellar : '';
-      let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}${cname ? `<span class="cname">${esc(cname)}</span>` : ''}`;
+      const cnameHtml = !cname ? '' : multi
+        ? `<span class="cname"><button type="button" class="sel cnsel" data-act="dd" data-id="cellarsel" aria-haspopup="listbox" aria-label="${esc(t('cellar.title'))}">${esc(cname)}</button></span>`
+        : `<span class="cname">${esc(cname)}</span>`;
+      let html = `<div class="top">${ttl ? `<span class="title">${esc(ttl)}</span>` : ''}${cnameHtml}`;
       if (!d) html += reload + gear + `</div>`;
       if (d) {
         // Count per group over the bottles that meet all other filters (and the search)
@@ -1525,19 +1558,24 @@
       return esc(l).split(' · ').join('<span class="lp">|</span>');
     }
     _locsHtml(bottles, brief) {
+      // All cellars together: every place carries its cellar (tag in front); the key is "cellar<SEP>place"
+      const A = this._allCellars(), SEP = '\u0001';
+      const L = (k) => (A ? k.slice(k.indexOf(SEP) + 1) : k), C = (k) => (A ? k.slice(0, k.indexOf(SEP)) : '');
+      const tag = (k) => (C(k) ? `<span class="ctag">${esc(C(k))}</span>` : '');
+      const cmp = (a, b) => (L(a[0]) === NO_LOC) - (L(b[0]) === NO_LOC) || de.compare(C(a[0]), C(b[0])) || de.compare(L(a[0]), L(b[0]));
       const m = new Map();
-      bottles.forEach((b) => m.set(b._loc, (m.get(b._loc) || 0) + 1));
+      bottles.forEach((b) => { const k = (A ? (b._cn || '') + SEP : '') + b._loc; m.set(k, (m.get(k) || 0) + 1); });
       const inRow = brief === true;
       if (brief && m.size === 1) brief = 'one'; else brief = '';
       if (inRow && m.size > 1) {
         // Several places in the wine row: summarise per rack (rack ×count), details are on the detail page
         const r = new Map();
-        m.forEach((n, l) => { const k = l === NO_LOC ? NO_LOC : l.split(' · ')[0]; r.set(k, (r.get(k) || 0) + n); });
-        return Array.from(r.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
-          .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${this._lt(l === NO_LOC ? t('loc.noneShort') : l)}<b>×${n}</b></span>`).join('');
+        m.forEach((n, k) => { const l = L(k), key = (A ? C(k) + SEP : '') + (l === NO_LOC ? NO_LOC : l.split(' · ')[0]); r.set(key, (r.get(key) || 0) + n); });
+        return Array.from(r.entries()).sort(cmp)
+          .map(([k, n]) => `<span class="loc${L(k) === NO_LOC ? ' none' : ''}">${tag(k)}${this._lt(L(k) === NO_LOC ? t('loc.noneShort') : L(k))}<b>×${n}</b></span>`).join('');
       }
-      return Array.from(m.entries()).sort((a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]))
-        .map(([l, n]) => `<span class="loc${l === NO_LOC ? ' none' : ''}">${this._lt(l === NO_LOC ? t('loc.noneShort') : l)}${!brief && (bottles.length > 1 || n > 1) ? `<b>×${n}</b>` : ''}</span>`).join('');
+      return Array.from(m.entries()).sort(cmp)
+        .map(([k, n]) => `<span class="loc${L(k) === NO_LOC ? ' none' : ''}">${tag(k)}${this._lt(L(k) === NO_LOC ? t('loc.noneShort') : L(k))}${!brief && (bottles.length > 1 || n > 1) ? `<b>×${n}</b>` : ''}</span>`).join('');
     }
     _winText(e) {
       const b = e.b;
@@ -2172,7 +2210,10 @@
     }
     // Detail view ("view" only): orders the details like Cellarion (wine, maturity, profile, my entry, own fields, bottles)
     // Link to the vintage in Cellarion (opens the web app)
-    _edUrl(b) { return this._data && this._data.cellarId && b && b.wine ? `${this._data.url}/cellars/${encodeURIComponent(this._data.cellarId)}/vintages/${encodeURIComponent(b.wine)}/${encodeURIComponent(b.vintage || 'NV')}` : ''; }
+    _edUrl(b) {
+      const cid = (b && b.cellar) || (this._data && this._data.cellarId); // with several cellars the bottle knows its own
+      return this._data && cid && b && b.wine ? `${this._data.url}/cellars/${encodeURIComponent(cid)}/vintages/${encodeURIComponent(b.wine)}/${encodeURIComponent(b.vintage || 'NV')}` : '';
+    }
     // Racks that hold bottles of the open wine+vintage (stable order, for switching in the large view)
     _rackList(bottles) {
       const geo = (this._data && this._data.rackGeo) || {};
@@ -2340,10 +2381,11 @@
       const _nRack = _inRack.reduce((n, [, arr]) => n + arr.length, 0);
       const _places = _inRack.map(([l, arr]) => _split(l)[1] ? _split(l)[1] + (arr.length > 1 && _inRack.length > 1 ? ' ×' + arr.length : '') : '').filter(Boolean).join(', ');
       const _cnt = t('det.bottlesN', { n: _nRack });
+      const _ctag = this._allCellars() && sel._cn ? `<span class="ctag">${esc(sel._cn)}</span>` : ''; // all cellars together: the cellar of the chosen place
       const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
       const botsSec = '';
       const actBar = `<div class="dact d2act">${popup}` +
-        `<button class="d2sel" data-act="dbots" aria-expanded="${sectionOpen}" aria-haspopup="listbox"><span class="d2st"><span class="d2sub" style="color:var(--cb-text);font-weight:600">${esc(_rk)} · <span class="bw">${esc(_cnt)}</span><span class="bi" title="${esc(_cnt)}" aria-label="${esc(_cnt)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 2h4v2.5c0 1 .6 1.6 1.2 2.6C16 8.3 16.5 9.5 16.5 11V21a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V11c0-1.5.5-2.7 1.3-3.9C9.4 6.1 10 5.5 10 4.5z"/></svg>${_nRack}</span></span>${_places ? `<span class="loc">${esc(_places)}</span>` : ''}</span>` +
+        `<button class="d2sel" data-act="dbots" aria-expanded="${sectionOpen}" aria-haspopup="listbox"><span class="d2st"><span class="d2sub" style="color:var(--cb-text);font-weight:600">${_ctag}${esc(_rk)} · <span class="bw">${esc(_cnt)}</span><span class="bi" title="${esc(_cnt)}" aria-label="${esc(_cnt)}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 2h4v2.5c0 1 .6 1.6 1.2 2.6C16 8.3 16.5 9.5 16.5 11V21a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V11c0-1.5.5-2.7 1.3-3.9C9.4 6.1 10 5.5 10 4.5z"/></svg>${_nRack}</span></span>${_places ? `<span class="loc">${esc(_places)}</span>` : ''}</span>` +
         `<span class="d2pill${multi ? ' hot' : ''}"${multi ? ` title="${esc(t('det.morePlaces', { n: groups.size - 1 }))}" aria-label="${esc(t('det.morePlaces', { n: groups.size - 1 }))}"` : ''}>${multi ? '+' + (groups.size - 1) + ' ' : ''}${sectionOpen ? '▾' : '▴'}</span></button>` +
         `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button>` +
         (sel.where && sel.where.rack ? `<button class="btn rbtn round" data-act="drack" aria-pressed="${!!(d && d.rackBig)}" title="${esc(t('det.rackBig'))}" aria-label="${esc(t('det.rackBig'))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M9 3v18M15 3v18"/></svg></button>` : '') +
@@ -2600,7 +2642,11 @@
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
       this._dd = null;
-      if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fsAdd(id, v); }
+      if (id === 'sort') { this._sort = v; this._saveState(); }
+      else if (id === 'cellarsel') { // other cellar (or all): filters and open rows belong to the old selection and are cleared, the search stays
+        this._local.cellar = v; this._f = { q: this._f.q || '' }; this._open = new Set(); this._saveState();
+        if (this._raw) this._ingest(this._raw);
+      } else if (id) { this._fsAdd(id, v); }
       this._renderDlg(); this._renderAll();
     },
     detail(t) {

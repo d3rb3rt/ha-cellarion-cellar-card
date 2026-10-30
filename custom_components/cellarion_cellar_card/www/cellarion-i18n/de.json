@@ -24,6 +24,8 @@
  "filter.cls": "Einstufung",
  "filter.vintage": "Jahrgang",
  "filter.racks": "Lagerort",
+ "cellar.title": "Keller",
+ "cellar.all": "Alle Keller",
  "filter.shop": "Händler",
  "sort.title": "Sortierung",
  "sort.name": "Wein A–Z",

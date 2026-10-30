@@ -307,8 +307,11 @@
  "flag.clsfilter.cols": "Spalten",
  "filter.and": "und",
  "flag.fmode": "Filtermodus (Test)",
- "flag.fmodeSub": "Erste Filter-Pille schaltet zwischen ODER und UND. ODER: ein Wein passt, wenn er zu irgendeinem gewählten Wert irgendeines Filters passt, alle Listen bleiben frei. UND: alles muss zusammen passen, die Listen werden enger; Einzelwert-Filter und Klassifikationsgruppen ersetzen die vorige Auswahl.",
+ "flag.fmodeSub": "Schalter: erste Filter-Pille schaltet zwischen ODER und UND. Ersetzen: Filter gelten wie bisher, ein Klick ersetzt aber den gewählten Wert (Klassifikation: den der Gruppe), die Liste zeigt weiter die anderen Werte. Schalter-Details: ODER: ein Wein passt, wenn er zu irgendeinem gewählten Wert irgendeines Filters passt, alle Listen bleiben frei. UND: alles muss zusammen passen, die Listen werden enger; Einzelwert-Filter und Klassifikationsgruppen ersetzen die vorige Auswahl.",
  "filter.modeOr": "ODER",
  "filter.modeAnd": "UND",
- "filter.modeTip": "Filtermodus: ODER oder UND"
+ "filter.modeTip": "Filtermodus: ODER oder UND",
+ "flag.fmode.off": "Aus",
+ "flag.fmode.toggle": "Schalter",
+ "flag.fmode.replace": "Ersetzen"
 }

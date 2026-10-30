@@ -65,24 +65,28 @@ INVENTORY = {
 }
 
 
-def _dev_inventory(tmp_path):
+def _only_first_cellar_racks(path):
+    assert path.startswith("/api/racks?cellar=c1")  # the racks of the shared cellar are not read
+    return RACKS
+
+
+def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks):
     spec = importlib.util.spec_from_file_location("bestand_dev", DEV)
     dev = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dev)
     dev.CACHE_FILE = str(tmp_path / "bestand.json")  # the state file follows the cache file
     dev.token = lambda: "t"
-    dev.get_cond = lambda path, tok, etag: (200, INVENTORY, 'W/"x"')
-    dev.get = lambda path, tok: RACKS
+    dev.get_cond = lambda path, tok, etag: (200, inv, 'W/"x"')
+    dev.get = lambda path, tok: racks(path)
     dev.refresh()
     return json.loads(pathlib.Path(dev.CACHE_FILE).read_text(encoding="utf-8"))
 
 
-def _integration_inventory():
+def _integration_inventory(inv=INVENTORY, racks=_only_first_cellar_racks):
     async def get(path):
-        assert path.startswith("/api/racks?cellar=c1")
-        return RACKS
+        return racks(path)
 
-    return asyncio.run(api.build_inventory(INVENTORY, get))
+    return asyncio.run(api.build_inventory(inv, get))
 
 
 def test_inventory_matches_development_setup(tmp_path, capsys):
@@ -94,3 +98,43 @@ def test_inventory_matches_development_setup(tmp_path, capsys):
     assert integ == dev
     assert dev["total"] == 6 and dev["racks"] == ["R", "S"] and dev["fields"] == ["Lage", "Stil"]
     assert [b["type"] for b in dev["bottles"] if b["name"] == "Villa Magra"] == ["other"]  # category "other" is delivered as type "other"
+
+
+# Two own cellars and one shared: both setups deliver the two own cellars, each bottle knows its cellar, shared stays out
+RACKS_BY_CELLAR = {
+    "c1": {"racks": [{"_id": "r1", "name": "R", "typeConfig": {"shelfRows": [1, 2, 1]}}]},
+    "c2": {"racks": [{"_id": "r3", "name": "Shelf", "cols": 4, "typeConfig": {"shelfRows": [2, 2]}}]},
+}
+INVENTORY_TWO = {
+    "schema": 1,
+    "cellars": [{"id": "c1", "name": "HK4", "role": "owner"}, {"id": "c2", "name": "Cabin", "role": "owner"}, {"id": "c3", "name": "Shared", "role": "member"}],
+    "racks": [{"id": "r1", "cellar": "c1", "name": "R"}, {"id": "r3", "cellar": "c2", "name": "Shelf"}, {"id": "r9", "cellar": "c3", "name": "Other"}],
+    "wines": {"w1": {"name": "Riesling", "type": "still", "colour": "white"}},
+    "bottles": [
+        {"id": "a" * 24, "wine": "w1", "cellar": "c1", "vintage": "2019", "window": {},
+         "location": {"rack": "r1", "rackName": "R", "position": 1, "shelf": 1, "row": 1, "col": 1}, "personal": []},
+        {"id": "b" * 24, "wine": "w1", "cellar": "c2", "vintage": "2019", "window": {},
+         "location": {"rack": "r3", "rackName": "Shelf", "position": 3, "shelf": 2, "row": 1, "col": 3}, "personal": []},
+        {"id": "c" * 24, "wine": "w1", "cellar": "c2", "vintage": "2020", "window": {}, "location": None, "personal": []},
+        {"id": "d" * 24, "wine": "w1", "cellar": "c3", "vintage": "2021", "window": {}, "location": None, "personal": []},  # shared cellar: left out
+    ],
+}
+
+
+def _racks_of_own_cellars(path):
+    cid = path.split("cellar=")[1].split("&")[0]
+    assert cid in RACKS_BY_CELLAR, "racks of a cellar that is not delivered were read"
+    return RACKS_BY_CELLAR[cid]
+
+
+def test_two_own_cellars_match_development_setup(tmp_path, capsys):
+    dev = _dev_inventory(tmp_path, INVENTORY_TWO, _racks_of_own_cellars)
+    capsys.readouterr()
+    integ = _integration_inventory(INVENTORY_TWO, _racks_of_own_cellars)
+    for d in (dev, integ):
+        d.pop("generated", None)
+    assert integ == dev
+    assert [(c["id"], c["total"], c["racks"]) for c in dev["cellars"]] == [("c1", 1, ["R"]), ("c2", 2, ["Shelf"])]
+    assert dev["total"] == 3 and dev["racks"] == ["R", "Shelf"]
+    assert [b["cellar"] for b in dev["bottles"]] == ["c1", "c2", "c2"]
+    assert dev["cellars"][1]["rackGeo"] == {"Shelf": {"cols": 4, "rows": [2, 2]}}

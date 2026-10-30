@@ -209,53 +209,86 @@ class McpClient:
 # ---------- inventory ----------
 
 
-def pick_cellar(cellars: list[JsonDict], cellar_id: str | None) -> JsonDict:
-    """The chosen cellar by id, or the first one when no id is configured."""
+def own_cellars(cellars: list[JsonDict]) -> list[JsonDict]:
+    """The user's own cellars (role owner; a missing role counts as owner). Cellars shared with the user are left out;
+    without an own one the first stays."""
+    return [c for c in cellars if c.get("role") in (None, "owner")] or cellars[:1]
+
+
+def pick_cellars(cellars: list[JsonDict], cellar_ids: str | None) -> list[JsonDict]:
+    """The cellars to deliver. cellar_ids is empty (all of the user's own cellars) or a comma separated list of cellar ids: those
+    cellars, in that order (the first is the one the card starts with). Ids that no longer exist are skipped; none left is an error."""
     if not cellars:
         raise RuntimeError("no cellar found")
-    if not cellar_id:
-        return cellars[0]
-    for c in cellars:
-        if cellar_id in (c.get("_id"), c.get("id")):
-            return c
-    raise RuntimeError("the configured cellar no longer exists")
+    wanted = [x.strip() for x in (cellar_ids or "").split(",") if x.strip()]
+    if not wanted:
+        return own_cellars(cellars)
+    picked: list[JsonDict] = []
+    for w in wanted:
+        c = next((x for x in cellars if w in (x.get("_id"), x.get("id"))), None)
+        if c is not None and c not in picked:
+            picked.append(c)
+    if not picked:
+        raise RuntimeError("the configured cellar no longer exists")
+    return picked
 
 
-def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_id: str | None = None) -> JsonDict:
-    """Compact inventory (cellar name, racks, bottles with places and personal fields) of one cellar from GET /api/inventory."""
-    cellar = pick_cellar(inv.get("cellars") or [], cellar_id)
-    cid = cellar.get("id") or cellar.get("_id")
+def rack_geo(racks: list[JsonDict], geo: dict[str, JsonDict]) -> dict[str, JsonDict]:
+    """Columns and rows per shelf of the racks (by name), where the rack layout is known."""
+    return {r["name"]: {"cols": g["cols"], "rows": g["rows"]} for r in racks
+            if (g := geo.get(r.get("id")) or geo.get(r.get("name"))) and g.get("rows")}
+
+
+def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None) -> JsonDict:
+    """Compact inventory from GET /api/inventory: the cellars (id, name, total, racks, rackGeo), bottles with places and personal fields.
+    The card picks one cellar or shows all together; cellar/cellarId/racks/rackGeo at the top are the first cellar's name and id and the
+    sum of all racks (for cards without the cellar list)."""
+    cellars = pick_cellars(inv.get("cellars") or [], cellar_ids)
+    ids = [c.get("id") or c.get("_id") for c in cellars]
+    first = ids[0]
+    multi = len(ids) > 1
     wines = inv.get("wines") or {}
     bottles: list[JsonDict] = []
     labels: set[str] = set()
+    count = dict.fromkeys(ids, 0)
     for b in inv.get("bottles") or []:
-        if b.get("cellar") not in (None, cid):  # the inventory also holds cellars shared with the user
+        cb = b.get("cellar") or first
+        if cb not in count:  # cellars that are not delivered (the inventory also holds cellars shared with the user)
             continue
         s = slim(b, wines.get(b.get("wine")), place(b.get("location"), geo))
+        if multi:
+            s["cellar"] = cb
         p = personal(b.get("personal"))
         if p:
             s["p"] = p
             labels.update(p)
         bottles.append(s)
+        count[cb] += 1
+    all_racks = [r for r in inv.get("racks") or [] if (r.get("cellar") or first) in count and r.get("name")]
+    out = []
+    for c, cid in zip(cellars, ids):
+        rs = [r for r in all_racks if (r.get("cellar") or first) == cid]
+        out.append({"id": cid, "name": c.get("name"), "total": count[cid], "racks": [r["name"] for r in rs], "rackGeo": rack_geo(rs, geo)})
     return {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-        "cellar": cellar.get("name"),
-        "cellarId": cid,
+        "cellar": cellars[0].get("name"),
+        "cellarId": first,
+        "cellars": out,
         "total": len(bottles),
-        "racks": [r["name"] for r in inv.get("racks") or [] if r.get("cellar") in (None, cid) and r.get("name")],
-        "rackGeo": {r["name"]: {"cols": g["cols"], "rows": g["rows"]} for r in inv.get("racks") or []
-                    if r.get("cellar") in (None, cid) and r.get("name") and (g := geo.get(r.get("id")) or geo.get(r.get("name"))) and g.get("rows")},
+        "racks": list(dict.fromkeys(r["name"] for r in all_racks)),
+        "rackGeo": rack_geo(all_racks, geo),
         "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
     }
 
 
-async def build_inventory(inv: JsonDict, get: Getter, cellar_id: str | None = None) -> JsonDict:
-    """Compact inventory from an already fetched /api/inventory. Only the rack layout (shelves, places per row) is read on top."""
-    cellar = pick_cellar(inv.get("cellars") or [], cellar_id)
-    cid = cellar.get("id") or cellar.get("_id")
-    geo = geometry((await get(f"/api/racks?cellar={cid}&summary=1")).get("racks"))
-    return build(inv, geo, cellar_id)
+async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None) -> JsonDict:
+    """Compact inventory from an already fetched /api/inventory. Only the rack layout (shelves, places per row) is read on top, per cellar."""
+    geo: dict[str, JsonDict] = {}
+    for c in pick_cellars(inv.get("cellars") or [], cellar_ids):
+        cid = c.get("id") or c.get("_id")
+        geo.update(geometry((await get(f"/api/racks?cellar={cid}&summary=1")).get("racks")))
+    return build(inv, geo, cellar_ids)
 
 
 async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,

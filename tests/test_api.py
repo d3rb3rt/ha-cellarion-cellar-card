@@ -77,18 +77,46 @@ def test_profile_from_get_bottle():
     assert out["rating"] == 90 and "occasion" not in out
 
 
-def test_pick_cellar_by_id_or_first():
-    cellars = [{"_id": "c1", "name": "HK4"}, {"_id": "c2", "name": "Cabin"}]
-    assert api.pick_cellar(cellars, None)["name"] == "HK4"
-    assert api.pick_cellar(cellars, "c2")["name"] == "Cabin"
+def test_pick_cellars_by_id_or_all_own_ones():
+    cellars = [{"_id": "c1", "name": "HK4"}, {"_id": "c2", "name": "Cabin", "role": "owner"}, {"_id": "c3", "name": "Shared", "role": "member"}]
+    assert [c["name"] for c in api.pick_cellars(cellars, None)] == ["HK4", "Cabin"]  # cellars shared with the user are left out
+    assert [c["name"] for c in api.pick_cellars(cellars, "c2")] == ["Cabin"]  # a configured cellar restricts the delivery to it
 
 
-def test_pick_cellar_unknown_id_or_none_at_all():
+def test_pick_cellars_comma_separated_keeps_the_order_and_skips_unknown_ids():
+    cellars = [{"_id": "c1", "name": "HK4"}, {"_id": "c2", "name": "Cabin"}, {"_id": "c3", "name": "Shared", "role": "member"}]
+    assert [c["name"] for c in api.pick_cellars(cellars, "c2, c1")] == ["Cabin", "HK4"]  # the first is the cellar the card starts with
+    assert [c["name"] for c in api.pick_cellars(cellars, "c3,gone,c1,c3")] == ["Shared", "HK4"]  # an explicit id may name a shared cellar
+
+
+def test_pick_cellars_without_an_own_one_keeps_the_first():
+    cellars = [{"_id": "c1", "name": "A", "role": "member"}, {"_id": "c2", "name": "B", "role": "member"}]
+    assert [c["name"] for c in api.pick_cellars(cellars, None)] == ["A"]
+
+
+def test_pick_cellars_unknown_id_or_none_at_all():
     import pytest
     with pytest.raises(RuntimeError):
-        api.pick_cellar([{"_id": "c1"}], "gone")
+        api.pick_cellars([{"_id": "c1"}], "gone")
     with pytest.raises(RuntimeError):
-        api.pick_cellar([], None)
+        api.pick_cellars([], None)
+
+
+def test_build_lists_all_own_cellars_and_tags_bottles_only_with_several():
+    wines = {"w1": {"name": "Riesling"}}
+    geo = api.geometry([{"_id": "r1", "name": "R", "cols": 6, "typeConfig": {"shelfRows": [1, 1]}}, {"_id": "r2", "name": "S", "cols": 4, "typeConfig": {"shelfRows": [2]}}])
+    base = {"racks": [{"id": "r1", "cellar": "c1", "name": "R"}, {"id": "r2", "cellar": "c2", "name": "S"}], "wines": wines,
+            "bottles": [{"id": "a" * 24, "wine": "w1", "cellar": "c1", "vintage": "2020"}, {"id": "b" * 24, "wine": "w1", "cellar": "c2", "vintage": "2021"},
+                        {"id": "c" * 24, "wine": "w1", "cellar": "c2", "vintage": "2022"}, {"id": "d" * 24, "wine": "w1", "cellar": "c9", "vintage": "2023"}]}
+    two = api.build({**base, "cellars": [{"id": "c1", "name": "HK4"}, {"id": "c2", "name": "Cabin"}]}, geo)
+    assert [(c["id"], c["name"], c["total"], c["racks"]) for c in two["cellars"]] == [("c1", "HK4", 1, ["R"]), ("c2", "Cabin", 2, ["S"])]
+    assert two["total"] == 3 and two["racks"] == ["R", "S"] and set(two["rackGeo"]) == {"R", "S"}
+    assert [b["cellar"] for b in two["bottles"]] == ["c1", "c2", "c2"]  # the bottle of an unknown cellar is left out
+    assert two["cellar"] == "HK4" and two["cellarId"] == "c1"
+    one = api.build({**base, "cellars": [{"id": "c1", "name": "HK4"}]}, geo)
+    assert [c["total"] for c in one["cellars"]] == [1] and "cellar" not in one["bottles"][0]  # a single cellar: bottles stay as before
+    only = api.build({**base, "cellars": [{"id": "c1", "name": "HK4"}, {"id": "c2", "name": "Cabin"}]}, geo, "c2")
+    assert [c["id"] for c in only["cellars"]] == ["c2"] and only["total"] == 2 and "cellar" not in only["bottles"][0]
 
 
 def test_rack_geo_lists_the_rows_per_shelf_from_the_bottom():

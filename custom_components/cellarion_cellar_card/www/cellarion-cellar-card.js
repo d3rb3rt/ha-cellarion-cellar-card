@@ -392,6 +392,9 @@
     .rbtn[aria-pressed="true"] { display: inline-flex; align-items: center; justify-content: center; background: var(--cb-on); color: var(--cb-on-text); }
     .rmap:not(.big) { cursor: pointer; }
     .rmap .rm-head { width: 100%; }
+    .rmap .rm-dots { display: flex; justify-content: center; gap: 5px; margin-top: 4px; }
+    .rmap .rm-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--cb-line); }
+    .rmap .rm-dots i.on { background: var(--cb-on); }
     .rmap .rm-head .rm-name { flex: 1; text-align: center; }
     .rmap .rm-nav { flex: none; width: 32px; height: 32px; min-width: 0; min-height: 0; padding: 0 0 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.3em; line-height: 1; background: var(--cb-chip); color: var(--cb-text); border: 0; border-radius: 8px; cursor: pointer; }
     .rmap .rm-x { flex: none; min-height: 36px; min-width: 36px; color: var(--cb-sub); background: none; font-size: .9em; border: 1px solid var(--cb-line); border-radius: 8px; cursor: pointer; }
@@ -2182,7 +2185,7 @@
         const nav = (dir, ch) => `<button class="rm-nav" data-act="drnav" data-dir="${dir}" aria-label="${esc(t(dir < 0 ? 'det.rackPrev' : 'det.rackNext'))}">${ch}</button>`;
         const multiR = big && rl.length > 1;
         const zoom = '';
-        return `<div class="rmap${big ? ' big' : ''}"${big ? '' : ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackBig'))}"`}><div class="rm-head">${multiR ? nav(-1, '‹') : ''}<div class="rm-name">${esc(rk)}${multiR ? ` · ${rl.indexOf(rk) + 1}/${rl.length}` : ''}</div>${multiR ? nav(1, '›') : ''}${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
+        return `<div class="rmap${big ? ' big' : ''}"${big ? '' : ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackBig'))}"`}><div class="rm-head">${multiR ? nav(-1, '‹') : ''}<div class="rm-name">${esc(rk)}${multiR ? `<span class="rm-dots" aria-label="${rl.indexOf(rk) + 1}/${rl.length}">${rl.map((r) => `<i${r === rk ? ' class="on"' : ''}></i>`).join('')}</span>` : ''}</div>${multiR ? nav(1, '›') : ''}${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
       }).join('');
     }
     _viewV2(sel, bottles, info) {

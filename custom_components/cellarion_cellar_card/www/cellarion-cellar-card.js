@@ -1464,7 +1464,8 @@
       // Several cellars: the cellar name becomes a pulldown (one cellar or all together)
       const multi = !!(d && d.multi);
       if (multi) {
-        const items = d.cellars.map((x) => ({ v: x.id, t: `${x.name} (${x.n})` }));
+        const items = d.cellars.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), I18N.lang, { sensitivity: 'base', numeric: true })) // alphabetical; the start cellar stays the first one delivered
+          .map((x) => ({ v: x.id, t: `${x.name} (${x.n})` }));
         items.push({ sep: true }, { v: 'all', t: `${t('cellar.all')} (${d.cellars.reduce((n, x) => n + x.n, 0)})` });
         const cur = items.find((o) => o.v === d.cellarSel) || items[0];
         this._ddItems.cellarsel = { label: t('cellar.title'), items, cur: cur.t, curV: cur.v };

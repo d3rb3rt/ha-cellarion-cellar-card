@@ -320,6 +320,7 @@
     .fpills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .fpills:not(:has(> :not([hidden]))) { display: none; }
     .fpills button[hidden] { display: none; }
+    .fand { font-size: 12px; color: var(--cb-sub); padding: 0 2px; }
     .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .fpill .x { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; opacity: .65; font-size: 11px; }
     mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
@@ -1086,8 +1087,6 @@
     // ---------- Filters, groups, sorting ----------
     // skip: leave out a filter group (for the counts in the pick lists: only the other filters apply)
     _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
-    // Add a filter value; tiers of one classification group replace each other (choosing Auslese replaces Kabinett)
-    _fsAdd(id, v) { const S = this._fs(id); if (id === 'cls') { const g = this._clsPos(v)[0]; if (g < 3) Array.from(S).forEach((x) => { if (this._clsPos(x)[0] === g) S.delete(x); }); } S.add(v); }
     // All possible filters: fixed ones (type ... place) plus one per personal data field (automatically from the cache)
     _allDefs() {
       const byProd = (a, b) => de.compare(this._pkey(a[0]), this._pkey(b[0]));
@@ -1118,8 +1117,8 @@
       const noOther = skip !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
       return this._data.bottles.filter((b) => {
         if (noOther && b._type === 'other') return false;
-        // Classification: all chosen tiers must apply (rank AND ripeness); all other filters: any of the chosen values
-        for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'cls' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }
+        // Classification: any of the chosen tiers of one group (rank, ripeness, ageing, other), but every group with a choice must match; other filters: any of the chosen values
+        for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'cls' ? !this._clsGroups(f[d.id]).every((grp) => grp.some((v) => vals.includes(v))) : !vals.some((v) => f[d.id].has(v))) return false; }
         for (const t of toks) if (!b._hay.includes(t)) return false;
         return true;
       });
@@ -1365,6 +1364,12 @@
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
+    // Chosen classification tiers split by group, in group order: [[rank tiers], [ripeness tiers], ...] (empty groups left out)
+    _clsGroups(set) {
+      const g = [[], [], [], []];
+      Array.from(set || []).forEach((v) => g[this._clsPos(v)[0]].push(v));
+      return g.filter((x) => x.length);
+    }
     // Group of a classification tier: [0 vineyard rank, 1 ripeness / predicate, 2 ageing, 3 other, index inside the group]
     _clsPos(v) {
       const G = [
@@ -1475,7 +1480,8 @@
           }).join('') + `<span class="fend">` + (hid.length ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
-        const pills = defs.map((d) => Array.from(this._fs(d.id)).map((v) => {
+        const pills = defs.map((d) => (d.id === 'cls' ? this._clsGroups(this._fs(d.id)).map((grp, gi) => (gi ? [{ and: true }] : []).concat(grp)).reduce((a, x) => a.concat(x), []) : Array.from(this._fs(d.id))).map((v) => {
+          if (v && v.and) return `<span class="fand">${esc(t('filter.and'))}</span>`;
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
@@ -2547,7 +2553,7 @@
       const s = e.target && e.target.dataset && e.target.dataset.sel;
       if (!s) return;
       if (s === 'sort') { this._sort = e.target.value; this._saveState(); }
-      else if (e.target.value) { this._fsAdd(s, e.target.value); }
+      else if (e.target.value) { this._fs(s).add(e.target.value); }
       this._renderAll();
     }
     _onInput(e) {
@@ -2569,7 +2575,7 @@
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
       this._dd = null;
-      if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fsAdd(id, v); }
+      if (id === 'sort') { this._sort = v; this._saveState(); } else if (id) { this._fs(id).add(v); }
       this._renderDlg(); this._renderAll();
     },
     detail(t) {
@@ -2587,7 +2593,7 @@
       const g = t.dataset.g, v = t.dataset.v;
       this._stat = null;
       this._f = { q: '' }; // only the filter of the tap, earlier filters are cleared
-      if (g === 'q') this._f.q = v; else this._fsAdd(g, v);
+      if (g === 'q') this._f.q = v; else this._fs(g).add(v);
       // A single wine and vintage as result: straight to its detail page
       const keys = new Set(this._filtered().map((b) => (b.wine || b.name) + '|' + String(b.vintage || 'NV')));
       if (keys.size === 1) {

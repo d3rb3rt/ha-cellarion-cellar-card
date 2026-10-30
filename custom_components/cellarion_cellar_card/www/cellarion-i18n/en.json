@@ -304,5 +304,6 @@
  "flag.clsfilterSub": "Off: as before. Groups: one list ordered by rank, ripeness, ageing and other. Columns: wide list with the groups side by side.",
  "flag.clsfilter.off": "Off",
  "flag.clsfilter.groups": "Groups",
- "flag.clsfilter.cols": "Columns"
+ "flag.clsfilter.cols": "Columns",
+ "filter.and": "and"
 }

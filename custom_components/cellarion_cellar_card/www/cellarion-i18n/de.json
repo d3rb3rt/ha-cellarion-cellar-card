@@ -304,5 +304,6 @@
  "flag.clsfilterSub": "Aus: wie bisher. Gruppen: eine Liste, nach Lage, Prädikat, Reifung und Sonstige geordnet. Spalten: breite Liste mit den Gruppen nebeneinander.",
  "flag.clsfilter.off": "Aus",
  "flag.clsfilter.groups": "Gruppen",
- "flag.clsfilter.cols": "Spalten"
+ "flag.clsfilter.cols": "Spalten",
+ "filter.and": "und"
 }

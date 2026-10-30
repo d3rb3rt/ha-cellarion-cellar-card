@@ -379,7 +379,7 @@
     .rm-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
     .rmap { flex: none; display: flex; flex-direction: column; gap: 8px; }
     .rmap .rm-head { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 3px; }
-    .rmap .rm-head .rm-name { margin: 0; }
+    .rmap .rm-head .rm-name { margin: 0; font-size: .85em; color: var(--cb-text); white-space: nowrap; }
     .rmap .rm-zoom { flex: none; background: none; border: 1px solid var(--cb-line); border-radius: 6px; color: var(--cb-sub); padding: 3px 5px; cursor: pointer; display: inline-flex; }
     .rm-row.rm-bigrow { align-items: flex-start; }
     .rm-bigrow .rm-col { gap: 10px; }
@@ -388,8 +388,9 @@
     .rmap.big .rm-lanes { gap: 2px; }
     .rmap.big .rm-c { width: 22px; height: 22px; border-width: 2px; }
     .rbtn { display: none; }
+    .rbtn[aria-pressed="true"] { display: inline-flex; align-items: center; justify-content: center; background: var(--cb-on); color: var(--cb-on-text); }
     .rmap:not(.big) { cursor: pointer; }
-    .rmap .rm-nav { flex: none; min-width: 36px; min-height: 36px; font-size: 1.4em; line-height: 1; background: var(--cb-chip); color: var(--cb-text); border: 0; border-radius: 8px; cursor: pointer; }
+    .rmap .rm-nav { flex: none; min-width: 34px; min-height: 34px; font-size: 1.4em; line-height: 1; background: var(--cb-chip); color: var(--cb-text); border: 0; border-radius: 8px; cursor: pointer; }
     .rmap .rm-x { flex: none; min-height: 36px; min-width: 36px; color: var(--cb-sub); background: none; font-size: .9em; border: 1px solid var(--cb-line); border-radius: 8px; cursor: pointer; }
     .rbtn[aria-pressed="true"] { background: var(--cb-on); color: var(--cb-on-text); }
     @media (max-width: 600px) { .rm-row:not(.rm-bigrow) > .rmap { display: none; } .d2act .clink > span { display: none; } .d2act .clink { padding-left: 12px; padding-right: 12px; } .rbtn { display: inline-flex; align-items: center; justify-content: center; } }
@@ -2177,7 +2178,7 @@
         }
         const nav = (dir, ch) => `<button class="rm-nav" data-act="drnav" data-dir="${dir}" aria-label="${esc(t(dir < 0 ? 'det.rackPrev' : 'det.rackNext'))}">${ch}</button>`;
         const multiR = big && rl.length > 1;
-        const zoom = big ? `<button class="rm-x" data-act="drack" aria-label="${esc(t('det.rackSmall'))}" title="${esc(t('det.rackSmall'))}">✕</button>` : '';
+        const zoom = '';
         return `<div class="rmap${big ? ' big' : ''}"${big ? '' : ` data-act="drack" role="button" tabindex="0" title="${esc(t('det.rackBig'))}"`}><div class="rm-head">${multiR ? nav(-1, '‹') : ''}<div class="rm-name">${esc(rk)}${multiR ? ` · ${rl.indexOf(rk) + 1}/${rl.length}` : ''}</div>${multiR ? nav(1, '›') : ''}${zoom}</div><div class="rm-rack">${shelves}</div></div>`;
       }).join('');
     }

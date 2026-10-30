@@ -301,7 +301,7 @@
  "cls.g2": "Reifung",
  "cls.g3": "Sonstige",
  "flag.clsfilter": "Klassifikationsfilter (Test)",
- "flag.clsfilterSub": "Aus: wie bisher. Gruppen: eine Liste, nach Lage, Prädikat, Reifung und Sonstige geordnet. Spalten: breite Liste mit den Gruppen nebeneinander.",
+ "flag.clsfilterSub": "Aus: wie bisher. Gruppen: eine Liste, nach Lage, Prädikat, Reifung und Sonstige geordnet. Spalten: breite Liste mit den Gruppen nebeneinander. Je Typ: ein eigener Filter pro Art (Lage, Prädikat, Reifung, Sonstige).",
  "flag.clsfilter.off": "Aus",
  "flag.clsfilter.groups": "Gruppen",
  "flag.clsfilter.cols": "Spalten",
@@ -313,5 +313,6 @@
  "filter.modeTip": "Filtermodus: ODER oder UND",
  "flag.fmode.off": "Aus",
  "flag.fmode.toggle": "Schalter",
- "flag.fmode.replace": "Ersetzen"
+ "flag.fmode.replace": "Ersetzen",
+ "flag.clsfilter.split": "Je Typ"
 }

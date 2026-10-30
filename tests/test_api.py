@@ -89,3 +89,11 @@ def test_pick_cellar_unknown_id_or_none_at_all():
         api.pick_cellar([{"_id": "c1"}], "gone")
     with pytest.raises(RuntimeError):
         api.pick_cellar([], None)
+
+
+def test_rack_geo_lists_the_rows_per_shelf_from_the_bottom():
+    geo = api.geometry([{"_id": "r1", "name": "Cabinet", "cols": 4, "typeConfig": {"shelfRows": [8, 6, 10]}}])
+    assert geo["r1"]["rows"] == [10, 6, 8]  # lowest shelf first, like "fach" in the places
+    inv = {"cellars": [{"id": "c1", "name": "HK4"}], "racks": [{"id": "r1", "cellar": "c1", "name": "Cabinet"}, {"id": "r9", "cellar": "c1", "name": "Unknown"}],
+           "wines": {}, "bottles": []}
+    assert api.build(inv, geo)["rackGeo"] == {"Cabinet": {"cols": 4, "rows": [10, 6, 8]}}  # a rack without layout has no entry

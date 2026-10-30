@@ -30,15 +30,16 @@ Getter = Callable[[str], Awaitable[JsonDict]]
 
 
 def geometry(racks: Any) -> dict[str, JsonDict]:
-    """Rack layout from /api/racks: {rack id or name: {name, fachen, cols}}.
+    """Rack layout from /api/racks: {rack id or name: {name, fachen, cols, rows}}.
 
     The inventory names, per bottle, only shelf (counted from the top), row and place; the number of
     shelves and the places per row come from here.
     """
     geo: dict[str, JsonDict] = {}
     for r in racks or []:
-        g = {"name": r.get("name"), "fachen": len((r.get("typeConfig") or {}).get("shelfRows") or []),
-             "cols": r.get("cols") or 6}
+        sr = [int(x) for x in ((r.get("typeConfig") or {}).get("shelfRows") or []) if isinstance(x, (int, float)) and x >= 0]
+        g = {"name": r.get("name"), "fachen": len(sr), "cols": r.get("cols") or 6,
+             "rows": sr[::-1]}  # rows = rows per shelf, lowest shelf first
         for key in (r.get("_id"), r.get("id"), r.get("name")):
             if key:
                 geo[key] = g
@@ -242,6 +243,8 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_id: str | None = None)
         "cellarId": cid,
         "total": len(bottles),
         "racks": [r["name"] for r in inv.get("racks") or [] if r.get("cellar") in (None, cid) and r.get("name")],
+        "rackGeo": {r["name"]: {"cols": g["cols"], "rows": g["rows"]} for r in inv.get("racks") or []
+                    if r.get("cellar") in (None, cid) and r.get("name") and (g := geo.get(r.get("id")) or geo.get(r.get("name"))) and g.get("rows")},
         "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
     }

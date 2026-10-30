@@ -1487,6 +1487,8 @@
           defs.map((d) => {
             const m = t3[d.id], set = this._fs(d.id);
             if (!m.size && !set.size) return grey && hasAny(d) ? `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>` : '';
+            // flag fgrey: nothing chosen yet and every bottle shown has the one remaining value: choosing it would change nothing
+            if (grey && !set.size && m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length) return `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
             const items = d.defs ? this._optsK(d.defs, m, set) : d.clsg !== undefined ? this._optsCls(m, set) : this._opts(m, set, d.sort || by);
             if (d.id === 'grape' && set.size) { const co = new Map(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => { if (!co.has(g)) co.set(g, new Set()); co.get(g).add(b.wine); })); items.forEach((o) => { if (o.v !== undefined) { o.and = co.has(o.v); o.nAnd = o.and ? co.get(o.v).size : 0; } }); } // & only where the grape occurs together with the chosen ones, with the number of wines that would remain
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size,

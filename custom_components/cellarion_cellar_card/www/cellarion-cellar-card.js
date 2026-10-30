@@ -375,8 +375,9 @@
     .d2chips span em { font-style: normal; color: var(--cb-sub); margin-right: 4px; }
     .d2txt { line-height: 1.4; }
     .d2mine { border-left: 2px solid var(--cb-line); padding-left: 10px; margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
-    .rmap { float: right; margin: 0 0 8px 14px; }
-    .rmap + .rmap { clear: right; }
+    .rm-row { display: flex; gap: 14px; align-items: flex-start; }
+    .rm-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+    .rmap { flex: none; display: flex; flex-direction: column; gap: 8px; }
     .rmap .rm-name { font-size: .7em; color: var(--cb-sub); margin-bottom: 3px; text-align: center; }
     .rmap .rm-rack { display: flex; flex-direction: column; gap: 3px; width: max-content; border: 1px solid var(--cb-line); border-radius: 6px; padding: 4px; }
     .rmap .rm-shelf { display: flex; align-items: stretch; gap: 4px; }
@@ -2232,7 +2233,7 @@
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = (sel.grapes || []).join(', ');
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
-      return `<div class="d2hero">${img}${main}</div>${maturity}${this._flag('rackmap') ? this._rackMap(sel, bottles) : ''}${about}${noteHtml}${botsSec}${actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${this._flag('rackmap') ? `<div class="rm-row"><div class="rm-col">${maturity}${about}${noteHtml}</div>${this._rackMap(sel, bottles)}</div>` : maturity + about + noteHtml}${botsSec}${actBar}`;
     }
     _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)

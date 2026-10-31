@@ -197,6 +197,11 @@
       background: var(--cb-chip); padding: 0 10px; font-size: var(--cb-chip-font, 14px); max-width: 100%;
     }
     button.sel.hasv { color: var(--cb-on); font-weight: 600; box-shadow: 0 0 0 1px var(--cb-on) inset; } /* filter has values selected */
+    /* Filter mode OR (green) / NOT (red): chosen filters and their pills take the mode colour instead of the accent (theme: cellarion-fm-or / cellarion-fm-not) */
+    :host([data-fm="or"]) { --cb-fm: var(--cellarion-fm-or, var(--success-color, #2fa84f)); }
+    :host([data-fm="not"]) { --cb-fm: var(--cellarion-fm-not, var(--error-color, #d9534f)); }
+    :host([data-fm]) button.sel.hasv { color: var(--cb-fm); box-shadow: 0 0 0 1px var(--cb-fm) inset; }
+    :host([data-fm]) .fpill { background: color-mix(in srgb, var(--cb-fm) 18%, var(--cb-chip)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cb-fm) 55%, transparent) inset; }
     button.sel { width: auto; flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: 6px; text-align: left; color: var(--cb-text); font-family: inherit; cursor: pointer; white-space: nowrap; overflow: hidden; }
     button.sel::after { content: ''; flex: none; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); opacity: .7; margin-right: 4px; }
     button.sel.dis { opacity: .4; cursor: default; pointer-events: none; } /* filter has no options right now */
@@ -1352,6 +1357,7 @@
       if (this._keep()) this._saveState();
       this._applyMode();
       this.toggleAttribute('data-fullw', this._fullw());
+      if (this._multi()) this.setAttribute('data-fm', this._fm()); else this.removeAttribute('data-fm'); // filter mode colour (CSS: green OR, red NOT)
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();

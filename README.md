@@ -17,7 +17,7 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/detail.png?v=1.0.0" alt="Bottle details with label image" width="380">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/detail.png?v=2.4.1" alt="Bottle details with label image" width="380">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/phone.png?v=2.4.0" alt="Phone layout" width="300"><br>
   <em>Bottle details with label image, drink window, profile and storage places · the same card on a phone.</em>
 </p>
@@ -124,6 +124,11 @@ Update automations and scripts that call the old services or the old sensor by h
   red = past the window. The same colours are used in the drink-window bar in the details.
 - **Details**: *Take out …* asks for the reason and confirms before anything is written. *Edit in Cellarion* opens the
   bottle in the Cellarion app.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/cellars.png?v=2.4.1" alt="Cellar pulldown with All cellars" width="620"><br>
+  <em>With several cellars: the cellar pulldown, and a cellar tag on every place in the combined view.</em>
+</p>
 
 ## Rack view
 

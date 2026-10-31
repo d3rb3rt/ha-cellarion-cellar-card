@@ -309,6 +309,7 @@
  "fmode.std": "Standard",
  "fmode.or": "ODER",
  "fmode.not": "NICHT",
+ "fmode.orPill": "oder",
  "fmode.notPill": "nicht",
  "fmode.hint": "ODER: mindestens ein gewählter Wert passt. NICHT: keiner der gewählten Werte passt."
 }

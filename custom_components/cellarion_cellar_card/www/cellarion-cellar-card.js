@@ -1564,10 +1564,12 @@
           }).join('') + fmChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
+        let pn = 0; // pill counter: in the OR mode every pill after the first gets "or" in front, in the NOT mode every pill gets "not"
         const pills = defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
+          const fmPre = this._fm() === 'not' ? esc(t('fmode.notPill')) + ' ' : this._fm() === 'or' && pn++ > 0 ? esc(t('fmode.orPill')) + ' ' : '';
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
-            `${this._fm() === 'not' ? esc(t('fmode.notPill')) + ' ' : ''}${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
+            `${fmPre}${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
         }).join(this._pillSep(d)))).join('');
         html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>✕</button></div>`;
         html += `<div class="sumline"><span class="grow" data-sum></span>${sortInSum ? sortBtn : ''}</div>`;

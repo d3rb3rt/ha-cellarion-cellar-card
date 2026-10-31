@@ -598,10 +598,10 @@
     .setv2 .fl { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; min-height: 44px; cursor: pointer; }
     .setv2 .fl .wname { white-space: normal; }
     .setv2 .grip { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 44px; color: var(--cb-sub); cursor: grab; touch-action: none; }
-    .setv2 .fseg { flex: none; display: inline-flex; border: 1px solid var(--cb-line); border-radius: 16px; overflow: hidden; } /* three states of a filter: visible / behind ... / off */
-    .setv2 .fseg button { min-height: 30px; padding: 0 9px; border: 0; background: transparent; color: var(--cb-text); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
-    .setv2 .fseg button + button { border-left: 1px solid var(--cb-line); }
-    .setv2 .fseg button.on { background: var(--cb-on); color: var(--cb-on-text); }
+    .setv2 .fseg { flex: none; display: inline-flex; gap: 2px; } /* three states of a filter: visible / behind ... / off. Quiet: no frame, no solid fill; only the deviation from "visible" gets the accent */
+    .setv2 .fseg button { min-height: 28px; padding: 0 8px; border: 0; border-radius: 14px; background: transparent; color: var(--cb-sub); font: inherit; font-size: 12px; font-weight: 400; cursor: pointer; white-space: nowrap; }
+    .setv2 .fseg button.on { background: color-mix(in srgb, var(--cb-text) 14%, transparent); color: var(--cb-text); font-weight: 600; }
+    .setv2 .fseg button.on[data-v="more"] { background: color-mix(in srgb, var(--cb-on) 22%, transparent); color: var(--cb-on); }
     .setv2 .frow.drag { background: var(--cb-chip); border-radius: 6px; }
     .setv2 .frow.drag .grip { cursor: grabbing; color: var(--cb-text); }
     .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }

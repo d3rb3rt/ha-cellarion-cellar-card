@@ -606,7 +606,8 @@
     .setv2 .fseg { flex: none; display: inline-flex; gap: 2px; width: 126px; } /* three states of a filter: visible / behind ... / off. Quiet: no frame, no solid fill; only the deviation from "visible" gets the accent */
     .setv2 .fseg button { min-height: 28px; padding: 0 8px; border: 0; border-radius: 14px; background: transparent; color: var(--cb-sub); font: inherit; font-size: 12px; font-weight: 400; cursor: pointer; white-space: nowrap; }
     .setv2 .fseg button.on { background: color-mix(in srgb, var(--cb-text) 14%, transparent); color: var(--cb-text); font-weight: 600; }
-    .setv2 .fseg button.on[data-v="more"] { background: color-mix(in srgb, var(--cb-on) 22%, transparent); color: var(--cb-on); }
+    .setv2 .fseg button.on[data-v="vis"] { background: color-mix(in srgb, var(--cb-on) 22%, transparent); color: var(--cb-on); } /* On: accent (blue), ...: grey, Off: red */
+    .setv2 .fseg button.on[data-v="off"] { background: color-mix(in srgb, var(--cellarion-maturity-over, var(--error-color, #d9534f)) 22%, transparent); color: var(--cellarion-maturity-over, var(--error-color, #d9534f)); }
     .setv2 .frow.drag { background: var(--cb-chip); border-radius: 6px; }
     .setv2 .frow.drag .grip { cursor: grabbing; color: var(--cb-text); }
     .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }

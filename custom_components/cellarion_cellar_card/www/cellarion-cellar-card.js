@@ -598,6 +598,10 @@
     .setv2 .fl { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; min-height: 44px; cursor: pointer; }
     .setv2 .fl .wname { white-space: normal; }
     .setv2 .grip { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 44px; color: var(--cb-sub); cursor: grab; touch-action: none; }
+    .setv2 .fseg { flex: none; display: inline-flex; border: 1px solid var(--cb-line); border-radius: 16px; overflow: hidden; } /* three states of a filter: visible / behind ... / off */
+    .setv2 .fseg button { min-height: 30px; padding: 0 9px; border: 0; background: transparent; color: var(--cb-text); font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .setv2 .fseg button + button { border-left: 1px solid var(--cb-line); }
+    .setv2 .fseg button.on { background: var(--cb-on); color: var(--cb-on-text); }
     .setv2 .frow.drag { background: var(--cb-chip); border-radius: 6px; }
     .setv2 .frow.drag .grip { cursor: grabbing; color: var(--cb-text); }
     .rackblk { margin: 4px 0 2px 4px; padding-left: 12px; border-left: 2px solid var(--cb-line); }
@@ -1131,7 +1135,7 @@
     _pillWrap(d, html) { return d.id === 'grape' && !this._multi() && this._fs(d.id).size > 1 ? `<span class="fgrp">${html}</span>` : html; }
     _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
     // Filter mode: 'std' (one value per filter, as before), 'or' (a bottle shows if ANY chosen value of ANY filter matches), 'not' (a bottle shows if NO chosen value matches)
-    _fm() { return this._fmode === 'or' || this._fmode === 'not' ? this._fmode : 'std'; }
+    _fm() { return (this._fmode === 'or' || this._fmode === 'not') && !(this._fh && this._fh.has('fmode:off')) ? this._fmode : 'std'; }
     _multi() { return this._fm() !== 'std'; }
     // Back to the standard mode: every filter keeps one value again (grapes stay an AND group)
     _setFm(v) {
@@ -1530,7 +1534,7 @@
           `placeholder="${(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || this._hdr2() ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
           (sortInSum ? '' : sortBtn) +
           stat + reload + gear + `</div>`;
-        const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id));
+        const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id) && !this._fh.has('off:' + d.id)); // filters set to "off" are not offered at all
         // Hidden filters (settings) only count when there is something to choose right now (or a value is chosen): no greyed-out ones behind the "..." button, and no button when it would only open greyed-out ones
         const useful = (d) => { if (this._fs(d.id).size) return true; const m = cnt3(d.id, d.get); return m.size > 0 && !(m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length); };
         const hidUse = hid.filter(useful);
@@ -1543,7 +1547,7 @@
         const anyV = {};
         const hasAny = (d) => anyV[d.id] !== undefined ? anyV[d.id] : (anyV[d.id] = this._data.bottles.some((b) => [].concat(d.get(b)).some((v) => v)));
         // Filter mode pulldown (Standard / OR / NOT): shown when the further filters are open, and always while OR or NOT is active
-        const fmShow = this._showHid || this._multi() || this._fh.has('fmode:show'); // settings (Filters): the mode can be set visible; default hidden behind "..."
+        const fmShow = !this._fh.has('fmode:off') && (this._showHid || this._multi() || this._fh.has('fmode:show')); // settings (Filters): visible / behind "..." (default) / off
         let fmChip = '';
         if (fmShow) {
           const fmItems = ['std', 'or', 'not'].map((v) => ({ v, t: t('fmode.' + v) }));
@@ -2075,10 +2079,14 @@
       const iord = idefs.filter((d) => !d.fixed);
       const racks = (this._data && this._data.racks) || [];
       const frow = (d, on, grp) => `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><label class="fl">${fchk(grp === 'f' ? 'fvis' : 'ivis', d.id, on, d.label)}<span class="wname">${esc(lbl(d))}</span></label>${grp ? grip : ''}</div>`;
-      // Filter mode (Standard / OR / NOT): a fixed row below the list (not movable, always last before "..."); on = always visible, off = only behind "..." (marker 'fmode:show' in the hidden list)
-      const fmOn = this._fh.has('fmode:show');
-      const fmRow = `<div class="frow${fmOn ? '' : ' off'}" data-id="fmode"><label class="fl">${fchk('fvis', 'fmode', fmOn, t('fmode.title'))}<span class="wname">${esc(t('fmode.title'))}</span></label></div>`;
-      const filtersBody = `<div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>` + fmRow;
+      // Three states per filter: visible / behind "..." / off (never offered). Stored in the hidden list: id = behind "...", id + 'off:id' = off (older cards still show it behind "...")
+      const fseg = (id, st) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis')], ['more', t('fstate.more')], ['off', t('fstate.off')]].map(([v, l]) => `<button type="button" class="${st === v ? 'on' : ''}" data-act="fstate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}">${esc(l)}</button>`).join('') + `</span>`;
+      const fstOf = (d) => this._fh.has('off:' + d.id) ? 'off' : this._fh.has(d.id) ? 'more' : 'vis';
+      const frowF = (d) => { const st = fstOf(d); return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${fseg(d.id, st)}${grip}</div>`; };
+      // Filter mode (Standard / OR / NOT): a fixed row below the list (not movable, always last before "..."); visible = marker 'fmode:show', off = marker 'fmode:off' (the card stays in standard mode)
+      const fmSt = this._fh.has('fmode:off') ? 'off' : this._fh.has('fmode:show') ? 'vis' : 'more';
+      const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}</div>`;
+      const filtersBody = `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
       const infoBody = `<div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);
@@ -2715,6 +2723,7 @@
     statgo(t) { if (this._stat) { this._stat.path.push(t.dataset.to); this._stat.all = false; this._renderDlg(); } },
     statfilter(t) {
       const g = t.dataset.g, v = t.dataset.v;
+      if (g !== 'q' && this._fh.has('off:' + g)) return; // a filter set to "off" is not offered, so a tap in the statistics does not set it either
       this._stat = null;
       this._f = { q: '' }; // only the filter of the tap, earlier filters are cleared
       if (g === 'q') this._f.q = v; else this._fsAdd(g, v);
@@ -2736,11 +2745,20 @@
       if (k === 'setlang') ACTIONS.lang.call(this, { dataset: { v } });
       else if (k === 'setscale') { ACTIONS.scale.call(this, { dataset: { v } }); this._renderSet(); }
     },
-    fvis(t) {
-      const id = t.dataset.id;
+    // Settings, filters: set the state of a filter (v: 'vis' visible, 'more' behind "...", 'off' never offered)
+    fstate(t) {
+      const id = t.dataset.id, v = t.dataset.v;
       const hid = new Set(this._fh);
-      if (id === 'fmode') { const k = 'fmode:show'; if (hid.has(k)) hid.delete(k); else hid.add(k); } // filter mode: visible (marker present) or behind "..."
-      else if (hid.has(id)) hid.delete(id); else { hid.add(id); delete this._f[id]; }
+      if (id === 'fmode') { // filter mode: markers instead of ids
+        hid.delete('fmode:show'); hid.delete('fmode:off');
+        if (v === 'vis') hid.add('fmode:show'); else if (v === 'off') { hid.add('fmode:off'); this._fmode = 'std'; }
+        this._fh = hid; // so _setFm sees the new state
+        if (v === 'off') this._setFm('std');
+      } else {
+        hid.delete(id); hid.delete('off:' + id);
+        if (v !== 'vis') { hid.add(id); delete this._f[id]; }
+        if (v === 'off') hid.add('off:' + id);
+      }
       this._setFilters(this._fo, Array.from(hid));
       this._renderAll(); this._renderSet();
     },

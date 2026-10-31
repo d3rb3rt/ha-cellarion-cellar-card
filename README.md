@@ -105,6 +105,10 @@ Update automations and scripts that call the old services or the old sensor by h
   clear that filter. Filters you moved behind the **...** button are listed there. The classification is split into
   one filter per kind (vineyard rank, ripeness, ageing, other); for grapes an **&** button adds a further grape, and the
   wine must then have all chosen grapes.
+- **Several cellars**: with more than one cellar the cellar name in the header is a tinted pulldown. *All cellars* is
+  listed first and is the start view until you pick a cellar; the cellars below it are sorted alphabetically. In the
+  combined view every storage place carries a small cellar tag, and the statistics, filters and search cover all cellars.
+  Pick one cellar to see only its bottles and racks. The choice is remembered per device.
 - **Filter mode**: the dashed pulldown at the end of the filter row switches how filters combine.
   *Default* picks one value per filter and all filters must match.
   *OR* allows several values everywhere and shows every wine matching **any** chosen value, for example red **or**
@@ -199,7 +203,7 @@ Assistant) or to **this device only** (stored in the browser).
 </p>
 
 Under the integration's **Configure** in Home Assistant you set the refresh interval of the background update and, if your
-account has several cellars, which one is shown.
+account has several cellars, which of them are shown (empty = all of your own cellars).
 
 ## Card options (all optional)
 

@@ -1543,7 +1543,7 @@
         const anyV = {};
         const hasAny = (d) => anyV[d.id] !== undefined ? anyV[d.id] : (anyV[d.id] = this._data.bottles.some((b) => [].concat(d.get(b)).some((v) => v)));
         // Filter mode pulldown (Standard / OR / NOT): shown when the further filters are open, and always while OR or NOT is active
-        const fmShow = this._showHid || this._multi();
+        const fmShow = this._showHid || this._multi() || this._fh.has('fmode:show'); // settings (Filters): the mode can be set visible; default hidden behind "..."
         let fmChip = '';
         if (fmShow) {
           const fmItems = ['std', 'or', 'not'].map((v) => ({ v, t: t('fmode.' + v) }));
@@ -2075,7 +2075,10 @@
       const iord = idefs.filter((d) => !d.fixed);
       const racks = (this._data && this._data.racks) || [];
       const frow = (d, on, grp) => `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><label class="fl">${fchk(grp === 'f' ? 'fvis' : 'ivis', d.id, on, d.label)}<span class="wname">${esc(lbl(d))}</span></label>${grp ? grip : ''}</div>`;
-      const filtersBody = `<div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>`;
+      // Filter mode (Standard / OR / NOT): a fixed row below the list (not movable, always last before "..."); on = always visible, off = only behind "..." (marker 'fmode:show' in the hidden list)
+      const fmOn = this._fh.has('fmode:show');
+      const fmRow = `<div class="frow${fmOn ? '' : ' off'}" data-id="fmode"><label class="fl">${fchk('fvis', 'fmode', fmOn, t('fmode.title'))}<span class="wname">${esc(t('fmode.title'))}</span></label></div>`;
+      const filtersBody = `<div class="dlist" data-g="f">` + fdefs.map((d) => frow(d, !this._fh.has(d.id), 'f')).join('') + `</div>` + fmRow;
       const infoBody = `<div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);
@@ -2736,7 +2739,8 @@
     fvis(t) {
       const id = t.dataset.id;
       const hid = new Set(this._fh);
-      if (hid.has(id)) hid.delete(id); else { hid.add(id); delete this._f[id]; }
+      if (id === 'fmode') { const k = 'fmode:show'; if (hid.has(k)) hid.delete(k); else hid.add(k); } // filter mode: visible (marker present) or behind "..."
+      else if (hid.has(id)) hid.delete(id); else { hid.add(id); delete this._f[id]; }
       this._setFilters(this._fo, Array.from(hid));
       this._renderAll(); this._renderSet();
     },

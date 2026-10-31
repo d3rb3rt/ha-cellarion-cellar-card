@@ -7,18 +7,18 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 > setup. It does what it says there, but if that is not your thing, please don't install it. Issues and ideas are welcome.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=1.0.0" alt="Inventory grouped by wine" width="820"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=2.4.0" alt="Inventory grouped by wine" width="820"><br>
   <em>The inventory, grouped by wine, with search, filters and an A–Z index.</em>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/filters.png?v=1.0.0" alt="Filter dropdown with counts" width="820"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/filters.png?v=2.4.0" alt="Filter dropdown with counts" width="820"><br>
   <em>Every filter shows how many wines, vintages and bottles match.</em>
 </p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/detail.png?v=1.0.0" alt="Bottle details with label image" width="380">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/phone.png?v=1.0.0" alt="Phone layout" width="300"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/phone.png?v=2.4.0" alt="Phone layout" width="300"><br>
   <em>Bottle details with label image, drink window, profile and storage places · the same card on a phone.</em>
 </p>
 
@@ -30,10 +30,13 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
   cellars* together with a cellar tag on each place). The choice is remembered per device. Settings and filters are shared by all cellars.
 - **Filters** with live counts: type, grape, region, appellation, producer, maturity, vintage, price, storage rack and
   **every personal data field you keep in Cellarion** (they appear as filters automatically). Choose which filters are
-  shown and in which order.
+  shown, in which order, and which stay behind a "..." button. A **filter mode** (Default, OR, NOT) lets you pick several
+  values in every filter and combine them the way you need.
 - **Bottle details**: your data (price, purchase, merchant, note, personal fields), the register profile (body, acidity,
   flavours, food pairings, description), a drink-window bar with today's position, the label image and the storage places
   with a count per place.
+- **Rack view**: a small picture of the rack shows where the bottles lie; tap it for the full rack with every shelf and
+  slot, and take a bottle out right from there (see below).
 - **Take out** from a fixed bar in the details: say why (drunk, gifted, sold, other), confirm, and Cellarion marks the
   bottle as consumed. The card then offers to take out another one of the same vintage.
 - **Storage display per rack**: count shelves from the top or the bottom, show the position as left/middle/right, as a slot
@@ -97,7 +100,18 @@ Update automations and scripts that call the old services or the old sensor by h
 
 - **Search** looks in name, producer, vintage, region, country, appellation, classification, grapes, storage place, type
   and your personal fields. Several words must all match.
-- **Filters**: tap a filter chip to pick a value. The counts in the dropdown show wines, vintages and bottles.
+- **Filters**: tap a filter chip to pick a value. The counts in the dropdown show wines, vintages and bottles. A filter
+  with nothing to choose right now stays in place, greyed out. The *Selected* line at the top of a pick list has an x to
+  clear that filter. Filters you moved behind the **...** button are listed there. The classification is split into
+  one filter per kind (vineyard rank, ripeness, ageing, other); for grapes an **&** button adds a further grape, and the
+  wine must then have all chosen grapes.
+- **Filter mode**: the dashed pulldown at the end of the filter row switches how filters combine.
+  *Default* picks one value per filter and all filters must match.
+  *OR* allows several values everywhere and shows every wine matching **any** chosen value, for example red **or**
+  white **or** Kabinett (chosen filters turn green, with "or" between them).
+  *NOT* allows several values everywhere and hides every wine matching **any** chosen value, for example neither
+  white nor rosé (chosen filters turn red, with "not" before them); the other filters then only offer what is left.
+  Going back to *Default* keeps one value per filter.
 - **A–Z bar** jumps to a letter and follows the current sorting. Sorted by producer, the letter is the producer's sort word
   (see below).
 - A wine with several vintages shows them when you tap the row; tap a vintage for the details.
@@ -106,6 +120,24 @@ Update automations and scripts that call the old services or the old sensor by h
   red = past the window. The same colours are used in the drink-window bar in the details.
 - **Details**: *Take out …* asks for the reason and confirms before anything is written. *Edit in Cellarion* opens the
   bottle in the Cellarion app.
+
+## Rack view
+
+The details of a bottle show a small picture of the rack it lies in. Tap it (or the rack button in the bar) for the full
+view: every shelf and slot of the rack, counted the way you set under *Storage locations*.
+
+- **Solid** = the bottle you opened, **tinted** = other bottles of the same vintage, **filled** = any other bottle.
+- Tap a tinted or solid slot to take that bottle out.
+- If the wine lies in several racks, the arrows (or a swipe on the phone) move to the previous or next of those racks.
+- Hover over a slot to see which wine lies there.
+
+The rack picture needs the rack layout from Cellarion; racks without a layout show only the text of the place.
+On phones the list shows just the rack name as the storage place; the exact place is in the details and in the rack view.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/rack.png?v=2.4.0" alt="Rack view" width="380"><br>
+  <em>The rack view: this bottle solid, other bottles of the vintage tinted.</em>
+</p>
 
 ## Statistics
 
@@ -116,7 +148,8 @@ cellar value, bottles per type and the top country, producer, region and grape.
   by it, for example only the sparkling wines.
 - Tap a **tile** (wines, countries, producers, oldest vintage, cellar value, top country, …) to see that breakdown in more
   detail, for example the producers with their bottle counts. Tap an entry there to filter the list by it.
-- The overview counts everything in the cellar, including items from the *Other* category that are hidden from the list.
+- The overview counts what the list shows: when *Other* items (not wine) are hidden from the list (see *Show Other in the
+  list* under Settings), the overview leaves them out too, so the numbers match the list.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics.png?v=1.0.0" alt="Statistics overview" width="340">
@@ -137,7 +170,9 @@ Assistant) or to **this device only** (stored in the browser).
 
 **Filters**
 - *When the page reloads*: keep the last filters and sorting, or start fresh.
-- *Filters*: which filters are shown and in which order. Drag to reorder; your own Cellarion data fields appear here too.
+- *Filters*: every filter has a switch with three states: **On** (in the filter row), **...** (behind the "..." button)
+  or **Off** (not offered at all). Drag to reorder; your own Cellarion data fields appear here too. The filter mode
+  pulldown is in the list as well; it always sits at the end of the row, before "...".
 
 **List**
 - *Info in the list*: which facts appear under each wine name, and in which order.

@@ -598,7 +598,12 @@
     .setv2 .fl { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; min-height: 44px; cursor: pointer; }
     .setv2 .fl .wname { white-space: normal; }
     .setv2 .grip { flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 44px; color: var(--cb-sub); cursor: grab; touch-action: none; }
-    .setv2 .fseg { flex: none; display: inline-flex; gap: 2px; } /* three states of a filter: visible / behind ... / off. Quiet: no frame, no solid fill; only the deviation from "visible" gets the accent */
+    .setv2 .fhead { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--cb-sub); } /* column headlines above the filter list: name / visibility / sort */
+    .setv2 .fhead .fl { min-height: 28px; cursor: default; }
+    .setv2 .fhead .fhs { flex: none; width: 126px; text-align: center; }
+    .setv2 .fhead .fhg, .setv2 .gripsp { flex: none; width: 48px; text-align: center; }
+    .setv2 .fseg button { flex: 1; padding: 0; text-align: center; }
+    .setv2 .fseg { flex: none; display: inline-flex; gap: 2px; width: 126px; } /* three states of a filter: visible / behind ... / off. Quiet: no frame, no solid fill; only the deviation from "visible" gets the accent */
     .setv2 .fseg button { min-height: 28px; padding: 0 8px; border: 0; border-radius: 14px; background: transparent; color: var(--cb-sub); font: inherit; font-size: 12px; font-weight: 400; cursor: pointer; white-space: nowrap; }
     .setv2 .fseg button.on { background: color-mix(in srgb, var(--cb-text) 14%, transparent); color: var(--cb-text); font-weight: 600; }
     .setv2 .fseg button.on[data-v="more"] { background: color-mix(in srgb, var(--cb-on) 22%, transparent); color: var(--cb-on); }
@@ -2080,13 +2085,14 @@
       const racks = (this._data && this._data.racks) || [];
       const frow = (d, on, grp) => `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><label class="fl">${fchk(grp === 'f' ? 'fvis' : 'ivis', d.id, on, d.label)}<span class="wname">${esc(lbl(d))}</span></label>${grp ? grip : ''}</div>`;
       // Three states per filter: visible / behind "..." / off (never offered). Stored in the hidden list: id = behind "...", id + 'off:id' = off (older cards still show it behind "...")
-      const fseg = (id, st) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis')], ['more', t('fstate.more')], ['off', t('fstate.off')]].map(([v, l]) => `<button type="button" class="${st === v ? 'on' : ''}" data-act="fstate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}">${esc(l)}</button>`).join('') + `</span>`;
+      const fseg = (id, st) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis'), t('fstate.visTip')], ['more', t('fstate.more'), t('fstate.moreTip')], ['off', t('fstate.off'), t('fstate.offTip')]].map(([v, l, tip]) => `<button type="button" class="${st === v ? 'on' : ''}" data-act="fstate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}" title="${esc(tip)}" aria-label="${esc(tip)}">${esc(l)}</button>`).join('') + `</span>`;
       const fstOf = (d) => this._fh.has('off:' + d.id) ? 'off' : this._fh.has(d.id) ? 'more' : 'vis';
       const frowF = (d) => { const st = fstOf(d); return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${fseg(d.id, st)}${grip}</div>`; };
       // Filter mode (Standard / OR / NOT): a fixed row below the list (not movable, always last before "..."); visible = marker 'fmode:show', off = marker 'fmode:off' (the card stays in standard mode)
       const fmSt = this._fh.has('fmode:off') ? 'off' : this._fh.has('fmode:show') ? 'vis' : 'more';
-      const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}</div>`;
-      const filtersBody = `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
+      const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
+      const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
+      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
       const infoBody = `<div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);

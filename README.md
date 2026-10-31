@@ -7,7 +7,7 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 > setup. It does what it says there, but if that is not your thing, please don't install it. Issues and ideas are welcome.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=2.4.0" alt="Inventory grouped by wine" width="820"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=2.4.1" alt="Inventory grouped by wine" width="820"><br>
   <em>The inventory, grouped by wine, with search, filters and an A–Z index.</em>
 </p>
 

@@ -1176,8 +1176,9 @@
       return this._data.bottles.filter((b) => {
         if (noOther && b._type === 'other') return false;
         if (this._multi()) {
-          // OR / NOT: the pick lists stay free (counts over all bottles); the list itself shows bottles where any chosen value matches (OR) or none does (NOT)
-          if (!(skip || grp) && act.length) { const hit = act.some((d) => [].concat(d.get(b)).some((v) => f[d.id].has(v))); if (this._fm() === 'or' ? !hit : hit) return false; }
+          // OR: the pick lists stay free (counts over all bottles, so more values can be added); the list shows bottles where any chosen value matches.
+          // NOT: lists follow the exclusions of the other filters (what is offered and greyed out matches the remaining bottles); the list shows bottles where no chosen value matches
+          if ((this._fm() === 'not' || !(skip || grp)) && act.length) { const hit = act.some((d) => [].concat(d.get(b)).some((v) => f[d.id].has(v))); if (this._fm() === 'or' ? !hit : hit) return false; }
         } else {
           // Grapes: the wine must have all chosen grapes (AND group); every other filter holds one value
           for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'grape' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }

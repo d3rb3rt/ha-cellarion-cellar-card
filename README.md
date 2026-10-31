@@ -193,6 +193,11 @@ Assistant) or to **this device only** (stored in the browser).
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/producers.png?v=1.0.0" alt="Edit producers" width="360">
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-filters.png?v=2.4.1" alt="Filter settings with the On, ... and Off switch" width="420"><br>
+  <em>Filter settings: every filter is On, behind "..." or Off; the filter mode is the last row.</em>
+</p>
+
 Under the integration's **Configure** in Home Assistant you set the refresh interval of the background update and, if your
 account has several cellars, which one is shown.
 

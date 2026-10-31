@@ -204,7 +204,7 @@ Assistant) or to **this device only** (stored in the browser).
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-filters.png?v=2.4.1" alt="Filter settings with the On, ... and Off switch" width="420"><br>
-  <em>Filter settings: every filter is On, behind "..." or Off; the filter mode is the last row.</em>
+  <em>Filter settings: every filter is On, behind "..." or Off; the filter mode is the last row. Names in [square brackets] are your own data fields from Cellarion.</em>
 </p>
 
 Under the integration's **Configure** in Home Assistant you set the refresh interval of the background update and, if your

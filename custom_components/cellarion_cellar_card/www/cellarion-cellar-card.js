@@ -903,6 +903,7 @@
       const st = this._st || {};
       if (!this._keep()) return;
       this._sort = st.sort || 'name';
+      this._fmode = st.fm === 'or' || st.fm === 'not' ? st.fm : 'std';
       if (st.f && typeof st.f === 'object') {
         for (const k of Object.keys(st.f)) {
           if (k === 'q') this._f.q = String(st.f.q || '');
@@ -917,7 +918,7 @@
           f = { q: this._f.q || '' };
           for (const k of Object.keys(this._f)) if (k !== 'q' && this._f[k] && this._f[k].size) f[k] = Array.from(this._f[k]);
         }
-        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._restored ? this._sort : ((this._st || {}).sort || this._sort), scale: this._scale, local: this._local, f })); } catch (e) { /* ohne Speicher weiter */ }
+        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._restored ? this._sort : ((this._st || {}).sort || this._sort), scale: this._scale, local: this._local, f, fm: this._restored ? this._fm() : (this._st || {}).fm })); } catch (e) { /* ohne Speicher weiter */ }
     }
 
     // ---------- Data ----------
@@ -1119,11 +1120,19 @@
     // ---------- Filters, groups, sorting ----------
     // skip: leave out a filter group (for the counts in the pick lists: only the other filters apply)
     // Grapes: several chosen grapes are an AND group (the wine must have all of them): the pills sit in a bordered group with & between them
-    _pillSep(d) { return d.id === 'grape' ? '<span class="fand">&amp;</span>' : ''; }
-    _pillWrap(d, html) { return d.id === 'grape' && this._fs(d.id).size > 1 ? `<span class="fgrp">${html}</span>` : html; }
+    _pillSep(d) { return d.id === 'grape' && !this._multi() ? '<span class="fand">&amp;</span>' : ''; }
+    _pillWrap(d, html) { return d.id === 'grape' && !this._multi() && this._fs(d.id).size > 1 ? `<span class="fgrp">${html}</span>` : html; }
     _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
-    // A pick replaces the chosen value of its filter (every filter holds one value; for grapes the & button in the list adds a further one, see ddand)
-    _fsAdd(id, v) { const S = this._fs(id); S.clear(); S.add(v); }
+    // Filter mode: 'std' (one value per filter, as before), 'or' (a bottle shows if ANY chosen value of ANY filter matches), 'not' (a bottle shows if NO chosen value matches)
+    _fm() { return this._fmode === 'or' || this._fmode === 'not' ? this._fmode : 'std'; }
+    _multi() { return this._fm() !== 'std'; }
+    // Back to the standard mode: every filter keeps one value again (grapes stay an AND group)
+    _setFm(v) {
+      this._fmode = v === 'or' || v === 'not' ? v : 'std';
+      if (this._fmode === 'std') for (const k of Object.keys(this._f)) if (k !== 'q' && k !== 'grape' && this._f[k] && this._f[k].size > 1) this._f[k] = new Set([Array.from(this._f[k])[0]]);
+    }
+    // Standard: a pick replaces the chosen value of its filter (every filter holds one value; for grapes the & button in the list adds a further one, see ddand). OR / NOT: a pick adds a value
+    _fsAdd(id, v) { const S = this._fs(id); if (!this._multi()) S.clear(); S.add(v); }
     // All possible filters: fixed ones (type ... place) plus one per personal data field (automatically from the cache)
     _allDefs() {
       const byProd = (a, b) => de.compare(this._pkey(a[0]), this._pkey(b[0]));
@@ -1159,8 +1168,13 @@
       const noOther = gid !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
       return this._data.bottles.filter((b) => {
         if (noOther && b._type === 'other') return false;
-        // Grapes: the wine must have all chosen grapes (AND group); every other filter holds one value
-        for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'grape' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }
+        if (this._multi()) {
+          // OR / NOT: the pick lists stay free (counts over all bottles); the list itself shows bottles where any chosen value matches (OR) or none does (NOT)
+          if (!(skip || grp) && act.length) { const hit = act.some((d) => [].concat(d.get(b)).some((v) => f[d.id].has(v))); if (this._fm() === 'or' ? !hit : hit) return false; }
+        } else {
+          // Grapes: the wine must have all chosen grapes (AND group); every other filter holds one value
+          for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'grape' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }
+        }
         for (const t of toks) if (!b._hay.includes(t)) return false;
         return true;
       });
@@ -1511,7 +1525,7 @@
         // Hidden filters (settings) only count when there is something to choose right now (or a value is chosen): no greyed-out ones behind the "..." button, and no button when it would only open greyed-out ones
         const useful = (d) => { if (this._fs(d.id).size) return true; const m = cnt3(d.id, d.get); return m.size > 0 && !(m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length); };
         const hidUse = hid.filter(useful);
-        const moreBtn = hidUse.some((d) => !this._fs(d.id).size);
+        const moreBtn = true; // the "..." button always exists now: behind it sit the hidden filters (if any) and the filter mode pulldown
         const defs = this._showHid ? vis.concat(hidUse) : vis.concat(hid.filter((d) => this._fs(d.id).size));
         const t3 = {};
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
@@ -1519,7 +1533,16 @@
         // Filters without options under the current selection stay in place, greyed out (instead of disappearing); filters that have no values at all stay hidden
         const anyV = {};
         const hasAny = (d) => anyV[d.id] !== undefined ? anyV[d.id] : (anyV[d.id] = this._data.bottles.some((b) => [].concat(d.get(b)).some((v) => v)));
-        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0);
+        // Filter mode pulldown (Standard / OR / NOT): shown when the further filters are open, and always while OR or NOT is active
+        const fmShow = this._showHid || this._multi();
+        let fmChip = '';
+        if (fmShow) {
+          const fmItems = ['std', 'or', 'not'].map((v) => ({ v, t: t('fmode.' + v) }));
+          const fmCur = fmItems.find((o) => o.v === this._fm());
+          this._ddItems.fmode = { label: t('fmode.title'), items: fmItems, cur: fmCur.t, curV: fmCur.v, hint: t('fmode.hint') };
+          fmChip = `<button type="button" class="sel fs${this._multi() ? ' hasv' : ''}" data-act="dd" data-id="fmode" aria-haspopup="listbox" aria-label="${esc(t('fmode.title') + ': ' + fmCur.t)}">${esc(this._multi() ? fmCur.t : t('fmode.title'))}</button>`;
+        }
+        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0);
         this._nChips = nChips;
         html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
           defs.map((d) => {
@@ -1528,17 +1551,17 @@
             // nothing chosen yet and every bottle shown has the one remaining value: choosing it would change nothing
             if (!set.size && m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length) return `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
             const items = d.defs ? this._optsK(d.defs, m, set) : d.clsg !== undefined ? this._optsCls(m, set) : this._opts(m, set, d.sort || by);
-            if (d.id === 'grape' && set.size) { const co = new Map(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => { if (!co.has(g)) co.set(g, new Set()); co.get(g).add(b.wine); })); items.forEach((o) => { if (o.v !== undefined) { o.and = co.has(o.v); o.nAnd = o.and ? co.get(o.v).size : 0; } }); } // & only where the grape occurs together with the chosen ones, with the number of wines that would remain
-            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size,
-              sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' ? ' & ' : ', ') : '' };
+            if (d.id === 'grape' && set.size && !this._multi()) { const co = new Map(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => { if (!co.has(g)) co.set(g, new Set()); co.get(g).add(b.wine); })); items.forEach((o) => { if (o.v !== undefined) { o.and = co.has(o.v); o.nAnd = o.and ? co.get(o.v).size : 0; } }); } // & only where the grape occurs together with the chosen ones, with the number of wines that would remain
+            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size && !this._multi(),
+              sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' && !this._multi() ? ' & ' : ', ') : '' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-          }).join('') + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
+          }).join('') + fmChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
         const pills = defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
-            `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
+            `${this._fm() === 'not' ? esc(t('fmode.notPill')) + ' ' : ''}${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
         }).join(this._pillSep(d)))).join('');
         html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>✕</button></div>`;
         html += `<div class="sumline"><span class="grow" data-sum></span>${sortInSum ? sortBtn : ''}</div>`;
@@ -2650,6 +2673,13 @@
     },
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
+      if (id === 'fmode') { this._dd = null; this._setFm(v); this._renderDlg(); this._renderAll(); return; } // filter mode: Standard / OR / NOT
+      if (this._multi() && id && id !== 'sort' && id !== 'cellarsel') { // OR / NOT: a pick adds a value and the list stays open (more values can follow)
+        this._fsAdd(id, v); this._renderAll();
+        const an = this.shadowRoot.querySelector('[data-act="dd"][data-id="' + id + '"]'); if (an) this._ddAnchor = an;
+        this._renderDlg();
+        return;
+      }
       this._dd = null;
       if (id === 'sort') { this._sort = v; this._saveState(); }
       else if (id === 'cellarsel') { // other cellar (or all): filters and open rows belong to the old selection and are cleared, the search stays
@@ -2779,3 +2809,4 @@
     description: 'Wine cellar inventory with search, filters, detail view and take-out (Cellarion).',
   });
 })();
+

@@ -304,5 +304,11 @@
  "cls.g3": "Sonstige",
  "filter.andAdd": "Als weitere Bedingung hinzufügen (UND)",
  "dd.clear": "Auswahl aufheben",
- "dd.selected": "Gewählt"
+ "dd.selected": "Gewählt",
+ "fmode.title": "Filtermodus",
+ "fmode.std": "Standard",
+ "fmode.or": "ODER",
+ "fmode.not": "NICHT",
+ "fmode.notPill": "nicht",
+ "fmode.hint": "ODER: mindestens ein gewählter Wert passt. NICHT: keiner der gewählten Werte passt."
 }

@@ -201,6 +201,8 @@
     :host([data-fm="or"]) { --cb-fm: var(--cellarion-fm-or, var(--success-color, #2fa84f)); }
     :host([data-fm="not"]) { --cb-fm: var(--cellarion-fm-not, var(--error-color, #d9534f)); }
     :host([data-fm]) button.sel.hasv { color: var(--cb-fm); box-shadow: 0 0 0 1px var(--cb-fm) inset; }
+    .fwrap .sel.fs.fm { border: 1px dashed color-mix(in srgb, var(--cb-text) 55%, transparent); background: color-mix(in srgb, var(--cb-text) 8%, transparent); font-weight: 600; } /* the filter mode pulldown is set apart from the filters: dashed edge, light tint */
+    :host([data-fm]) .fwrap .sel.fs.fm { border-color: var(--cb-fm); }
     :host([data-fm]) .fpill { background: color-mix(in srgb, var(--cb-fm) 18%, var(--cb-chip)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cb-fm) 55%, transparent) inset; }
     button.sel { width: auto; flex: none; display: inline-flex; align-items: center; justify-content: space-between; gap: 6px; text-align: left; color: var(--cb-text); font-family: inherit; cursor: pointer; white-space: nowrap; overflow: hidden; }
     button.sel::after { content: ''; flex: none; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); opacity: .7; margin-right: 4px; }
@@ -1546,7 +1548,7 @@
           const fmItems = ['std', 'or', 'not'].map((v) => ({ v, t: t('fmode.' + v) }));
           const fmCur = fmItems.find((o) => o.v === this._fm());
           this._ddItems.fmode = { label: t('fmode.title'), items: fmItems, cur: fmCur.t, curV: fmCur.v, hint: t('fmode.hint') };
-          fmChip = `<button type="button" class="sel fs${this._multi() ? ' hasv' : ''}" data-act="dd" data-id="fmode" aria-haspopup="listbox" aria-label="${esc(t('fmode.title') + ': ' + fmCur.t)}">${esc(this._multi() ? fmCur.t : t('fmode.title'))}</button>`;
+          fmChip = `<button type="button" class="sel fs fm${this._multi() ? ' hasv' : ''}" data-act="dd" data-id="fmode" aria-haspopup="listbox" aria-label="${esc(t('fmode.title') + ': ' + fmCur.t)}">${esc(this._multi() ? fmCur.t : t('fmode.title'))}</button>`;
         }
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0);
         this._nChips = nChips;

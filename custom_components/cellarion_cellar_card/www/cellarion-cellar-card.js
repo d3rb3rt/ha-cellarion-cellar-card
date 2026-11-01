@@ -2711,8 +2711,8 @@
       }
       this._dd = null;
       if (id === 'sort') { this._sort = v; this._saveState(); }
-      else if (id === 'cellarsel') { // other cellar (or all): filters and open rows belong to the old selection and are cleared, the search stays
-        this._local.cellar = v; this._f = { q: this._f.q || '' }; this._open = new Set(); this._saveState();
+      else if (id === 'cellarsel') { // other cellar (or all): filters and search stay, open rows belong to the old selection and are cleared
+        this._local.cellar = v; this._open = new Set(); this._saveState();
         if (this._raw) this._ingest(this._raw);
       } else if (id) { this._fsAdd(id, v); }
       this._renderDlg(); this._renderAll();

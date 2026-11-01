@@ -339,6 +339,7 @@
     .ddpop .ddand:active { background: color-mix(in srgb, var(--cb-text) 25%, var(--cb-chip)); }
     .fand { font-size: 12px; color: var(--cb-sub); padding: 0 2px; }
     .fpill { min-height: 26px; padding: 0 4px 0 10px; border-radius: 14px; background: var(--cb-chip); font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .fpill.fmpill { font-weight: 700; letter-spacing: .04em; }
     .fpill .x { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; opacity: .65; font-size: 11px; }
     mark.hl { background: var(--cb-hl); color: inherit; border-radius: 3px; padding: 0 1px; }
     .tsp { flex: none; display: inline-block; vertical-align: middle; width: 22px; height: 22px; }
@@ -1577,12 +1578,12 @@
           }).join('') + fmChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
-        let pn = 0; // pill counter: in the OR mode every pill after the first gets "or" in front, in the NOT mode every pill gets "not"
-        const pills = defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
+        // OR / NOT: one leading mode pill (with a cross to go back to standard) instead of a prefix in every pill
+        const fmPill = this._multi() ? `<button class="fpill fmpill" data-act="fmoff" aria-label="${esc(t('fmode.title') + ': ' + t('fmode.' + this._fm()))}">${esc(t('fmode.' + this._fm()))}<span class="x">✕</span></button>` : '';
+        const pills = fmPill + defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
-          const fmPre = this._fm() === 'not' ? esc(t('fmode.notPill')) + ' ' : this._fm() === 'or' && pn++ > 0 ? esc(t('fmode.orPill')) + ' ' : '';
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
-            `${fmPre}${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
+            `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
         }).join(this._pillSep(d)))).join('');
         html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>✕</button></div>`;
         html += `<div class="sumline"><span class="grow" data-sum></span>${sortInSum ? sortBtn : ''}</div>`;
@@ -2817,6 +2818,7 @@
       if (set.has(v)) set.delete(v); else set.add(v);
       this._renderAll();
     },
+    fmoff() { this._setFm('std'); this._renderDlg(); this._renderAll(); },
     fdel(t) { this._f[t.dataset.g].delete(t.dataset.v); this._renderAll(); },
     pyes() { this._cfm = false; this._renderDlg(); this._refreshNow(); },
     pno() { this._cfm = false; this._renderDlg(); },

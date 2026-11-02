@@ -221,11 +221,41 @@ refresh_seconds: 300       # re-read the cached inventory this often (0 = never)
 refresh_on_open: true      # fetch fresh data from Cellarion when the card opens (at most once a minute)
 height: 600px              # fixed height; default: fills the rest of the window
 flush: true                # no frame, for use inside another card
+extensions:                # optional JS modules that extend the card, see "Extensions" below
+  - /local/my-extension.js
 ```
 
 The full list is at the top of `custom_components/cellarion_cellar_card/www/cellarion-cellar-card.js`. Colours can be overridden in
 your theme with `cellarion-accent`, `cellarion-chip-bg`, `cellarion-wine-red`/`-white`/`-rose`, `cellarion-maturity-peak`
 and friends (also listed there).
+
+## Extensions
+
+For changes that only you need, the card can load your own JavaScript modules. This keeps the card itself free of special cases:
+the extension lives in your `www` folder and is switched on per card in YAML.
+
+```yaml
+type: custom:cellarion-cellar-card
+extensions:
+  - /local/my-extension.js?v=1     # change the number to make browsers load a changed file
+```
+
+An extension is an ES module whose default export receives the card class and returns an extended class. It may override any
+method of the card and call the original with `super`:
+
+```js
+export default (Base) => class extends Base {
+  // example: add a line below the details of a bottle
+  _viewV2(sel, bottles, info) {
+    return super._viewV2(sel, bottles, info) + '<div class="dpur">Hello from my extension</div>';
+  }
+};
+```
+
+- Several modules can be listed; they are applied in order, each one extending the result of the previous.
+- If a module cannot be loaded or throws while loading, the card keeps working without it (see the browser console).
+- Extensions rely on the card's internal method names, which are not a stable interface and can change between releases.
+  Check your extension after updating the card.
 
 ## Services
 

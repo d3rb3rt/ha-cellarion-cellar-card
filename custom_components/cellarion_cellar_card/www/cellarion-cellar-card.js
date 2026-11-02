@@ -772,6 +772,25 @@
       this._busy = false;
       this._built = false;
       if (this._hass) this._start();
+      this._loadExt();
+    }
+
+    // Optional extensions (config "extensions"): each module exports default (Base) => class extends Base. The class of this card instance is swapped for
+    // the extended one, so an extension may override any method and call super. Errors never break the card.
+    async _loadExt() {
+      const list = [].concat(this._cfg.extensions || []).filter((u) => typeof u === 'string' && u);
+      const key = list.join('|');
+      if (!list.length || this._extKey === key) return;
+      this._extKey = key;
+      for (const u of list) {
+        try {
+          const mod = await import(u);
+          if (typeof mod.default !== 'function') continue;
+          const Sub = mod.default(Object.getPrototypeOf(this).constructor);
+          if (typeof Sub === 'function' && Sub.prototype instanceof HTMLElement) Object.setPrototypeOf(this, Sub.prototype);
+        } catch (e) { console.warn('cellarion card: extension failed', u, e); }
+      }
+      if (this._built) { this._renderAll(); if (this._det) this._renderDlg0(); }
     }
 
     set hass(hass) {

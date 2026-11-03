@@ -371,11 +371,6 @@
  "flag.archgone": "Archive: only wines with no bottle left (test)",
  "flag.archgoneSub": "Archive shows only wines with no bottle left (any vintage). Drunk vintages of stock wines appear in the detail view under \"Drunk\".",
  "det.drunkSec": "Drunk ({n})",
- "flag.navpad": "Bottom space for the Android navigation bar (test)",
- "flag.navpadSub": "Lifts the detail sheet above the 3-button navigation if it covers the card.",
- "flag.navpad.s": "small",
- "flag.navpad.m": "medium",
- "flag.navpad.l": "large",
  "det.drunkMore": "+{n} more",
  "det.drunkLess": "less"
 }

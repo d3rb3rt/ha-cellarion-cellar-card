@@ -371,11 +371,6 @@
  "flag.archgone": "Archiv: nur Weine ohne Flasche (Test)",
  "flag.archgoneSub": "Archiv zeigt nur Weine, von denen keine Flasche mehr da ist (jeder Jahrgang). Getrunkene Jahrgänge von Bestandsweinen stehen im Detail unter „Getrunken“.",
  "det.drunkSec": "Getrunken ({n})",
- "flag.navpad": "Abstand unten für Android-Navigationsleiste (Test)",
- "flag.navpadSub": "Hebt das Detailfenster über die Dreier-Navigation, falls sie die Karte überdeckt.",
- "flag.navpad.s": "klein",
- "flag.navpad.m": "mittel",
- "flag.navpad.l": "groß",
  "det.drunkMore": "+{n} weitere",
  "det.drunkLess": "weniger"
 }

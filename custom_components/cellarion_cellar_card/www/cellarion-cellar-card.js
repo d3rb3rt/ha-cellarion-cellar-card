@@ -930,11 +930,13 @@
       this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
       // Info behind the wine name in the list: order + what is shown (central for all devices, overridable per device)
       const I = L.info || { order: S.infoOrder, show: S.infoShow };
-      this._io = Array.isArray(I.order) ? I.order.slice() : [];
-      this._is = new Set(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']);
+      // The old single item "cls" (classification) became one item per kind (cls0..cls3)
+      const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : [x])));
+      this._io = Array.isArray(I.order) ? expand(I.order) : [];
+      this._is = new Set(expand(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']));
     }
     _infoDefs() {
-      const std = [['cls', t('filter.cls')], ['region', t('filter.region')], ['grape', t('filter.grape')]]
+      const std = [0, 1, 2, 3].map((g) => ['cls' + g, t('cls.g' + g)]).concat([['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]])
         .map(([id, label]) => ({ id, label }));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       const all = std.concat(pers);
@@ -1867,8 +1869,9 @@
       pr = pr || '';
       const txt = (d) => {
         if (d.id === 'price') return this._priceOnly(pr);
-        if (d.id === 'cls') return b._cls && b._cls.length ? this._hl(b._cls.join(', ')) : '';
+        if (/^cls[0-3]$/.test(d.id)) { const c = (b._cls || []).filter((v) => this._clsPos(v)[0] === Number(d.id.slice(3))); return c.length ? this._hl(c.join(', ')) : ''; }
         if (d.id === 'region') return b.region ? this._hl(b.region) : '';
+        if (d.id === 'appellation') return b.appellation ? this._hl(b.appellation) : '';
         if (d.id === 'grape') return b.grapes && b.grapes.length ? this._hl(b.grapes.join(', ')) : '';
         const v = b.p && b.p[d.label];
         return v ? this._hl([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
@@ -2562,15 +2565,15 @@
       const el = this._dlg, x = this._xv, sel = this._infoSel();
       if (!el || !x || !sel) return;
       const rk = (k) => { const i = INFO_ORDER.indexOf(k); return i < 0 ? 99 : i; };
-      // Tab order = order of the info settings (the same order as the rows of "My data"); producer first, appellation right after region
+      // Tab order = order of the info settings (the same order as the rows of "My data"); producer first
       const defs = this._infoDefs();
       const rank = (k) => {
         if (k === 'producer') return -2;
         const ti = INFO_TIER.indexOf(k);
-        let id = k === 'region' || k === 'appellation' ? 'region' : k === 'grape' ? 'grape' : ti >= 0 ? 'cls' : '';
+        let id = k === 'region' || k === 'appellation' || k === 'grape' ? k : ti >= 0 ? 'cls' + ti : '';
         if (!id) { const d = defs.find((d2) => d2.personal && infoNorm(d2.label) === k); id = d ? d.id : ''; }
         const i = id ? defs.findIndex((d2) => d2.id === id) : -1;
-        return i < 0 ? 999 : i + (k === 'appellation' ? 0.5 : ti >= 0 ? ti * 0.1 : 0);
+        return i < 0 ? 999 : i;
       };
       const keys = Object.keys(x.items).sort((a, b) => rank(a) - rank(b) || rk(a) - rk(b) || (a < b ? -1 : 1));
       if (keys.indexOf(x.tab) < 0 && keys.length) x.tab = keys[0];
@@ -2622,18 +2625,14 @@
         if (tier) nameDd.textContent = nameDd.textContent.trim() + ' | ' + tier;
         cru.dt.remove(); cru.dd.remove();
       }
-      // Classification tiers in the header line: one clickable span per tier of a kind that has an info text
-      const cls = sel._cls || [];
-      if (cls.length) {
-        const tierKey = (c) => { const k = INFO_TIER[this._clsPos(c)[0]]; return k && im[k] ? k : (k === 'vineyard_rank' && im.vineyard_name && !done.has('vineyard_name') ? 'vineyard_name' : ''); };
-        if (cls.some(tierKey)) {
-          const w = Array.from(el.querySelectorAll('.dh .wreg')).find((n) => n.textContent.trim() === cls.join(', '));
-          if (w) {
-            w.innerHTML = cls.map((c) => { const k = tierKey(c); return k ? `<span data-act="dxi" data-ik="${k}" data-lbl="${esc(infoLbl(k))}" title="${esc(infoLbl(k))}" style="${INFO_CLICK}">${esc(c)}</span>` : esc(c); }).join(', ');
-            cls.forEach((c) => { const k = tierKey(c); if (k) done.add(k); });
-          }
-        }
-      }
+      // Classification in the header line: one item per kind (rank, ripeness, ageing); the item is clickable when that kind has an info text
+      INFO_TIER.forEach((k, g) => {
+        const c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g);
+        const key = im[k] ? k : (g === 0 && im.vineyard_name && !done.has('vineyard_name') ? 'vineyard_name' : '');
+        if (!c.length || !key) return;
+        const n = Array.from(el.querySelectorAll('.dh .wreg')).find((w) => w.textContent.trim() === c.join(', '));
+        if (n) { mark(n, key, infoLbl(key)); done.add(key); }
+      });
       // Other built-in attributes: the sub line of the detail (appellation, grapes) and the region in the header
       const sub = Array.from(el.querySelectorAll('.d2sub'));
       if (im.appellation && !done.has('appellation')) mark(sub.find((n) => n.textContent.trim() === sel.appellation), 'appellation', infoLbl('appellation'));

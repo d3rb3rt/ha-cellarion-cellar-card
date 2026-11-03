@@ -261,6 +261,8 @@ class Hub:
                 self.data = await api.build_inventory(inv, self._get, self._cellar_id, raw)
                 if raw is None and old:  # list_history not reachable: keep the last history
                     self.data["history"] = old
+                elif mcp is not None and self.data.get("history"):  # wine facts of drunk wines that are not in the cellar any more
+                    await api.enrich_history(self.data["history"], old, mcp)
                 self.data["url"] = self.url  # base address of the Cellarion server, for the "edit in Cellarion" link
                 self._etag, self._geo_at = etag, time.time()
                 body = {k: v for k, v in self.data.items() if k != "generated"}

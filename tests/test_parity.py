@@ -172,3 +172,43 @@ def test_no_history_means_no_key(tmp_path, capsys):
     dev = _dev_inventory(tmp_path, history=[])
     capsys.readouterr()
     assert "history" not in dev and "history" not in _integration_inventory(history=[])
+
+
+# Wine facts of drunk wines: from the wines of the inventory, otherwise from get_bottle (same result in both setups)
+GB = {"wine": {"wine_id": "w9", "name": "Elsewhere", "country": "Austria", "region": "Wachau", "appellation": None,
+               "grapes": ["Gruener Veltliner"], "classification": None, "classifications": ["Smaragd", "Ried"]}}
+
+
+def test_history_facts_match_development_setup(tmp_path):
+    spec = importlib.util.spec_from_file_location("bestand_dev", DEV)
+    dev = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dev)
+    rows = [{"id": "1" * 24, "name": "Elsewhere", "vintage": "2010"}, {"id": "2" * 24, "name": "Elsewhere", "vintage": "2012"},
+            {"id": "3" * 24, "name": "Known", "wine": "w1", "country": "Germany"}]
+    calls: list[str] = []
+
+    def call(bid):
+        calls.append(bid)
+        return GB
+
+    d = [dict(r) for r in rows]
+    dev.enrich_history(d, None, call)
+
+    class FakeMcp:
+        def __init__(self):
+            self.n = []
+
+        async def tool(self, name, args):
+            assert name == "get_bottle"
+            self.n.append(args["bottle_id"])
+            return GB
+
+    m = FakeMcp()
+    i = [dict(r) for r in rows]
+    asyncio.run(api.enrich_history(i, None, m))
+    assert d == i and calls == ["1" * 24] and m.n == ["1" * 24]  # one call per wine
+    assert d[0]["wine"] == "w9" and d[0]["classification"] == "Smaragd, Ried" and d[1]["region"] == "Wachau" and "wine" in d[2]
+    # facts of the last data are reused without a call
+    d2 = [dict(rows[0])]
+    dev.enrich_history(d2, d, lambda bid: 1 / 0)
+    assert d2[0]["region"] == "Wachau"

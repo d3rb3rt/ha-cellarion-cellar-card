@@ -248,10 +248,21 @@ async def fetch_history(mcp: McpClient) -> list[JsonDict] | None:
         return None
 
 
-def slim_history(rows: Any, ids: list[str]) -> list[JsonDict]:
+HIST_FACT_KEYS = ("wine", "country", "region", "appellation", "grapes", "classification")
+
+
+def wine_key(name: Any, producer: Any) -> str:
+    return f"{str(name or '').strip().casefold()}|{str(producer or '').strip().casefold()}"
+
+
+def slim_history(rows: Any, ids: list[str], wines: JsonDict | None = None) -> list[JsonDict]:
     """Reduce the consumption log to what the card needs (only the delivered cellars). Short keys:
-    at = date (ISO), reason = drank/gifted/sold, rating/scale = rating given when drunk, note = note."""
+    at = date (ISO), reason = drank/gifted/sold, rating/scale = rating given when drunk, note = note.
+    wines = the wines of the inventory: a wine that is still in the cellar gives wine id, country, region, appellation, grapes, classification."""
     first, multi = ids[0], len(ids) > 1
+    known: dict[str, tuple[Any, JsonDict]] = {}
+    for wid, w in (wines or {}).items():
+        known.setdefault(wine_key(w.get("name"), w.get("producer")), (wid, w))
     out: list[JsonDict] = []
     for r in rows or []:
         cb = r.get("cellar_id") or first
@@ -265,8 +276,52 @@ def slim_history(rows: Any, ids: list[str]) -> list[JsonDict]:
              "price": r.get("price"), "currency": r.get("currency")}
         if multi:
             h["cellar"] = cb
+        kw = known.get(wine_key(w.get("name"), w.get("producer")))
+        if kw:
+            wid, kv = kw
+            h.update({"wine": wid, "country": kv.get("country"), "region": kv.get("region"), "appellation": kv.get("appellation"),
+                      "grapes": [str(g) for g in (kv.get("grapes") or []) if g], "classification": kv.get("classification")})
         out.append({k: v for k, v in h.items() if v not in (None, "", [])})
     return out
+
+
+def history_facts(g: JsonDict) -> JsonDict:
+    """Wine facts of a bottle from the MCP tool get_bottle (for wines that are not in the cellar any more)."""
+    w = (g or {}).get("wine") or {}
+    cl = w.get("classification") or ", ".join(str(x) for x in (w.get("classifications") or []) if x)
+    f = {"wine": w.get("wine_id"), "country": w.get("country"), "region": w.get("region"), "appellation": w.get("appellation"),
+         "grapes": [str(x) for x in (w.get("grapes") or []) if x], "classification": cl}
+    return {k: v for k, v in f.items() if v not in (None, "", [])}
+
+
+async def enrich_history(hist: list[JsonDict] | None, old: list[JsonDict] | None, mcp: McpClient, limit: int = 80) -> list[JsonDict] | None:
+    """Rows of wines that are not in the cellar have no wine facts yet: take them from the rows of the last data, otherwise ask
+    get_bottle (at most `limit` wines per run; the rest follows with the next runs)."""
+    prev: dict[str, JsonDict] = {}
+    for r in old or []:
+        if r.get("wine"):
+            prev.setdefault(wine_key(r.get("name"), r.get("producer")), r)
+    found: dict[str, JsonDict] = {}
+    n = 0
+    for h in hist or []:
+        if h.get("wine"):
+            continue
+        k = wine_key(h.get("name"), h.get("producer"))
+        if k not in found:
+            src = prev.get(k)
+            if src:
+                found[k] = {f: src[f] for f in HIST_FACT_KEYS if f in src}
+            elif n < limit:
+                n += 1
+                try:
+                    found[k] = history_facts(await mcp.tool("get_bottle", {"bottle_id": h["id"]}))
+                except Exception as err:  # noqa: BLE001 - the facts are a nicety
+                    _LOGGER.debug("History facts unavailable: %s", err)
+                    found[k] = {}
+            else:
+                found[k] = {}
+        h.update(found[k])
+    return hist
 
 
 def own_cellars(cellars: list[JsonDict]) -> list[JsonDict]:
@@ -340,7 +395,7 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None
         "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
     }
-    hist = slim_history(history, ids)
+    hist = slim_history(history, ids, wines)
     if hist:  # only with entries, so a cellar without history looks as before
         data["history"] = hist
     return data

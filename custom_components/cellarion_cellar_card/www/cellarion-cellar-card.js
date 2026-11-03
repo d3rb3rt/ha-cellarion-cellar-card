@@ -1786,7 +1786,8 @@
       if (!hm && this._flag('history') && String(this._f.q || '').trim() && this._data.history && this._data.history.length) {
         const rows = this._view === 'flat' ? entries0.length : this._groups(entries0).length;
         if (rows < 5) {
-          const he = this._entries(this._filtered(null, null, 'hist'));
+          const inStock = new Set(this._data.bottles.map((b) => b.wine || b.name)); // only wines with no bottle left in the cellar
+          const he = this._entries(this._filtered(null, null, 'hist')).filter((e) => !inStock.has(e.wine));
           nHist = he.reduce((n, e) => n + e.bottles.length, 0);
           entries = entries0.concat(he);
         }

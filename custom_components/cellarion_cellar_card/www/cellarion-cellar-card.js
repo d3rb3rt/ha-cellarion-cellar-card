@@ -288,6 +288,12 @@
     .hrow > .vmid, .hrow > .fmid { opacity: .62; }
     .yv.hv { font-style: italic; font-weight: 600; color: var(--cb-text); }
     .wine.hist > .wrow.hrow .wname, .frow.hrow .wname { color: var(--s-drunk); } /* a wine that is only drunk: its name in the warning colour */
+    button.sel.swp { gap: 7px; justify-content: flex-start; padding-right: 12px; }
+    button.sel.swp::after { content: none; } /* no pull-down arrow: it is a switch */
+    .swp .swt { position: relative; flex: none; width: 24px; height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--cb-sub) 45%, transparent); transition: background .15s; }
+    .swp .swt i { position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--cb-text); transition: transform .15s; }
+    .swp.on .swt { background: var(--cb-on); }
+    .swp.on .swt i { transform: translateX(10px); }
     .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-drunk); border-radius: 10px; background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
     .hempty .dpur { display: block; margin-top: 2px; }
@@ -1698,15 +1704,8 @@
         const hSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis'; // settings (Filters): visible (default) / behind "..." / off
         if (hSt === 'off' && hSet.size) hSet.clear();
         const hOn = this._flag('history') && !!(d.history && d.history.length) && hSt !== 'off' && (hSt === 'vis' || this._showHid || !!hSet.size);
-        let histChip = '';
-        if (hOn) {
-          const srcItems = [{ v: 'stock', t: t('filter.stock') }, { v: 'hist', t: t('filter.history') }];
-          const srcCur = srcItems.find((o) => o.v === (hSet.size ? 'hist' : 'stock'));
-          this._ddItems.src = { label: t('filter.source'), items: srcItems, cur: srcCur.t, curV: srcCur.v };
-          histChip = this._fh.has('src:sw') // shown as a switch (archive on / off) instead of the pull-down
-            ? `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="histtoggle" aria-pressed="${hSet.size ? 'true' : 'false'}" aria-label="${esc(t('filter.history'))}">${esc(t('filter.history'))}</button>`
-            : `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="dd" data-id="src" aria-haspopup="listbox" aria-label="${esc(t('filter.source') + ': ' + srcCur.t)}">${esc(srcCur.t)}</button>`;
-        }
+        // the pill looks like a switch (track with knob): tap = archive on / off
+        const histChip = hOn ? `<button type="button" class="sel fs swp${hSet.size ? ' hasv on' : ''}" role="switch" data-act="histtoggle" aria-checked="${hSet.size ? 'true' : 'false'}" aria-label="${esc(t('filter.history'))}"><span class="swt" aria-hidden="true"><i></i></span>${esc(t('filter.history'))}</button>` : '';
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0) + (hOn ? 1 : 0);
         this._nChips = nChips;
         html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
@@ -2282,11 +2281,9 @@
       const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
       // Stock / Archive (flag history): fixed row before the filter mode (not movable); visible (default) = marker none, behind "..." = 'src:more', off = 'src:off'
       const srcSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis';
-      const srcRow = this._flag('history') ? `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.source'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>` : '';
-      const srcForm = this._flag('history') ? `<div class="frow" data-id="srcform"><span class="fl"><span class="wname">${esc(t('filter.sourceForm'))}</span></span><span class="fseg" role="group" aria-label="${esc(t('filter.sourceForm'))}">` +
-        [['dd', t('src.dd')], ['sw', t('src.sw')]].map(([v, l]) => `<button type="button" class="${(this._fh.has('src:sw') ? 'sw' : 'dd') === v ? 'on' : ''}" data-act="fstate" data-id="srcform" data-v="${v}" aria-pressed="${(this._fh.has('src:sw') ? 'sw' : 'dd') === v}">${esc(l)}</button>`).join('') + `</span><span class="gripsp"></span></div>` : '';
+      const srcRow = this._flag('history') ? `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.history'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>` : '';
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
-      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + srcRow + srcForm + fmRow;
+      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + srcRow + fmRow;
       // Data fields: one checkbox per field (list; with flag infosplit a second section sets the details with its own order); the price only has the list
       const split = this._flag('infosplit');
       const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) }))}"></span>`;
@@ -3054,7 +3051,6 @@
     },
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
-      if (id === 'src') { this._dd = null; const S = this._fs('hist'); if (v === 'hist') S.add('1'); else S.clear(); this._open = new Set(); this._renderDlg(); this._renderAll(); return; } // source: stock / archive
       if (id === 'fmode') { this._dd = null; this._setFm(v); this._renderDlg(); this._renderAll(); return; } // filter mode: Standard / OR / NOT
       if (this._multi() && id && id !== 'sort' && id !== 'cellarsel') { // OR / NOT: a pick adds a value and the list stays open (more values can follow)
         this._fsAdd(id, v); this._renderAll();
@@ -3109,9 +3105,7 @@
     fstate(t) {
       const id = t.dataset.id, v = t.dataset.v;
       const hid = new Set(this._fh);
-      if (id === 'srcform') { // stock / archive as a pull-down or a switch
-        hid.delete('src:sw'); if (v === 'sw') hid.add('src:sw');
-      } else if (id === 'src') { // stock / archive: markers instead of ids
+      if (id === 'src') { // stock / archive: markers instead of ids
         hid.delete('src:more'); hid.delete('src:off');
         if (v === 'more') hid.add('src:more'); else if (v === 'off') hid.add('src:off');
         this._fh = hid;

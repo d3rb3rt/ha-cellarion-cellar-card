@@ -329,5 +329,11 @@
  "info.lbl.village": "Ort",
  "info.back": "Zurück",
  "fhead.list": "Liste",
- "fhead.details": "Details"
+ "fhead.details": "Details",
+ "flag.infosplit": "Datenfelder: Liste und Details getrennt (Test)",
+ "flag.infosplitSub": "Eigene Auswahl und Reihenfolge der Datenfelder für die Liste und für die Details (Zeilen, Kopf, Info-Tabs).",
+ "set.infoList": "Datenfelder in der Liste",
+ "set.infoDet": "Datenfelder in den Details",
+ "set.infoListSub": "Infozeile unter dem Weinnamen: Auswahl und Reihenfolge",
+ "set.infoDetSub": "Zeilen in „Meine Daten“, Detailkopf und Info-Tabs: Auswahl und Reihenfolge"
 }

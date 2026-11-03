@@ -329,5 +329,11 @@
  "info.lbl.village": "Village",
  "info.back": "Back",
  "fhead.list": "List",
- "fhead.details": "Details"
+ "fhead.details": "Details",
+ "flag.infosplit": "Data fields: list and details separate (test)",
+ "flag.infosplitSub": "Own selection and order of the data fields for the list and for the details (rows, header, info tabs).",
+ "set.infoList": "Data fields in the list",
+ "set.infoDet": "Data fields in the details",
+ "set.infoListSub": "Info line below the wine name: selection and order",
+ "set.infoDetSub": "Rows in \"My data\", detail header and info tabs: selection and order"
 }

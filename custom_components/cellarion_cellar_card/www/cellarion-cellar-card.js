@@ -1730,7 +1730,7 @@
         // OR / NOT: one leading mode pill (with a cross to go back to standard) instead of a prefix in every pill
         const fmPill = this._multi() ? `<button class="fpill fmpill" data-act="fmoff" aria-label="${esc(t('fmode.title') + ': ' + t('fmode.' + this._fm()))}">${esc(t('fmode.' + this._fm()))}<span class="x">✕</span></button>` : '';
         const histPill = hOn && hSet.size ? `<button class="fpill hpill" data-act="fdel" data-g="hist" data-v="1" aria-label="${esc(t('head.removePill', { label: t('filter.history') }))}">${esc(t('filter.history'))}<span class="x">✕</span></button>` : '';
-        const pills = fmPill + histPill + defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
+        const pills = histPill + fmPill + defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;

@@ -143,6 +143,25 @@ def profile_from_get_bottle(g: JsonDict) -> JsonDict:
     return out
 
 
+def fallback_from_get_bottle(g: JsonDict) -> JsonDict:
+    """Details taken from get_bottle alone (a consumed bottle may not be served by the REST route): note, purchase, size and the
+    wine facts (country, region, appellation, grapes, classification) of wines that are not in the cellar any more."""
+    out: JsonDict = {}
+    w = g.get("wine") or {}
+    pu = g.get("purchase") or {}
+    for key, val in (("notes", g.get("notes")), ("price", g.get("price")), ("currency", g.get("currency")), ("purchaseDate", pu.get("date")),
+                     ("purchaseLocation", pu.get("location")), ("bottleSize", g.get("bottle_size"))):
+        if val not in (None, "", [], {}):
+            out[key] = val
+    cl = w.get("classification") or ", ".join(str(x) for x in (w.get("classifications") or []) if x)
+    facts = {"country": w.get("country"), "region": w.get("region"), "appellation": w.get("appellation"),
+             "grapes": [str(x) for x in (w.get("grapes") or []) if x], "classification": cl}
+    facts = {k: v for k, v in facts.items() if v not in (None, "", [])}
+    if facts:
+        out["wineFacts"] = facts
+    return out
+
+
 BOTTLE_DETAIL_KEYS = (
     "notes", "price", "currency", "purchaseDate", "purchaseLocation", "bottleSize",
     "rating", "ratingScale", "openedAt",
@@ -241,6 +260,7 @@ def slim_history(rows: Any, ids: list[str]) -> list[JsonDict]:
         w = r.get("wine") or {}
         h = {"id": r.get("bottle_id"), "name": w.get("name"), "producer": w.get("producer"), "type": w.get("type"),
              "vintage": r.get("vintage") or "NV", "at": r.get("consumed_at"), "reason": r.get("consumed_reason") or r.get("status"),
+             "drinkFrom": r.get("drink_from"), "drinkTo": r.get("drink_to"), "peakFrom": r.get("peak_from"), "peakUntil": r.get("peak_until"),
              "rating": r.get("consumed_rating"), "scale": r.get("consumed_rating_scale"), "note": str(r.get("consumed_note") or "")[:500],
              "price": r.get("price"), "currency": r.get("currency")}
         if multi:
@@ -341,7 +361,11 @@ async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,
     """Note, purchase, rating, register profile and label image of one bottle."""
     if not re.fullmatch(r"[a-f0-9]{24}", bottle_id or ""):
         raise ValueError("invalid bottle id")
-    d = await get(f"/api/bottles/{bottle_id}")
+    try:
+        d = await get(f"/api/bottles/{bottle_id}")
+    except Exception as err:  # e.g. a consumed bottle: the details then come from get_bottle alone
+        _LOGGER.debug("Bottle route unavailable: %s", err)
+        d = {}
     b = d.get("bottle") if isinstance(d.get("bottle"), dict) else d
     out: JsonDict = {k: b.get(k) for k in BOTTLE_DETAIL_KEYS if b.get(k) not in (None, "", [])}
     wd = b.get("wineDefinition") if isinstance(b.get("wineDefinition"), dict) else {}
@@ -356,6 +380,8 @@ async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,
         try:
             got = await mcp.tool("get_bottle", {"bottle_id": bottle_id})
             out.update(profile_from_get_bottle(got))
+            for k, v in fallback_from_get_bottle(got).items():
+                out.setdefault(k, v)  # only what the bottle route did not have
             if "image" not in out:
                 # An own photo that is not the default image only shows up in the photo list of get_bottle
                 for ph in ((got.get("photos") or {}).get("items") or []):

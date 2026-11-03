@@ -164,7 +164,7 @@ def test_history_matches_development_setup(tmp_path, capsys):
     h = dev["history"]
     assert [x["name"] for x in h] == ["Mellifera", "Alte Reben"]
     assert h[0] == {"id": "1" * 24, "name": "Mellifera", "producer": "Lointier", "type": "sparkling", "vintage": "NV",
-                    "at": "2026-11-03T14:24:12.400Z", "reason": "drank", "price": 50, "currency": "EUR"}
+                    "at": "2026-11-03T14:24:12.400Z", "reason": "drank", "price": 50, "currency": "EUR", "drinkFrom": 2024, "drinkTo": 2030}
     assert h[1]["rating"] == 4.5 and h[1]["scale"] == "stars" and len(h[1]["note"]) == 500
 
 

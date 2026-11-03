@@ -1151,6 +1151,11 @@
       const names = new Map(cl.map((c) => [c.id, c.name || '']));
       const per = new Map();
       (data.bottles || []).forEach((b) => { if (!this._gone.has(b.id)) { const k = b.cellar || cl[0].id; per.set(k, (per.get(k) || 0) + 1); } });
+      // Classification list of a wine; predicates (Kabinett, Spätlese ...) before the vineyard rank
+      const clsOf = (c) => {
+        const pr = (x) => (/kabinett|sp[aä]tlese|auslese|eiswein|qualit[aä]tswein|landwein/i.test(x) ? 0 : 1);
+        return String(c || '').split(',').map((x) => x.trim()).filter(Boolean).map((x, i) => [x, i]).sort((a, b) => pr(a[0]) - pr(b[0]) || a[1] - b[1]).map((x) => x[0]);
+      };
       const bottles = (data.bottles || []).filter((b) => !this._gone.has(b.id) && (!multi || all || (b.cellar || cl[0].id) === sel)).map((b) => {
         const o = Object.assign({}, b);
         o._cn = multi ? names.get(b.cellar || cl[0].id) || '' : '';
@@ -1159,9 +1164,7 @@
         o._loc = this._placeText(o) || o.location || NO_LOC;
         o._rack = o.where && o.where.rack ? o.where.rack : NO_LOC;
         o._type = o.type || '';
-        o._cls = String(o.classification || '').split(',').map((x) => x.trim()).filter(Boolean);
-        // Predicates (Kabinett, Spätlese ...) before the vineyard rank
-        { const pr = (x) => (/kabinett|sp[aä]tlese|auslese|eiswein|qualit[aä]tswein|landwein/i.test(x) ? 0 : 1); o._cls = o._cls.map((x, i) => [x, i]).sort((a, b) => pr(a[0]) - pr(b[0]) || a[1] - b[1]).map((x) => x[0]); }
+        o._cls = clsOf(o.classification);
         o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
           (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type],
           Object.keys(o.p || {}).filter((k) => !isInfoKey(k)).map((k) => (Array.isArray(o.p[k]) ? o.p[k].join(' ') : o.p[k])).join(' ')].join('\u0001')); // the long info texts and source links are not searched // fields are separated, so a phrase cannot run across two fields
@@ -1176,18 +1179,18 @@
         const o = Object.assign({}, h);
         const k = wkey(o.name, o.producer);
         o.vintage = o.vintage || 'NV';
-        o.wine = wineOf.get(k) || 'h:' + k;
+        o.wine = o.wine || wineOf.get(k) || 'h:' + k;
         o._hist = true;
         const sm = sampleOf.get(k); // wine facts of a bottle of the same wine in the cellar (if there is one)
-        if (sm) ['country', 'region', 'appellation', 'grapes', '_cls', 'p'].forEach((f) => { if (o[f] === undefined) o[f] = sm[f]; });
+        if (sm) ['country', 'region', 'appellation', 'grapes', 'classification', 'colour', 'p'].forEach((f) => { if (o[f] === undefined) o[f] = sm[f]; });
         o._status = 'drunk';
         o._cn = multi ? names.get(o.cellar || cl[0].id) || '' : '';
         o._price = priceKey(o);
         o._loc = '';
         o._rack = NO_LOC;
         o._type = o.type || '';
-        o._cls = [];
-        o._hay = norm([o.name, o.producer, o.vintage, TYPE_LABEL[o.type]].join('\u0001'));
+        o._cls = clsOf(o.classification);
+        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification, (o.grapes || []).join(' '), TYPE_LABEL[o.type]].join('\u0001'));
         return o;
       });
       const count = (get) => {
@@ -1700,7 +1703,9 @@
           const srcItems = [{ v: 'stock', t: t('filter.stock') }, { v: 'hist', t: t('filter.history') }];
           const srcCur = srcItems.find((o) => o.v === (hSet.size ? 'hist' : 'stock'));
           this._ddItems.src = { label: t('filter.source'), items: srcItems, cur: srcCur.t, curV: srcCur.v };
-          histChip = `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="dd" data-id="src" aria-haspopup="listbox" aria-label="${esc(t('filter.source') + ': ' + srcCur.t)}">${esc(srcCur.t)}</button>`;
+          histChip = this._fh.has('src:sw') // shown as a switch (archive on / off) instead of the pull-down
+            ? `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="histtoggle" aria-pressed="${hSet.size ? 'true' : 'false'}" aria-label="${esc(t('filter.history'))}">${esc(t('filter.history'))}</button>`
+            : `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="dd" data-id="src" aria-haspopup="listbox" aria-label="${esc(t('filter.source') + ': ' + srcCur.t)}">${esc(srcCur.t)}</button>`;
         }
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0) + (hOn ? 1 : 0);
         this._nChips = nChips;
@@ -2009,8 +2014,10 @@
       if (g.entries.length === 1 && g.entries[0].hist) {
         // Only drunk: one dimmed row, not tappable
         const e = g.entries[0];
-        return `<div class="wine hist"><div class="wrow hrow" data-act="detail" data-h="1" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(g.b)}<span class="wmain">${this._title(g.b, '', true)}</span>` +
-          `<span class="wright"><span class="wloc locs">${this._histInfo(e)}</span><span class="wvint yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span></span></div></div>`;
+        return `<div class="wine hist"><div class="wrow hrow" data-act="detail" data-h="1" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(g.b)}<span class="wmain">${this._title(g.b, this._priceSpans(e.bottles).d, true)}</span>` +
+          `<span class="wright"><span class="wloc locs">${this._histInfo(e)}</span><span class="wvint yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
+          (this._is.has('price') && this._priceOnly(this._priceSpans(e.bottles).d) ? `<span class="wpm">${this._priceOnly(this._priceSpans(e.bottles).d)}</span>` : '') +
+          `<span class="wcount">${esc(t('hist.drunkN', { n: e.bottles.length })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></div></div>`;
       }
       if (g.entries.length === 1) {
         // Only one vintage: the details are right in the wine row, tapping opens the details.
@@ -2276,8 +2283,10 @@
       // Stock / Archive (flag history): fixed row before the filter mode (not movable); visible (default) = marker none, behind "..." = 'src:more', off = 'src:off'
       const srcSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis';
       const srcRow = this._flag('history') ? `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.source'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>` : '';
+      const srcForm = this._flag('history') ? `<div class="frow" data-id="srcform"><span class="fl"><span class="wname">${esc(t('filter.sourceForm'))}</span></span><span class="fseg" role="group" aria-label="${esc(t('filter.sourceForm'))}">` +
+        [['dd', t('src.dd')], ['sw', t('src.sw')]].map(([v, l]) => `<button type="button" class="${(this._fh.has('src:sw') ? 'sw' : 'dd') === v ? 'on' : ''}" data-act="fstate" data-id="srcform" data-v="${v}" aria-pressed="${(this._fh.has('src:sw') ? 'sw' : 'dd') === v}">${esc(l)}</button>`).join('') + `</span><span class="gripsp"></span></div>` : '';
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
-      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + srcRow + fmRow;
+      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + srcRow + srcForm + fmRow;
       // Data fields: one checkbox per field (list; with flag infosplit a second section sets the details with its own order); the price only has the list
       const split = this._flag('infosplit');
       const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) }))}"></span>`;
@@ -3100,7 +3109,9 @@
     fstate(t) {
       const id = t.dataset.id, v = t.dataset.v;
       const hid = new Set(this._fh);
-      if (id === 'src') { // stock / archive: markers instead of ids
+      if (id === 'srcform') { // stock / archive as a pull-down or a switch
+        hid.delete('src:sw'); if (v === 'sw') hid.add('src:sw');
+      } else if (id === 'src') { // stock / archive: markers instead of ids
         hid.delete('src:more'); hid.delete('src:off');
         if (v === 'more') hid.add('src:more'); else if (v === 'off') hid.add('src:off');
         this._fh = hid;

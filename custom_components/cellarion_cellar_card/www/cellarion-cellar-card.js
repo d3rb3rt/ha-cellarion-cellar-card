@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'infosplit' }] : []; // infosplit: data fields for list and details are set separately (own selection and order)
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'infosplit' }, { id: 'history' }] : []; // infosplit: data fields for list and details are set separately (own selection and order)
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -88,9 +88,10 @@
     PRICE_BANDS.forEach(([, k]) => PRICE.push([k, t('price.' + k)]));
     STATUS_LABEL.window = t('status.window');
     STATUS_LABEL.unknown = t('status.unknown');
+    STATUS_LABEL.drunk = t('status.drunk');
     NO_LOC = t('loc.none');
   };
-  const STATUS_RANK = { over: 0, late: 1, peak: 2, window: 3, early: 4, notready: 5, unknown: 6 };
+  const STATUS_RANK = { over: 0, late: 1, peak: 2, window: 3, early: 4, notready: 5, unknown: 6, drunk: 7 };
 
   const esc = (s) =>
     String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -174,6 +175,7 @@
       --s-window: var(--cellarion-maturity-peak, var(--success-color, #2fa84f));
       --cb-hl: color-mix(in srgb, var(--warning-color, #ffc107) 38%, transparent);
       --s-unknown: var(--cb-ring);
+      --s-drunk: var(--cb-ring);
       display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--cb-text);
       font-size: var(--cb-row-font, 14px);
     }
@@ -281,6 +283,11 @@
     }
     .sdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--cb-ring); }
     .wine { border-bottom: 1px solid var(--cb-line); }
+    /* flag history: drunk entries (from the consumption log) are dimmed and not tappable */
+    .hrow { opacity: .6; cursor: default; }
+    .wine.hist > .wrow { opacity: .6; }
+    .yv.hv { opacity: .55; font-style: italic; }
+    .hrow .hinfo, .hinfo { color: var(--cb-sub); font-size: .9em; white-space: nowrap; }
     .wrow, .frow {
       width: 100%; display: flex; align-items: center; gap: 10px; box-sizing: border-box;
       min-height: var(--cb-row-h, 44px); padding: 6px 12px;
@@ -1156,6 +1163,26 @@
           Object.keys(o.p || {}).filter((k) => !isInfoKey(k)).map((k) => (Array.isArray(o.p[k]) ? o.p[k].join(' ') : o.p[k])).join(' ')].join('\u0001')); // the long info texts and source links are not searched // fields are separated, so a phrase cannot run across two fields
         return o;
       });
+      // History (flag): drunk / gifted / sold bottles of the consumption log as pseudo bottles, only used by the list; the wine id is taken from a bottle of the same wine and producer
+      const wkey = (n, p) => norm(n) + '|' + norm(p);
+      const wineOf = new Map();
+      (data.bottles || []).forEach((b) => { if (b.wine) wineOf.set(wkey(b.name, b.producer), b.wine); });
+      const hist = !this._flag('history') ? [] : (data.history || []).filter((h) => !multi || all || (h.cellar || cl[0].id) === sel).map((h) => {
+        const o = Object.assign({}, h);
+        const k = wkey(o.name, o.producer);
+        o.vintage = o.vintage || 'NV';
+        o.wine = wineOf.get(k) || 'h:' + k;
+        o._hist = true;
+        o._status = 'drunk';
+        o._cn = multi ? names.get(o.cellar || cl[0].id) || '' : '';
+        o._price = priceKey(o);
+        o._loc = '';
+        o._rack = NO_LOC;
+        o._type = o.type || '';
+        o._cls = [];
+        o._hay = norm([o.name, o.producer, o.vintage, TYPE_LABEL[o.type]].join('\u0001'));
+        return o;
+      });
       const count = (get) => {
         const m = new Map();
         bottles.forEach((b) => { const v = get(b); if (v) m.set(v, (m.get(v) || 0) + 1); });
@@ -1174,6 +1201,7 @@
         url: String(data.url || 'https://cellarion.app').replace(/\/+$/, ''),
         fields: Array.isArray(data.fields) ? data.fields : [],
         bottles,
+        history: hist,
         racks: cur ? (cur.racks || []) : Array.from(new Set([].concat(...cl.map((c) => c.racks || [])))),
         rackGeo: cur ? (cur.rackGeo || {}) : Object.assign({}, ...cl.map((c) => c.rackGeo || {})),
         facet: {
@@ -1263,13 +1291,17 @@
       this._qc = { q, d: this._data, r };
       return r;
     }
-    _filtered(skip, grp) {
+    // Flag history: the filter "History" is on, the list shows the drunk bottles instead of the cellar
+    _histMode() { return !!(this._flag('history') && this._f.hist && this._f.hist.size); }
+    // src: 'hist' = always the consumption log (used for the extra rows of a search), otherwise the cellar (or the log while the filter History is on)
+    _filtered(skip, grp, src) {
       const f = this._f;
+      const pool = src === 'hist' || (!src && this._histMode()) ? (this._data.history || []) : this._data.bottles;
       const toks = this._qToks();
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
       const gid = grp || skip, skipDef = gid && this._allDefs().find((d) => d.id === gid);
       const noOther = gid !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
-      return this._data.bottles.filter((b) => {
+      return pool.filter((b) => {
         if (noOther && b._type === 'other') return false;
         if (this._multi()) {
           // OR: the pick lists stay free (counts over all bottles, so more values can be added); the list shows bottles where any chosen value matches.
@@ -1296,6 +1328,7 @@
         e.status = e.bottles.reduce((a, x) => (STATUS_RANK[x._status] < STATUS_RANK[a] ? x._status : a), e.bottles[0]._status);
         const ends = e.bottles.map((x) => x.drinkTo).filter(Boolean);
         e.drinkTo = ends.length ? Math.min.apply(null, ends) : 9999;
+        e.hist = !!e.b._hist; // drunk entry (flag history)
       });
       return Array.from(m.values());
     }
@@ -1322,9 +1355,9 @@
       const m = new Map();
       entries.forEach((e) => {
         let g = m.get(e.wine);
-        if (!g) { g = { id: e.wine, b: e.b, entries: [], count: 0 }; m.set(e.wine, g); }
+        if (!g) { g = { id: e.wine, b: e.b, entries: [], count: 0, hn: 0 }; m.set(e.wine, g); }
         g.entries.push(e);
-        g.count += e.bottles.length;
+        if (e.hist) g.hn += e.bottles.length; else g.count += e.bottles.length; // count = bottles in the cellar, hn = drunk ones
       });
       const groups = Array.from(m.values());
       groups.forEach((g) => {
@@ -1647,7 +1680,10 @@
           this._ddItems.fmode = { label: t('fmode.title'), items: fmItems, cur: fmCur.t, curV: fmCur.v, hint: t('fmode.hint') };
           fmChip = `<button type="button" class="sel fs fm${this._multi() ? ' hasv' : ''}" data-act="dd" data-id="fmode" aria-haspopup="listbox" aria-label="${esc(t('fmode.title') + ': ' + fmCur.t)}">${esc(this._multi() ? fmCur.t : t('fmode.title'))}</button>`;
         }
-        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0);
+        // Flag history: one switch "History" (only drunk bottles), as long as the consumption log has entries
+        const hOn = this._flag('history') && !!(d.history && d.history.length), hSet = this._fs('hist');
+        const histChip = hOn ? `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="histtoggle" aria-pressed="${hSet.size ? 'true' : 'false'}" aria-label="${esc(t('filter.history'))}">${esc(t('filter.history'))}</button>` : '';
+        const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0) + (hOn ? 1 : 0);
         this._nChips = nChips;
         html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
           defs.map((d) => {
@@ -1660,12 +1696,13 @@
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size && !this._multi(),
               sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' && !this._multi() ? ' & ' : ', ') : '' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-          }).join('') + fmChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
+          }).join('') + histChip + fmChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
         // OR / NOT: one leading mode pill (with a cross to go back to standard) instead of a prefix in every pill
         const fmPill = this._multi() ? `<button class="fpill fmpill" data-act="fmoff" aria-label="${esc(t('fmode.title') + ': ' + t('fmode.' + this._fm()))}">${esc(t('fmode.' + this._fm()))}<span class="x">✕</span></button>` : '';
-        const pills = fmPill + defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
+        const histPill = hOn && hSet.size ? `<button class="fpill" data-act="fdel" data-g="hist" data-v="1" aria-label="${esc(t('head.removePill', { label: t('filter.history') }))}">${esc(t('filter.history'))}<span class="x">✕</span></button>` : '';
+        const pills = fmPill + histPill + defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
@@ -1735,8 +1772,19 @@
       }
       if (!this._data) { el.innerHTML = `<div class="msg">${esc(t('list.loading'))}</div>`; return; }
       this._az = new Set();
+      const hm = this._histMode();
       const bottles = this._filtered();
-      const entries = this._entries(bottles);
+      const entries0 = this._entries(bottles);
+      let entries = entries0, nHist = 0;
+      // Flag history: a search with fewer than 5 rows also shows the matching drunk vintages (dimmed vintage rows)
+      if (!hm && this._flag('history') && String(this._f.q || '').trim() && this._data.history && this._data.history.length) {
+        const rows = this._view === 'flat' ? entries0.length : this._groups(entries0).length;
+        if (rows < 5) {
+          const he = this._entries(this._filtered(null, null, 'hist'));
+          nHist = he.reduce((n, e) => n + e.bottles.length, 0);
+          entries = entries0.concat(he);
+        }
+      }
       let html = '';
       let nWine;
       if (this._view === 'flat') {
@@ -1763,7 +1811,7 @@
           }).join('');
         } else html = groups.map((g) => this._azAnchor(g.b) + this._groupRow(g)).join('');
       }
-      if (!bottles.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
+      if (!entries.length) html = `<div class="msg">${esc(t('list.empty'))}</div>`;
       el.innerHTML = html;
       el.scrollTop = top;
       this._renderAz();
@@ -1778,8 +1826,9 @@
       const sum = this._head && this._head.querySelector('[data-sum]');
       if (sum) {
         const all = this._hideOther() ? this._data.bottles.filter((b) => b._type !== 'other').length : this._data.bottles.length;
-        sum.textContent = `${this._data.cellar && this._flagV('hdr') !== 'c' ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: nWine })} · ${t('count.vintages', { n: entries.length })} · ${t('count.bottles', { n: bottles.length })}` + (bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
-          (this._error ? ' · ' + t('count.loadError') : '');
+        const sw = nHist ? new Set(entries0.map((e) => e.wine)).size : nWine; // the extra drunk rows of a search are not counted as wines or vintages
+        sum.textContent = `${this._data.cellar && this._flagV('hdr') !== 'c' ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: sw })} · ${t('count.vintages', { n: entries0.length })} · ${hm ? t('hist.drunkN', { n: bottles.length }) : t('count.bottles', { n: bottles.length })}` + (!hm && bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
+          (nHist ? ' · ' + t('hist.more', { n: nHist }) : '') + (this._error ? ' · ' + t('count.loadError') : '');
         this._sumTxt = sum.textContent;
       }
     }
@@ -1920,10 +1969,29 @@
       return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
     }
 
+    // Drunk entry (flag history): reason and date of the last bottle, rating, number of bottles; the note is the tooltip
+    _histInfo(e) {
+      const hs = e.bottles.slice().sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+      const h = hs[0] || {};
+      let date = '';
+      try { date = h.at ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(h.at)) : ''; } catch (x) { date = String(h.at || '').slice(0, 10); }
+      const rk = 'hist.reason.' + (h.reason || 'drank');
+      const why = I18N.dict[rk] !== undefined ? t(rk) : String(h.reason || '');
+      const rt = typeof h.rating === 'number' ? ' · ' + (h.scale && !/star/i.test(h.scale) ? h.rating + ' ' + h.scale : '★ ' + h.rating) : '';
+      const tip = (hs.map((x) => x.note).filter(Boolean)[0]) || '';
+      return `<span class="hinfo"${tip ? ` title="${esc(tip)}"` : ''}>✓ ${esc(why + (date ? ' ' + date : '') + rt + (hs.length > 1 ? ' ×' + hs.length : ''))}</span>`;
+    }
+
     _groupRow(g) {
       const open = this._open.has(g.id);
       const asc = g.entries.slice().reverse();
-      const vints = asc.map((e) => `<span class="yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>`).join(' · ');
+      const vints = asc.map((e) => `<span class="yv${e.hist ? ' hv' : ''}" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>`).join(' · ');
+      if (g.entries.length === 1 && g.entries[0].hist) {
+        // Only drunk: one dimmed row, not tappable
+        const e = g.entries[0];
+        return `<div class="wine hist"><div class="wrow hrow">${this._typeDot(g.b)}<span class="wmain">${this._title(g.b, '', true)}</span>` +
+          `<span class="wright"><span class="wloc locs">${this._histInfo(e)}</span><span class="wvint yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span></span></div></div>`;
+      }
       if (g.entries.length === 1) {
         // Only one vintage: the details are right in the wine row, tapping opens the details.
         const e = g.entries[0];
@@ -1937,13 +2005,14 @@
           `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">›</span></span></button></div>`;
       }
       const ps = this._priceSpans([].concat.apply([], g.entries.map((x) => x.bottles)));
-      let html = `<div class="wine"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
+      let html = `<div class="wine${g.count ? '' : ' hist'}"><button class="wrow" data-act="toggle" data-id="${esc(g.id)}" aria-expanded="${open}">` +
         this._typeDot(g.b) +
         `<span class="wmain">${this._title(g.b, ps.d, true)}</span>` +
         `<span class="wright"><span class="wvint multi">${vints}</span>` +
-        `<span class="wcount">${esc(t('count.bottlesShort', { n: g.count })).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
+        `<span class="wcount">${(g.count ? esc(t('count.bottlesShort', { n: g.count })) : esc(t('hist.drunkN', { n: g.hn }))).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
         html += `<div class="vlist">` + g.entries.map((e) => {
+          if (e.hist) return `<div class="vrow hrow"><span class="vyear yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="vmid">${this._histInfo(e)}</span></div>`;
           const pr = this._is.has('price') ? this._priceTxt(e.bottles) : '';
           return `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
             (pr ? `<span class="wprice vprl">${esc(pr)}</span>` : '') +
@@ -1955,6 +2024,11 @@
     }
 
     _flatRow(e) {
+      if (e.hist) {
+        return `<div class="frow hrow">${this._typeDot(e.b)}<span class="fyear yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
+          `<span class="fmid">${this._title(e.b, '')}<span class="locs">${this._histInfo(e)}</span></span>` +
+          `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL.drunk)}</span></div>`;
+      }
       return `<div class="frow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(e.b)}<span class="fyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
         `<span class="fmid">${this._title(e.b, this._priceSpans(e.bottles).d)}` +
         `<span class="locs">${this._locsHtml(e.bottles)}</span></span>` +
@@ -3000,7 +3074,7 @@
       this._renderSet();
     },
     flag(t) {
-      this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: (FLAGS.find((x) => x.id === t.dataset.id) || {}).opts ? t.dataset.v : t.dataset.v === 'on' }); this._saveState(); this._renderSet(); this._renderAll(); this._renderDlg();
+      this._local.flags = Object.assign({}, this._local.flags, { [t.dataset.id]: (FLAGS.find((x) => x.id === t.dataset.id) || {}).opts ? t.dataset.v : t.dataset.v === 'on' }); this._saveState(); if (t.dataset.id === 'history') { if (!this._flag('history')) delete this._f.hist; if (this._raw) this._ingest(this._raw); } this._renderSet(); this._renderAll(); this._renderDlg();
     },
     lang(t) {
       this._setLang(t.dataset.v || '');
@@ -3037,6 +3111,7 @@
       this._renderAll();
     },
     fmoff() { this._setFm('std'); this._renderDlg(); this._renderAll(); },
+    histtoggle() { const S = this._fs('hist'); if (S.size) S.clear(); else S.add('1'); this._open = new Set(); this._renderAll(); },
     fdel(t) { this._f[t.dataset.g].delete(t.dataset.v); this._renderAll(); },
     pyes() { this._cfm = false; this._renderDlg(); this._refreshNow(); },
     pno() { this._cfm = false; this._renderDlg(); },

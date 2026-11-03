@@ -335,5 +335,14 @@
  "set.infoList": "Datenfelder in der Liste",
  "set.infoDet": "Datenfelder in den Details",
  "set.infoListSub": "Infozeile unter dem Weinnamen: Auswahl und Reihenfolge",
- "set.infoDetSub": "Zeilen in „Meine Daten“, Detailkopf und Info-Tabs: Auswahl und Reihenfolge"
+ "set.infoDetSub": "Zeilen in „Meine Daten“, Detailkopf und Info-Tabs: Auswahl und Reihenfolge",
+ "flag.history": "History (Test)",
+ "flag.historySub": "Getrunkene Weine aus Cellarion: Filter „History“ und bei einer Suche mit weniger als 5 Zeilen passende getrunkene Jahrgänge (gedimmt).",
+ "filter.history": "History",
+ "status.drunk": "Getrunken",
+ "hist.drunkN": "{n} getrunken",
+ "hist.more": "+{n} getrunken",
+ "hist.reason.drank": "getrunken",
+ "hist.reason.gifted": "verschenkt",
+ "hist.reason.sold": "verkauft"
 }

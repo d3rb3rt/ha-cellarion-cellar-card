@@ -335,5 +335,14 @@
  "set.infoList": "Data fields in the list",
  "set.infoDet": "Data fields in the details",
  "set.infoListSub": "Info line below the wine name: selection and order",
- "set.infoDetSub": "Rows in \"My data\", detail header and info tabs: selection and order"
+ "set.infoDetSub": "Rows in \"My data\", detail header and info tabs: selection and order",
+ "flag.history": "History (test)",
+ "flag.historySub": "Drunk wines from Cellarion: filter \"History\", and a search with fewer than 5 rows also shows matching drunk vintages (dimmed).",
+ "filter.history": "History",
+ "status.drunk": "Drunk",
+ "hist.drunkN": "{n} drunk",
+ "hist.more": "+{n} drunk",
+ "hist.reason.drank": "drunk",
+ "hist.reason.gifted": "gifted",
+ "hist.reason.sold": "sold"
 }

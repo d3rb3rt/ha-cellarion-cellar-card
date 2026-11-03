@@ -285,8 +285,9 @@
     .wine { border-bottom: 1px solid var(--cb-line); }
     /* flag history: drunk entries (from the consumption log) are dimmed and not tappable */
     .hrow { cursor: pointer; }
-    .hrow > :not(.yv), .wine.hist > .wrow > .wmain, .wine.hist > .wrow > .wright > .wloc { opacity: .62; }
+    .hrow > .vmid, .hrow > .fmid { opacity: .62; }
     .yv.hv { font-style: italic; font-weight: 600; color: var(--cb-text); }
+    .wine.hist > .wrow.hrow .wname, .frow.hrow .wname { color: var(--s-late); } /* a wine that is only drunk: its name in the warning colour */
     .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-late); border-radius: 10px; background: color-mix(in srgb, var(--s-late) 12%, transparent); }
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-late); }
     .hempty .dpur { display: block; margin-top: 2px; }

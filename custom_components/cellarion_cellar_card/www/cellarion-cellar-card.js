@@ -1691,7 +1691,10 @@
           fmChip = `<button type="button" class="sel fs fm${this._multi() ? ' hasv' : ''}" data-act="dd" data-id="fmode" aria-haspopup="listbox" aria-label="${esc(t('fmode.title') + ': ' + fmCur.t)}">${esc(this._multi() ? fmCur.t : t('fmode.title'))}</button>`;
         }
         // Flag history: pull-down "Stock / Archive" (the list shows the cellar or only the used-up wines), as long as the consumption log has entries
-        const hOn = this._flag('history') && !!(d.history && d.history.length), hSet = this._fs('hist');
+        const hSet = this._fs('hist');
+        const hSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis'; // settings (Filters): visible (default) / behind "..." / off
+        if (hSt === 'off' && hSet.size) hSet.clear();
+        const hOn = this._flag('history') && !!(d.history && d.history.length) && hSt !== 'off' && (hSt === 'vis' || this._showHid || !!hSet.size);
         let histChip = '';
         if (hOn) {
           const srcItems = [{ v: 'stock', t: t('filter.stock') }, { v: 'hist', t: t('filter.history') }];
@@ -2270,8 +2273,11 @@
       // Filter mode (Standard / OR / NOT): a fixed row below the list (not movable, always last before "..."); visible = marker 'fmode:show', off = marker 'fmode:off' (the card stays in standard mode)
       const fmSt = this._fh.has('fmode:off') ? 'off' : this._fh.has('fmode:show') ? 'vis' : 'more';
       const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
+      // Stock / Archive (flag history): fixed row before the filter mode (not movable); visible (default) = marker none, behind "..." = 'src:more', off = 'src:off'
+      const srcSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis';
+      const srcRow = this._flag('history') ? `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.source'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>` : '';
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
-      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
+      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + srcRow + fmRow;
       // Data fields: one checkbox per field (list; with flag infosplit a second section sets the details with its own order); the price only has the list
       const split = this._flag('infosplit');
       const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) }))}"></span>`;
@@ -3094,7 +3100,12 @@
     fstate(t) {
       const id = t.dataset.id, v = t.dataset.v;
       const hid = new Set(this._fh);
-      if (id === 'fmode') { // filter mode: markers instead of ids
+      if (id === 'src') { // stock / archive: markers instead of ids
+        hid.delete('src:more'); hid.delete('src:off');
+        if (v === 'more') hid.add('src:more'); else if (v === 'off') hid.add('src:off');
+        this._fh = hid;
+        if (v !== 'vis') this._fs('hist').clear();
+      } else if (id === 'fmode') { // filter mode: markers instead of ids
         hid.delete('fmode:show'); hid.delete('fmode:off');
         if (v === 'vis') hid.add('fmode:show'); else if (v === 'off') { hid.add('fmode:off'); this._fmode = 'std'; }
         this._fh = hid; // so _setFm sees the new state

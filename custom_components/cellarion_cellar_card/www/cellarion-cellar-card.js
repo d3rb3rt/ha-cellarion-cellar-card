@@ -1302,7 +1302,10 @@
     // src: 'hist' = always the consumption log (used for the extra rows of a search), otherwise the cellar (or the log while the filter History is on)
     _filtered(skip, grp, src) {
       const f = this._f;
-      const pool = src === 'hist' || (!src && this._histMode()) ? (this._data.history || []) : this._data.bottles;
+      const hp = src === 'hist' || (!src && this._histMode());
+      // History = only used up: a drunk vintage with a bottle of the same wine and vintage still in the cellar is not listed
+      const left = hp ? new Set(this._data.bottles.map((b) => (b.wine || b.name) + '|' + (b.vintage || 'NV'))) : null;
+      const pool = hp ? (this._data.history || []).filter((h) => src === 'hist' || !left.has(h.wine + '|' + (h.vintage || 'NV'))) : this._data.bottles;
       const toks = this._qToks();
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
       const gid = grp || skip, skipDef = gid && this._allDefs().find((d) => d.id === gid);

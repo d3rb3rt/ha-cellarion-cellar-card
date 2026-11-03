@@ -936,8 +936,8 @@
       this._is = new Set(expand(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']));
     }
     _infoDefs() {
-      const std = [0, 1, 2, 3].map((g) => ['cls' + g, t('cls.g' + g)]).concat([['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]])
-        .map(([id, label]) => ({ id, label }));
+      const std = [0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g })) // clsg: shown as "Classification: <kind>", like in the filter settings
+        .concat([['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       const all = std.concat(pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };

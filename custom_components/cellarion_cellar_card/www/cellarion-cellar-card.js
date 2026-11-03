@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = []; // experiments in test: {id, ...}; none at the moment (settings, "Test features", only shows while this is not empty)
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total)
   const STANDARD = ['infosplit', 'history']; // former flags, now always on: infosplit = data fields for list and details are set separately (own selection and order); history = archive of the drunk wines
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
@@ -513,6 +513,13 @@
     .sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stile, .smini { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border: 1px solid var(--cb-line); border-radius: 12px; background: var(--cb-chip); color: var(--cb-text); font: inherit; cursor: pointer; min-width: 0; }
     .stile.wide { width: 100%; }
+    .stile.st, .srow.st { cursor: default; }
+    .stile.st:active, .srow.st:active { background: var(--cb-chip); }
+    .srow.st:active { background: transparent; }
+    .statsheet[data-sc="arch"] .sbig.huge, .statsheet[data-sc="arch"] .sbig.val { color: var(--s-drunk); }
+    .statsheet[data-sc="arch"] .sbf { background: var(--s-drunk); }
+    .sbt.two { display: flex; }
+    .sbt.two .sbf { flex: none; border-radius: 0; }
     .smini { align-items: flex-start; padding: 8px 12px; }
     .smini .sval { font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .stile:active, .smini:active, .sbar:active, .srow:active { background: var(--cb-line); }
@@ -2190,6 +2197,91 @@
           return { title: '', sections: [] };
       }
     }
+    // Flag stat3: statistics of the archive (consumption log), same cellar selection and "Other" setting as the stock statistics
+    _statHist() {
+      const d = this._data;
+      if (!d) return null;
+      const noOther = !this._showOther();
+      if (this._statH && this._statH.d === d && this._statH.no === noOther) return this._statH.v;
+      const hs = (d.history || []).filter((h) => !noOther || h._type !== 'other');
+      const cur = (this._statData() || {}).currency || '';
+      const cnt = (get) => {
+        const m = new Map();
+        hs.forEach((h) => [].concat(get(h)).forEach((v) => { if (v) m.set(v, (m.get(v) || 0) + 1); }));
+        return Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(a[0], b[0]));
+      };
+      const ago = Date.now() - 365 * 864e5;
+      let value = 0, gifted = 0, late = 0, recent = 0;
+      const years = new Map(), wines = new Map();
+      hs.forEach((h) => {
+        const priced = typeof h.price === 'number' && h.currency === cur;
+        if (priced) value += h.price;
+        if (h.reason === 'gifted') gifted++;
+        const isLate = /^Nachgetragen/.test(String(h.note || '')); // entries without a known date (taken over from the old cellar book)
+        if (isLate) late++;
+        const m = /^(\d{4})/.exec(String(h.at || ''));
+        if (m) { const o = years.get(m[1]) || { n: 0, v: 0 }; o.n++; if (priced) o.v += h.price; years.set(m[1], o); }
+        if (!isLate && h.at && Date.parse(h.at) >= ago) recent++;
+        const k = h.wine || h.name;
+        let w = wines.get(k);
+        if (!w) { w = { name: h.name, producer: h.producer, n: 0 }; wines.set(k, w); }
+        w.n++;
+      });
+      const v = { total: hs.length, wines, years, value, gifted, late, recent, currency: cur,
+        types: cnt((h) => h._type), producers: cnt((h) => h.producer) };
+      this._statH = { d, v, no: noOther };
+      return v;
+    }
+    // Flag stat3: start page of the areas "Archive" and "Total" (S = stock statistics, H = archive statistics)
+    _statScopeHtml(scope, S, num) {
+      const H = this._statHist();
+      if (!H) return '';
+      const money = this._money(S.currency);
+      const dec = (n) => new Intl.NumberFormat(I18N.lang || 'de', { maximumFractionDigits: 1 }).format(n);
+      const hero = (n, label) => `<div class="shero"><span class="sbig huge">${esc(num(n))}</span><span class="slbl">${esc(label)}</span></div>`;
+      const tile = (big, label, go) => (go
+        ? `<button class="stile" data-act="statscope" data-t="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`
+        : `<div class="stile st"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></div>`);
+      const head = (label, hint) => `<div class="wsub shead">${esc(label)}</div>` + (hint ? `<div class="wsub">${esc(hint)}</div>` : '');
+      const row = (label, sub, n, mx, text, attr) => `<${attr ? 'button' : 'div'} class="srow${attr ? '' : ' st'}" ${attr || ''}><span class="srl"><span class="srt">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></span>` +
+        `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / Math.max(1, mx) * 100))}%"></span></span><span class="sbc">${esc(text)}</span></${attr ? 'button' : 'div'}>`;
+      const arch = (g, v) => `data-act="statarch" data-g="${esc(g)}" data-v="${esc(v)}"`;
+      if (scope === 'arch') {
+        const yrs = Array.from(H.years.entries()).sort((a, b) => b[0] - a[0]);
+        const ymx = Math.max(1, ...yrs.map(([, o]) => o.n));
+        const top = Array.from(H.wines.values()).sort((a, b) => b.n - a.n || de.compare(a.name, b.name)).slice(0, 8);
+        const tmx = Math.max(1, ...H.types.map((x) => x[1]));
+        return hero(H.total, t('stat.drunkHero')) +
+          `<div class="sgrid">${tile(num(H.wines.size), t('stat.wines'))}${tile(num(H.gifted), t('stat.gifted'))}</div>` +
+          (H.value > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(money(H.value))}</span><span class="slbl">${esc(t('stat.drunkValue'))}</span></div>` : '') +
+          head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
+          (H.late ? `<div class="wsub shint">${esc(t('stat.lateHint', { n: H.late }))}</div>` : '') +
+          head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +
+          head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" ${arch('types', k)}>${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+            `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / tmx * 100))}%"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +
+          `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
+      }
+      // Total: stock and archive together
+      const reach = H.recent > 0 ? S.total / H.recent : 0;
+      const sm = new Map(S.types), hm = new Map(H.types);
+      const tk = Array.from(new Set([].concat(S.types.map((x) => x[0]), H.types.map((x) => x[0]))));
+      tk.sort((a, b) => ((sm.get(b) || 0) + (hm.get(b) || 0)) - ((sm.get(a) || 0) + (hm.get(a) || 0)));
+      const tmx = Math.max(1, ...tk.map((k) => (sm.get(k) || 0) + (hm.get(k) || 0)));
+      const rebuy = Array.from(H.wines.entries()).filter(([k, w]) => !S.wines.has(k) && w.n >= 2).sort((a, b) => b[1].n - a[1].n || de.compare(a[1].name, b[1].name)).slice(0, 8);
+      const pm = new Map();
+      S.producers.forEach(([k, n]) => pm.set(k, [n, 0]));
+      H.producers.forEach(([k, n]) => { const o = pm.get(k) || [0, 0]; o[1] = n; pm.set(k, o); });
+      const prods = Array.from(pm.entries()).sort((a, b) => (b[1][0] + b[1][1]) - (a[1][0] + a[1][1]) || de.compare(a[0], b[0])).slice(0, 8);
+      return hero(S.total + H.total, t('stat.allBought')) +
+        `<div class="sgrid">${tile(num(S.total), t('stat.sc.stock'), 'stock')}${tile(num(H.total), t('stat.sc.arch'), 'arch')}</div>` +
+        (reach > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(t('stat.reachYears', { n: dec(reach) }))}</span><span class="slbl">${esc(t('stat.reach'))}</span><span class="slbl">${esc(t('stat.reachHint', { n: H.recent }))}</span></div>` : '') +
+        head(t('stat.byType'), t('stat.stockVsArch')) +
+        `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+          `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(a)} · ${num(b)}</span></button>`; }).join('')}</div>` +
+        (prods.length ? head(t('stat.producersAll'), t('stat.stockVsArch')) + `<div class="slist">${prods.map(([k, [a, b]]) => row(k, '', a + b, prods[0][1][0] + prods[0][1][1], num(a) + ' · ' + num(b), `data-act="statfilter" data-g="producer" data-v="${esc(k)}"`)).join('')}</div>` : '') +
+        (rebuy.length ? head(t('stat.rebuy'), t('stat.rebuyHint')) + `<div class="slist">${rebuy.map(([, w]) => row(w.name, w.producer, w.n, rebuy[0][1].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
+        `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
+    }
     _money(cur) {
       let f;
       try { f = new Intl.NumberFormat(I18N.lang || 'de', { style: 'currency', currency: cur || 'EUR', maximumFractionDigits: 0 }); } catch (e) { f = null; }
@@ -2204,11 +2296,15 @@
       const nav = (title) => `<div class="dh">${key ? `<button class="dx" data-act="statback" aria-label="${esc(t('stat.back'))}">←</button>` : ''}<span class="wmain"><span class="wname">${esc(title)}</span></span>` +
         `<button class="dx" data-act="statclose" aria-label="${esc(t('head.close'))}">✕</button></div>`;
       let html;
-      if (!key) {
+      const sc3 = this._flag('stat3'), scope = sc3 ? (st.scope || 'stock') : 'stock'; // flag stat3: three areas (stock | archive | total)
+      const tabs3 = sc3 && !key ? `<div class="stabs">${[['stock', t('stat.sc.stock')], ['arch', t('stat.sc.arch')], ['all', t('stat.sc.all')]].map(([k, l]) => `<button class="stab${k === scope ? ' on' : ''}" data-act="statscope" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '';
+      if (!key && scope !== 'stock') {
+        html = nav(this._data.cellar || t('stat.title')) + tabs3 + this._statScopeHtml(scope, S, num);
+      } else if (!key) {
         const tile = (go, big, label) => `<button class="stile" data-act="statgo" data-to="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`;
         const mini = (go, label, val) => `<button class="smini" data-act="statgo" data-to="${go}"><span class="slbl">${esc(label)}</span><span class="sval">${esc(val || '–')}</span></button>`;
         const maxT = Math.max(1, ...S.types.map((x) => x[1]));
-        html = nav(this._data.cellar || t('stat.title')) +
+        html = nav(this._data.cellar || t('stat.title')) + tabs3 +
           `<div class="shero"><span class="sbig huge">${esc(num(S.total))}</span><span class="slbl">${esc(t('stat.bottles'))}</span></div>` +
           `<div class="sgrid">${tile('wines', num(S.wines.size), t('stat.wines'))}${tile('countries', num(S.countries.length), t('stat.countries'))}` +
           `${tile('producers', num(S.producers.length), t('stat.producers'))}${tile('vintages', S.oldest || '–', t('stat.oldest'))}</div>` +
@@ -2231,7 +2327,7 @@
             (more || (st.all && sec.total > sec.limit) ? `<button class="btn" data-act="statall">${esc(st.all ? t('stat.less') : t('stat.all', { n: sec.total }))}</button>` : '');
         }).join('') + `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
       }
-      el.innerHTML = `<div class="dsheet statsheet" role="dialog" aria-modal="true">${html}</div>`;
+      el.innerHTML = `<div class="dsheet statsheet" data-sc="${key ? 'stock' : scope}" role="dialog" aria-modal="true">${html}</div>`;
       el.hidden = false;
       const sh = el.querySelector('.dsheet'); if (sh) sh.scrollTop = topPos;
     }
@@ -3083,6 +3179,16 @@
     statback() { if (this._stat) { this._stat.path.pop(); this._stat.all = false; this._renderDlg(); } },
     stattab(t) { if (this._stat) { this._stat.vtab = t.dataset.t; this._stat.all = false; this._renderDlg(); } },
     statall() { if (this._stat) { this._stat.all = !this._stat.all; this._renderDlg(); } },
+    statscope(t) { if (this._stat) { this._stat.scope = t.dataset.t; this._stat.all = false; this._renderDlg(); } }, // flag stat3: switch between stock, archive and total
+    statarch(t) { // flag stat3: tap in the archive statistics = this filter plus the archive switch
+      const g = t.dataset.g, v = t.dataset.v;
+      this._stat = null;
+      this._f = { q: '' };
+      if (g === 'q') this._f.q = v; else this._fsAdd(g, v);
+      this._fs('hist').add('1');
+      this._open = new Set();
+      this._renderDlg(); this._renderAll();
+    },
     statgo(t) { if (this._stat) { this._stat.path.push(t.dataset.to); this._stat.all = false; this._renderDlg(); } },
     statfilter(t) {
       const g = t.dataset.g, v = t.dataset.v;

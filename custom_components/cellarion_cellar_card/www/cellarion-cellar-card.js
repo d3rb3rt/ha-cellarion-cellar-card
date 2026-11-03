@@ -936,7 +936,7 @@
     _infoDefs() {
       const std = [['cls', t('filter.cls')], ['region', t('filter.region')], ['grape', t('filter.grape')]]
         .map(([id, label]) => ({ id, label }));
-      const pers = ((this._data && this._data.fields) || []).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
+      const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       const all = std.concat(pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
       // The price is special (bottle data, not wine data): always last, not sortable
@@ -2443,7 +2443,7 @@
         [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
         [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
-      ].concat(((this._data && this._data.fields) || []).map((l) => {
+      ].concat(this._infoDefs().filter((d) => d.personal).map((d) => d.label).map((l) => { // personal fields in the order of the info settings
         const vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
         return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
       }));
@@ -2562,7 +2562,17 @@
       const el = this._dlg, x = this._xv, sel = this._infoSel();
       if (!el || !x || !sel) return;
       const rk = (k) => { const i = INFO_ORDER.indexOf(k); return i < 0 ? 99 : i; };
-      const keys = Object.keys(x.items).sort((a, b) => rk(a) - rk(b) || (a < b ? -1 : 1));
+      // Tab order = order of the info settings (the same order as the rows of "My data"); producer first, appellation right after region
+      const defs = this._infoDefs();
+      const rank = (k) => {
+        if (k === 'producer') return -2;
+        const ti = INFO_TIER.indexOf(k);
+        let id = k === 'region' || k === 'appellation' ? 'region' : k === 'grape' ? 'grape' : ti >= 0 ? 'cls' : '';
+        if (!id) { const d = defs.find((d2) => d2.personal && infoNorm(d2.label) === k); id = d ? d.id : ''; }
+        const i = id ? defs.findIndex((d2) => d2.id === id) : -1;
+        return i < 0 ? 999 : i + (k === 'appellation' ? 0.5 : ti >= 0 ? ti * 0.1 : 0);
+      };
+      const keys = Object.keys(x.items).sort((a, b) => rank(a) - rank(b) || rk(a) - rk(b) || (a < b ? -1 : 1));
       if (keys.indexOf(x.tab) < 0 && keys.length) x.tab = keys[0];
       const chip = (k, label, on) => `<button class="chip${on ? ' on' : ''}" data-act="dxtab" data-k="${esc(k)}" data-v="${esc(k)}">${esc(label)}</button>`;
       const chips = keys.length > 1 ? `<div class="row-chips" style="margin-top:8px">${keys.map((k) => chip(k, infoLbl(k), k === x.tab)).join('')}</div>` : '';

@@ -248,7 +248,7 @@ async def fetch_history(mcp: McpClient) -> list[JsonDict] | None:
         return None
 
 
-HIST_FACT_KEYS = ("wine", "country", "region", "appellation", "grapes", "classification")
+HIST_FACT_KEYS = ("wine", "country", "region", "appellation", "grapes", "classification", "p")  # p = personal data fields of the wine
 
 
 def wine_key(name: Any, producer: Any) -> str:
@@ -294,9 +294,15 @@ def history_facts(g: JsonDict) -> JsonDict:
     return {k: v for k, v in f.items() if v not in (None, "", [])}
 
 
+def history_personal(g: JsonDict) -> dict[str, str]:
+    """Personal data fields of the wine (wine-level entries) from the MCP tool list_personal_data: {field: value}."""
+    return personal((g or {}).get("wine_entries"))
+
+
 async def enrich_history(hist: list[JsonDict] | None, old: list[JsonDict] | None, mcp: McpClient, limit: int = 80) -> list[JsonDict] | None:
     """Rows of wines that are not in the cellar have no wine facts yet: take them from the rows of the last data, otherwise ask
-    get_bottle (at most `limit` wines per run; the rest follows with the next runs)."""
+    get_bottle (at most `limit` wines per run; the rest follows with the next runs). The personal data fields of the wine come along
+    as p (list_personal_data), also for rows of the last data without p."""
     prev: dict[str, JsonDict] = {}
     for r in old or []:
         if r.get("wine"):
@@ -311,6 +317,12 @@ async def enrich_history(hist: list[JsonDict] | None, old: list[JsonDict] | None
             src = prev.get(k)
             if src:
                 found[k] = {f: src[f] for f in HIST_FACT_KEYS if f in src}
+                if "p" not in found[k] and n < limit:
+                    n += 1
+                    try:
+                        found[k]["p"] = history_personal(await mcp.tool("list_personal_data", {"bottle_id": h["id"]}))
+                    except Exception as err:  # noqa: BLE001 - the facts are a nicety
+                        _LOGGER.debug("History personal data unavailable: %s", err)
             elif n < limit:
                 n += 1
                 try:
@@ -318,6 +330,11 @@ async def enrich_history(hist: list[JsonDict] | None, old: list[JsonDict] | None
                 except Exception as err:  # noqa: BLE001 - the facts are a nicety
                     _LOGGER.debug("History facts unavailable: %s", err)
                     found[k] = {}
+                if found[k]:
+                    try:
+                        found[k]["p"] = history_personal(await mcp.tool("list_personal_data", {"bottle_id": h["id"]}))
+                    except Exception as err:  # noqa: BLE001
+                        _LOGGER.debug("History personal data unavailable: %s", err)
             else:
                 found[k] = {}
         h.update(found[k])

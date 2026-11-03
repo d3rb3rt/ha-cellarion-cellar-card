@@ -175,6 +175,7 @@ def test_no_history_means_no_key(tmp_path, capsys):
 
 
 # Wine facts of drunk wines: from the wines of the inventory, otherwise from get_bottle (same result in both setups)
+LP = {"wine_entries": [{"level": "wine", "key": "Subregion", "value": "Cote des Bar"}, {"level": "wine", "key": "Bubbles", "value": "Champagner"}]}
 GB = {"wine": {"wine_id": "w9", "name": "Elsewhere", "country": "Austria", "region": "Wachau", "appellation": None,
                "grapes": ["Gruener Veltliner"], "classification": None, "classifications": ["Smaragd", "Ried"]}}
 
@@ -192,13 +193,15 @@ def test_history_facts_match_development_setup(tmp_path):
         return GB
 
     d = [dict(r) for r in rows]
-    dev.enrich_history(d, None, call)
+    dev.enrich_history(d, None, call, call_p=lambda bid: LP)
 
     class FakeMcp:
         def __init__(self):
             self.n = []
 
         async def tool(self, name, args):
+            if name == "list_personal_data":
+                return LP
             assert name == "get_bottle"
             self.n.append(args["bottle_id"])
             return GB
@@ -207,8 +210,15 @@ def test_history_facts_match_development_setup(tmp_path):
     i = [dict(r) for r in rows]
     asyncio.run(api.enrich_history(i, None, m))
     assert d == i and calls == ["1" * 24] and m.n == ["1" * 24]  # one call per wine
+    assert d[0]["p"] == {"Subregion": "Cote des Bar", "Bubbles": "Champagner"}  # personal fields of the wine
     assert d[0]["wine"] == "w9" and d[0]["classification"] == "Smaragd, Ried" and d[1]["region"] == "Wachau" and "wine" in d[2]
     # facts of the last data are reused without a call
     d2 = [dict(rows[0])]
-    dev.enrich_history(d2, d, lambda bid: 1 / 0)
-    assert d2[0]["region"] == "Wachau"
+    dev.enrich_history(d2, d, lambda bid: 1 / 0, call_p=lambda bid: 1 / 0)
+    assert d2[0]["region"] == "Wachau" and d2[0]["p"]["Subregion"] == "Cote des Bar"
+    # rows of the last data without p get them with one call
+    old = [{k: v for k, v in d[0].items() if k != "p"}]
+    d3, i3 = [dict(rows[0])], [dict(rows[0])]
+    dev.enrich_history(d3, old, lambda bid: 1 / 0, call_p=lambda bid: LP)
+    asyncio.run(api.enrich_history(i3, old, FakeMcp()))
+    assert d3 == i3 and d3[0]["p"]["Bubbles"] == "Champagner"

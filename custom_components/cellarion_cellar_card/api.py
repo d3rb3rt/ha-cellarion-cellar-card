@@ -7,6 +7,7 @@ of the config entry), nothing is stored twice.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
@@ -336,10 +337,30 @@ def image_name(path: str | None) -> str | None:
     return m.group(1) if m else None
 
 
+def _image_exists(dest: Path) -> bool:
+    return dest.exists()
+
+
+def _write_image(dest: Path, data: bytes) -> None:
+    """Write the image atomically (runs in a worker thread, never on the event loop)."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(dest.suffix + ".tmp")
+    tmp.write_bytes(data)
+    tmp.replace(dest)
+
+
 async def download_image(session: aiohttp.ClientSession, base_url: str, path: str, dest: Path) -> bool:
     """Download a label image once (Cellarion only serves it same-origin, the browser cannot embed it directly)."""
-    if dest.exists():
+    if await asyncio.to_thread(_image_exists, dest):
         return True
+    async with session.get(base_url.rstrip("/") + path, headers={"User-Agent": USER_AGENT},
+                           timeout=aiohttp.ClientTimeout(total=30)) as resp:
+        resp.raise_for_status()
+        data = await resp.content.read(MAX_IMAGE_BYTES + 1)
+    if len(data) > MAX_IMAGE_BYTES:
+        return False
+    await asyncio.to_thread(_write_image, dest, data)
+    return True
     async with session.get(base_url.rstrip("/") + path, headers={"User-Agent": USER_AGENT},
                            timeout=aiohttp.ClientTimeout(total=30)) as resp:
         resp.raise_for_status()

@@ -292,7 +292,11 @@
     button.sel.swp::after { content: none; } /* no pull-down arrow: it is a switch */
     .swp .swt { position: relative; flex: none; width: 24px; height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--cb-sub) 45%, transparent); transition: background .15s; }
     .swp .swt i { position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--cb-text); transition: transform .15s; }
-    .swp.on .swt { background: var(--cb-on); }
+    .swp.on .swt { background: var(--s-drunk); }
+    :host([data-arch]:not([data-fm])) .fwrap, :host([data-arch]:not([data-fm])) .fpills { --cb-on: var(--s-drunk); } /* archive on: highlight colour of the filter pills */
+    button.sel.fs.swp.on, :host([data-fm]) button.sel.fs.swp.on { box-shadow: 0 0 0 1px var(--s-drunk) inset; }
+    .fwrap .sel.fs.swp.on { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 14%, transparent); } /* archive on: the colour of the drunk wines */
+    .fpill.hpill, :host([data-fm]) .fpill.hpill { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 14%, transparent); }
     .swp.on .swt i { transform: translateX(10px); }
     .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-drunk); border-radius: 10px; background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
@@ -1508,6 +1512,7 @@
       if (this._keep()) this._saveState();
       this._applyMode();
       this.toggleAttribute('data-fullw', this._fullw());
+      if (this._flag('history') && this._fs('hist').size) this.setAttribute('data-arch', ''); else this.removeAttribute('data-arch'); // archive on: the filter pills are highlighted in the archive colour (CSS)
       if (this._multi()) this.setAttribute('data-fm', this._fm()); else this.removeAttribute('data-fm'); // filter mode colour (CSS: green OR, red NOT)
       this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
@@ -1719,12 +1724,12 @@
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size && !this._multi(),
               sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' && !this._multi() ? ' & ' : ', ') : '' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-          }).join('') + histChip + fmChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
+          }).join('') + fmChip + histChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
         // OR / NOT: one leading mode pill (with a cross to go back to standard) instead of a prefix in every pill
         const fmPill = this._multi() ? `<button class="fpill fmpill" data-act="fmoff" aria-label="${esc(t('fmode.title') + ': ' + t('fmode.' + this._fm()))}">${esc(t('fmode.' + this._fm()))}<span class="x">✕</span></button>` : '';
-        const histPill = hOn && hSet.size ? `<button class="fpill" data-act="fdel" data-g="hist" data-v="1" aria-label="${esc(t('head.removePill', { label: t('filter.history') }))}">${esc(t('filter.history'))}<span class="x">✕</span></button>` : '';
+        const histPill = hOn && hSet.size ? `<button class="fpill hpill" data-act="fdel" data-g="hist" data-v="1" aria-label="${esc(t('head.removePill', { label: t('filter.history') }))}">${esc(t('filter.history'))}<span class="x">✕</span></button>` : '';
         const pills = fmPill + histPill + defs.map((d) => this._pillWrap(d, Array.from(this._fs(d.id)).map((v) => {
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
@@ -2283,7 +2288,7 @@
       const srcSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis';
       const srcRow = this._flag('history') ? `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.history'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>` : '';
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
-      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + srcRow + fmRow;
+      const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow + srcRow;
       // Data fields: one checkbox per field (list; with flag infosplit a second section sets the details with its own order); the price only has the list
       const split = this._flag('infosplit');
       const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) }))}"></span>`;

@@ -100,6 +100,35 @@
       .normalize('NFD')
       .replace(/[̀-ͯ]/g, '');
 
+  // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
+  const INFO_ORDER = ['producer', 'vineyard_name', 'village', 'region', 'appellation', 'grape', 'vineyard_rank', 'ripeness', 'ageing']; // built-in attributes (tab order)
+  const INFO_PERS = ['vineyard_name', 'village']; // personal fields that get a built-in row label
+  const INFO_TIER = ['vineyard_rank', 'ripeness', 'ageing']; // classification kind by the group index of _clsPos
+  const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
+  const infoNorm = (s) => String(s == null ? '' : s).trim().toLowerCase().replace(/[\s-]+/g, '_');
+  const isInfoKey = (k) => /^(info:|src:)/i.test(String(k));
+  const infoLbl = (k) => { const v = t('info.lbl.' + k); return v === 'info.lbl.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; };
+  // {attribute: text} from the personal fields of a bottle
+  const infoMap = (pf) => {
+    const m = {};
+    Object.keys(pf || {}).forEach((k) => { const x = /^info:\s*(.+)$/i.exec(k); if (x && pf[k]) m[infoNorm(x[1])] = pf[k]; });
+    return m;
+  };
+  // {attribute: {url, label}}; the label is optional (default = host name)
+  const srcMap = (pf) => {
+    const m = {};
+    Object.keys(pf || {}).forEach((k) => {
+      const x = /^src:\s*(.+)$/i.exec(k), v = x && String(pf[k] || '').trim();
+      if (!v) return;
+      const i = v.indexOf('|'), url = (i < 0 ? v : v.slice(0, i)).trim(), lbl = i < 0 ? '' : v.slice(i + 1).trim();
+      if (!/^https?:\/\//i.test(url)) return;
+      let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return; }
+      m[infoNorm(x[1])] = { url, label: lbl || host };
+    });
+    return m;
+  };
+  const srcLink = (o) => (o ? `<div class="dpur" style="margin-top:12px"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)} ↗</a></div>` : '');
+
   function statusOf(b, year) {
     const f = b.drinkFrom, t = b.drinkTo, p1 = b.peakFrom, p2 = b.peakUntil;
     if (f && year < f) return 'notready';
@@ -1191,7 +1220,7 @@
         const i = std.findIndex((x) => x.id === 'cls');
         if (i >= 0) std.splice(i, 1, ...[0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g, get: (b) => (b._cls || []).filter((v) => this._clsPos(v)[0] === g) })));
       }
-      const pers = ((this._data && this._data.fields) || []).map((l) => ({ id: 'p:' + l, label: l, personal: true, get: (b) => (b.p && b.p[l]) || null }));
+      const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true, get: (b) => (b.p && b.p[l]) || null }));
       const all = std.concat(pers);
       const pos = (d) => { const k = this._fo.indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
       return all.slice().sort((a, b) => pos(a) - pos(b));
@@ -2494,9 +2523,116 @@
       } catch (e) { top = 0; }
       el.style.top = top ? top + 'px' : '';
     }
+    // ---- Info overlay: all info texts of the selected bottle as tabs, opened below the clicked value ----
+    // An extension may override _infoSel/_infoVal/_infoTab/_infoExtra (e.g. a data source behind the texts).
+    _infoSel() {
+      const d = this._det;
+      if (!d || !this._data) return null;
+      const bottles = this._detBottles();
+      return bottles.find((b) => b.id === d.sel) || bottles[0] || null;
+    }
+    // Rows an extension may add to "My data": [{key, text, label?}]
+    _infoExtra() { return []; }
+    // Current value of an attribute of the bottle (title of the overlay)
+    _infoVal(sel, k) {
+      if (!sel) return '';
+      if (k === 'producer') return sel.producer || '';
+      if (k === 'region') return sel.region || '';
+      if (k === 'appellation') return sel.appellation || '';
+      if (k === 'grape') return (sel.grapes || []).join(', ');
+      const ti = INFO_TIER.indexOf(k);
+      if (ti >= 0) return (sel._cls || []).filter((c) => this._clsPos(c)[0] === ti).join(', ');
+      const p = sel.p || {};
+      const pk = Object.keys(p).find((n) => !isInfoKey(n) && infoNorm(n) === k);
+      return pk ? [].concat(p[pk]).join(', ') : '';
+    }
+    // Content of one tab: {title, sub, body}
+    _infoTab(x, sel) {
+      const val = this._infoVal(sel, x.tab);
+      return { title: val || infoLbl(x.tab), sub: val ? infoLbl(x.tab) : '', body: `<div class="dpur" style="white-space:pre-line">${esc(x.items[x.tab])}</div>` + srcLink(x.src[x.tab]) };
+    }
+    _infoOpen(key, from) {
+      const sel = this._infoSel();
+      if (!sel) return;
+      this._xv = { tab: key, items: infoMap(sel.p), src: srcMap(sel.p), anim: true, top: 0 };
+      try { if (from && this._dlg) { const r = from.getBoundingClientRect(), dr = this._dlg.getBoundingClientRect(); this._xv.top = Math.max(0, Math.round(r.bottom - dr.top + 6)); } } catch (e) { /* default: top */ }
+      this._renderDlg();
+    }
+    _infoRender() {
+      const el = this._dlg, x = this._xv, sel = this._infoSel();
+      if (!el || !x || !sel) return;
+      const rk = (k) => { const i = INFO_ORDER.indexOf(k); return i < 0 ? 99 : i; };
+      const keys = Object.keys(x.items).sort((a, b) => rk(a) - rk(b) || (a < b ? -1 : 1));
+      if (keys.indexOf(x.tab) < 0 && keys.length) x.tab = keys[0];
+      const chip = (k, label, on) => `<button class="chip${on ? ' on' : ''}" data-act="dxtab" data-k="${esc(k)}" data-v="${esc(k)}">${esc(label)}</button>`;
+      const chips = keys.length > 1 ? `<div class="row-chips" style="margin-top:8px">${keys.map((k) => chip(k, infoLbl(k), k === x.tab)).join('')}</div>` : '';
+      const tab = this._infoTab(x, sel);
+      const anim = x.anim; x.anim = false;
+      const css = '<style>.xscrim{position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.25)}' +
+        '.xdrop{position:absolute;z-index:7;top:var(--xt,0px);left:0;right:0;margin:0 auto;width:100%;max-width:560px;max-height:calc(100% - var(--xt,0px) - 12px);overflow-y:auto;box-sizing:border-box;' +
+        'padding:14px 16px;background:var(--cb-card);color:var(--cb-text);border-radius:14px;box-shadow:0 6px 28px rgba(0,0,0,.5);border:1px solid var(--cb-line);overscroll-behavior:contain}' +
+        '.xdrop.xin{animation:xdown .22s ease-out}@keyframes xdown{from{clip-path:inset(0 0 100% 0);opacity:.4;transform:translateY(-8px)}to{clip-path:inset(0 0 0 0);opacity:1;transform:none}}@media(min-width:700px){.xdrop{width:calc(100% - 64px);max-width:496px}}</style>';
+      const old = el.querySelector('.xscrim'); if (old) { old.remove(); const od = el.querySelector('.xdrop'); if (od) od.remove(); }
+      el.insertAdjacentHTML('beforeend', css + '<div class="xscrim" data-act="dxback"></div><div class="xdrop' + (anim ? ' xin' : '') + '" style="--xt:' + (x.top || 0) + 'px" role="dialog" aria-modal="true"><div class="dh"><button class="dx" data-act="dxback" aria-label="' + esc(t('info.back')) + '">←</button>' +
+        `<span class="wmain"><span class="wname">${esc(tab.title)}</span>${tab.sub ? `<span class="wsub">${esc(tab.sub)}</span>` : ''}</span>` +
+        `<button class="dx" data-act="dxback" aria-label="${esc(t('head.close'))}">✕</button></div>${chips}<div style="margin-top:10px">${tab.body}</div></div>`);
+      el.hidden = false;
+    }
+    // After each draw of the detail dialog: raw info rows go away, the values of attributes with an info text become clickable
+    _infoMark() {
+      const el = this._dlg, sel = this._infoSel();
+      if (!el || el.hidden || !sel || !this._det || this._det.step === 'done' || this._det.step === 'confirm') return;
+      const im = infoMap(sel.p), keys = Object.keys(im);
+      const mark = (n, key, lbl) => { if (!n) return; n.dataset.act = 'dxi'; n.dataset.ik = key; n.dataset.lbl = lbl; n.setAttribute('style', (n.getAttribute('style') || '') + ';' + INFO_CLICK); n.title = lbl; };
+      const done = new Set();
+      // Rows of "My data": raw info fields are removed, a row named like an attribute makes its value clickable
+      const rows = Array.from(el.querySelectorAll('dl.dfacts dt')).map((dt) => ({ dt, dd: dt.nextElementSibling, k: dt.textContent.trim() }));
+      rows.forEach((r) => {
+        if (isInfoKey(r.k)) { r.dt.remove(); if (r.dd) r.dd.remove(); return; }
+        if (INFO_PERS.indexOf(infoNorm(r.k)) >= 0) r.dt.textContent = infoLbl(infoNorm(r.k));
+        const names = [infoNorm(r.k)].concat(r.k.split('/').map(infoNorm));
+        const key = keys.find((k) => !done.has(k) && (INFO_ORDER.indexOf(k) < 0 || INFO_PERS.indexOf(k) >= 0) && names.indexOf(k) >= 0);
+        if (key && r.dd) { mark(r.dd, key, INFO_PERS.indexOf(key) >= 0 ? infoLbl(key) : r.k); done.add(key); }
+      });
+      // Rows an extension adds (no personal field needed)
+      this._infoExtra(im, sel).forEach((x) => {
+        const dl = el.querySelector('.d2mine dl.dfacts');
+        if (done.has(x.key) || !dl) return;
+        const lbl = x.label || infoLbl(x.key);
+        dl.insertAdjacentHTML('beforeend', `<dt>${esc(lbl)}</dt><dd>${esc(x.text)}</dd>`);
+        mark(dl.lastElementChild, x.key, lbl); done.add(x.key);
+      });
+      // Producer
+      if (im.producer) { mark(el.querySelector('.dh .wprod'), 'producer', infoLbl('producer')); done.add('producer'); }
+      // One row instead of two: "Lage: Name | Stufe"; the separate "Cru / Lage" row goes away
+      const nameDd = el.querySelector('dl.dfacts dd[data-ik="vineyard_name"]');
+      const cru = rows.find((r) => r.dt.isConnected && /^cru\s*\/\s*lage$/i.test(r.k));
+      if (nameDd && cru && cru.dd) {
+        const tier = cru.dd.textContent.trim();
+        if (tier) nameDd.textContent = nameDd.textContent.trim() + ' | ' + tier;
+        cru.dt.remove(); cru.dd.remove();
+      }
+      // Classification tiers in the header line: one clickable span per tier of a kind that has an info text
+      const cls = sel._cls || [];
+      if (cls.length) {
+        const tierKey = (c) => { const k = INFO_TIER[this._clsPos(c)[0]]; return k && im[k] ? k : (k === 'vineyard_rank' && im.vineyard_name && !done.has('vineyard_name') ? 'vineyard_name' : ''); };
+        if (cls.some(tierKey)) {
+          const w = Array.from(el.querySelectorAll('.dh .wreg')).find((n) => n.textContent.trim() === cls.join(', '));
+          if (w) {
+            w.innerHTML = cls.map((c) => { const k = tierKey(c); return k ? `<span data-act="dxi" data-ik="${k}" data-lbl="${esc(infoLbl(k))}" title="${esc(infoLbl(k))}" style="${INFO_CLICK}">${esc(c)}</span>` : esc(c); }).join(', ');
+            cls.forEach((c) => { const k = tierKey(c); if (k) done.add(k); });
+          }
+        }
+      }
+      // Other built-in attributes: the sub line of the detail (appellation, grapes) and the region in the header
+      const sub = Array.from(el.querySelectorAll('.d2sub'));
+      if (im.appellation && !done.has('appellation')) mark(sub.find((n) => n.textContent.trim() === sel.appellation), 'appellation', infoLbl('appellation'));
+      if (im.grape && !done.has('grape')) mark(sub.find((n) => n.textContent.trim() === (sel.grapes || []).join(', ')), 'grape', infoLbl('grape'));
+      if (im.region && !done.has('region')) mark(Array.from(el.querySelectorAll('.dh .wreg')).find((n) => n.textContent.trim() === sel.region), 'region', infoLbl('region'));
+    }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
     _hdepth() {
-      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._cfm ? 1 : 0);
+      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._cfm ? 1 : 0) + (this._xv ? 1 : 0);
     }
     _hsync() {
       if (this._hskip) return;
@@ -2510,6 +2646,7 @@
       if (this._hskip) { this._hskip = 0; this._hsync(); return; }
       if (!this._hd) return;
       this._hd--;
+      if (this._xv) { this._xv = null; this._renderDlg0(); this._hsync(); return; } // info overlay: one level back
       // one level back
       if (this._cfm) this._cfm = null;
       else if (this._dd) this._dd = null;
@@ -2521,6 +2658,12 @@
       this._hsync();
     }
     _renderDlg0() {
+      if (this._xv && !this._det) this._xv = null;
+      this._renderDlgBase();
+      try { this._infoMark(); } catch (e) { /* the card keeps working without it */ }
+      if (this._xv) { try { this._infoRender(); } catch (e) { /* the card keeps working */ } }
+    }
+    _renderDlgBase() {
       const el = this._dlg;
       if (!el) return;
       el.classList.toggle('dd', !!this._dd);
@@ -2573,6 +2716,9 @@
       el.hidden = false;
     }
     async _onDlg(act, el) {
+      if (act === 'dxi') { if (this._det) this._infoOpen(el.dataset.ik, el); return; }
+      if (this._xv && act === 'dxback') { this._xv = null; this._renderDlg(); return; }
+      if (this._xv && act === 'dxtab') { this._xv.tab = el.dataset.v; this._renderDlg0(); return; }
       const d = this._det;
       if (!d) return;
       if (act === 'dclose') { if (!d.busy) { this._det = null; this._renderDlg(); } return; }

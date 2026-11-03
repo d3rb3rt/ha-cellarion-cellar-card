@@ -318,5 +318,15 @@
  "fmode.std": "Standard",
  "fmode.or": "ODER",
  "fmode.not": "NICHT",
- "fmode.hint": "ODER: mindestens ein gewählter Wert passt. NICHT: keiner der gewählten Werte passt."
+ "fmode.hint": "ODER: mindestens ein gewählter Wert passt. NICHT: keiner der gewählten Werte passt.",
+ "info.lbl.producer": "Weingut",
+ "info.lbl.region": "Region",
+ "info.lbl.appellation": "Appellation",
+ "info.lbl.grape": "Rebsorte",
+ "info.lbl.vineyard_rank": "Lagenstufe",
+ "info.lbl.ripeness": "Prädikat",
+ "info.lbl.ageing": "Reife",
+ "info.lbl.vineyard_name": "Lage",
+ "info.lbl.village": "Ort",
+ "info.back": "Zurück"
 }

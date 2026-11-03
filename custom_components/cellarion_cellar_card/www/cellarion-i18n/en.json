@@ -318,5 +318,15 @@
  "fmode.std": "Default",
  "fmode.or": "OR",
  "fmode.not": "NOT",
- "fmode.hint": "OR: at least one chosen value matches. NOT: none of the chosen values matches."
+ "fmode.hint": "OR: at least one chosen value matches. NOT: none of the chosen values matches.",
+ "info.lbl.producer": "Producer",
+ "info.lbl.region": "Region",
+ "info.lbl.appellation": "Appellation",
+ "info.lbl.grape": "Grape",
+ "info.lbl.vineyard_rank": "Vineyard rank",
+ "info.lbl.ripeness": "Ripeness",
+ "info.lbl.ageing": "Ageing",
+ "info.lbl.vineyard_name": "Vineyard",
+ "info.lbl.village": "Village",
+ "info.back": "Back"
 }

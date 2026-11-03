@@ -933,7 +933,10 @@
       // The old single item "cls" (classification) became one item per kind (cls0..cls3)
       const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : [x])));
       this._io = Array.isArray(I.order) ? expand(I.order) : [];
-      this._is = new Set(expand(Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']));
+      // show = ids shown in the list ("on"); "off:<id>" = not shown anywhere (list, details, info tab); neither = only in the details ("...")
+      const sh = (Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']).map(String);
+      this._is = new Set(expand(sh.filter((x) => !x.startsWith('off:'))));
+      this._iOff = new Set(expand(sh.filter((x) => x.startsWith('off:')).map((x) => x.slice(4))));
     }
     _infoDefs() {
       const std = [0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g })) // clsg: shown as "Classification: <kind>", like in the filter settings
@@ -945,6 +948,16 @@
       return all.slice().sort((a, b) => pos(a) - pos(b)).concat([{ id: 'price', label: t('filter.price'), fixed: true }]);
     }
     _priceOnly(pr) { const m = String(pr || '').match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
+    _infoShowArr() { return Array.from(this._is).concat(Array.from(this._iOff).map((x) => 'off:' + x)); }
+    // Id of the data field (see _infoDefs) behind an info attribute key
+    _infoDefId(k) {
+      const ti = INFO_TIER.indexOf(k);
+      if (k === 'region' || k === 'appellation' || k === 'grape') return k;
+      if (ti >= 0) return 'cls' + ti;
+      const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
+      return d ? d.id : '';
+    }
+    _infoOff(k) { const id = this._infoDefId(k); return !!id && this._iOff.has(id); }
     _setInfo(order, show) {
       if (this._local.info) { this._local.info = { order, show }; this._saveState(); }
       else { this._shared.infoOrder = order; this._shared.infoShow = show; this._saveSettings(); }
@@ -2146,8 +2159,13 @@
       const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
       const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
-      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoSub'))}</div><div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
-        idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
+      // Three states per data field, like the filters: on (list and details) / "..." (details only) / off (nowhere); the price has on/off only
+      const iseg = (id, st, more) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis'), t('istate.visTip')], ...(more ? [['more', t('fstate.more'), t('istate.moreTip')]] : []), ['off', t('fstate.off'), t('istate.offTip')]].map(([v, l, tip]) =>
+        `<button type="button" class="${st === v ? 'on' : ''}" data-act="istate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}" title="${esc(tip)}" aria-label="${esc(tip)}">${esc(l)}</button>`).join('') + `</span>`;
+      const istOf = (d) => this._iOff.has(d.id) ? 'off' : this._is.has(d.id) ? 'vis' : (d.fixed ? 'off' : 'more');
+      const frowI = (d) => { const st = istOf(d); return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${iseg(d.id, st, !d.fixed)}${d.fixed ? '<span class="gripsp"></span>' : grip}</div>`; };
+      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoSub'))}</div>` + fhead + `<div class="dlist" data-g="i">` + iord.map(frowI).join('') + `</div>` +
+        idefs.filter((d) => d.fixed).map(frowI).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
           row(t('set.rackOrder'), '', '', radios('rk-' + n + '-order', 'rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
@@ -2167,7 +2185,7 @@
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         grp(t('set2.grpList')) +
-        sec('info', t('set.info'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id)).length, all: idefs.length }), infoBody, sw('info')) +
+        sec('info', t('set.info'), t('set2.sumFilters', { n: idefs.filter((d) => !this._iOff.has(d.id) && (d.id !== 'price' || this._is.has('price'))).length, all: idefs.length }), infoBody, sw('info')) +
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
@@ -2396,7 +2414,7 @@
       const yr = new Date().getFullYear();
       const d = this._det;
       // Region and classification are already in the title line: only country and (differing) appellation here
-      const origin = Array.from(new Set([sel.country, sel.appellation !== sel.region ? sel.appellation : ''].filter(Boolean))).join(' · ');
+      const origin = Array.from(new Set([sel.country, sel.appellation !== sel.region && !this._iOff.has('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
       const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
       let bar = '';
       if (df && dt) {
@@ -2446,7 +2464,7 @@
         [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
         [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
-      ].concat(this._infoDefs().filter((d) => d.personal).map((d) => d.label).map((l) => { // personal fields in the order of the info settings
+      ].concat(this._infoDefs().filter((d) => d.personal && !this._iOff.has(d.id)).map((d) => d.label).map((l) => { // personal fields in the order of the data-field settings (not those set to off)
         const vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
         return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
       }));
@@ -2506,7 +2524,7 @@
       // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
-      const grapes = (sel.grapes || []).join(', ');
+      const grapes = this._iOff.has('grape') ? '' : (sel.grapes || []).join(', ');
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       const bigMap = d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
@@ -2569,13 +2587,11 @@
       const defs = this._infoDefs();
       const rank = (k) => {
         if (k === 'producer') return -2;
-        const ti = INFO_TIER.indexOf(k);
-        let id = k === 'region' || k === 'appellation' || k === 'grape' ? k : ti >= 0 ? 'cls' + ti : '';
-        if (!id) { const d = defs.find((d2) => d2.personal && infoNorm(d2.label) === k); id = d ? d.id : ''; }
+        const id = this._infoDefId(k);
         const i = id ? defs.findIndex((d2) => d2.id === id) : -1;
         return i < 0 ? 999 : i;
       };
-      const keys = Object.keys(x.items).sort((a, b) => rank(a) - rank(b) || rk(a) - rk(b) || (a < b ? -1 : 1));
+      const keys = Object.keys(x.items).filter((k) => !this._infoOff(k)).sort((a, b) => rank(a) - rank(b) || rk(a) - rk(b) || (a < b ? -1 : 1));
       if (keys.indexOf(x.tab) < 0 && keys.length) x.tab = keys[0];
       const chip = (k, label, on) => `<button class="chip${on ? ' on' : ''}" data-act="dxtab" data-k="${esc(k)}" data-v="${esc(k)}">${esc(label)}</button>`;
       const chips = keys.length > 1 ? `<div class="row-chips" style="margin-top:8px">${keys.map((k) => chip(k, infoLbl(k), k === x.tab)).join('')}</div>` : '';
@@ -2832,7 +2848,7 @@
         const now = ids();
         if (now.join('\n') === before) return;
         if (list.dataset.g === 'f') { this._setFilters(now, Array.from(this._fh)); this._renderHead(); this._renderSet(); }
-        else { this._setInfo(now, Array.from(this._is)); this._renderSet(); this._renderAll(); }
+        else { this._setInfo(now, this._infoShowArr()); this._renderSet(); this._renderAll(); }
       };
       // Listen on the window, not on the grip: moving the row in the DOM releases pointer capture, so a drag bound to the grip stopped after one swap (mouse)
       window.addEventListener('pointermove', move); window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
@@ -2944,9 +2960,12 @@
       this._setFilters(this._fo, Array.from(hid));
       this._renderAll(); this._renderSet();
     },
-    ivis(t) {
-      const sh = new Set(this._is); sh.has(t.dataset.id) ? sh.delete(t.dataset.id) : sh.add(t.dataset.id);
-      this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), Array.from(sh)); this._renderSet(); this._renderAll();
+    istate(t) {
+      const id = t.dataset.id, v = t.dataset.v, is = new Set(this._is), off = new Set(this._iOff);
+      is.delete(id); off.delete(id);
+      if (v === 'vis') is.add(id); else if (v === 'off' && id !== 'price') off.add(id); // the price has only on/off (list only)
+      this._is = is; this._iOff = off;
+      this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), this._infoShowArr()); this._renderSet(); this._renderAll();
     },
     rack(t) { this._setRack(t.dataset.n, t.dataset.k, t.dataset.v); },
     keepst(t) {
@@ -2967,7 +2986,7 @@
     },
     scope(t) {
       const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
-      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : k === 'info' ? { order: this._io.slice(), show: Array.from(this._is) } : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : k === 'info' ? { order: this._io.slice(), show: this._infoShowArr() } : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
       else if (t.dataset.v === 'all' && dev) delete L[k];
       this._saveState();
       this._applyEff();

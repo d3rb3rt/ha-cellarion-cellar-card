@@ -327,5 +327,8 @@
  "info.lbl.ageing": "Reife",
  "info.lbl.vineyard_name": "Lage",
  "info.lbl.village": "Ort",
- "info.back": "Zurück"
+ "info.back": "Zurück",
+ "istate.visTip": "In Liste und Details",
+ "istate.moreTip": "Nur in den Details",
+ "istate.offTip": "Aus, wird nirgends angezeigt"
 }

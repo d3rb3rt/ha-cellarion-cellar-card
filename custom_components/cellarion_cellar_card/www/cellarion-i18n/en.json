@@ -327,5 +327,8 @@
  "info.lbl.ageing": "Ageing",
  "info.lbl.vineyard_name": "Vineyard",
  "info.lbl.village": "Village",
- "info.back": "Back"
+ "info.back": "Back",
+ "istate.visTip": "In the list and the details",
+ "istate.moreTip": "Only in the details",
+ "istate.offTip": "Off, shown nowhere"
 }

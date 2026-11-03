@@ -522,6 +522,8 @@
       overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
     }
     .dsheet > * { flex: none; }
+    /* wide view: the header of the detail (wine name) stays visible while the content scrolls */
+    @media (min-width: 601px) { .dsheet > .dh.dhs { position: sticky; top: -16px; z-index: 5; background: var(--cb-card); margin: -16px -16px 0; padding: 16px 16px 8px; } }
     .dsheet::-webkit-scrollbar { width: 5px; }
     .dsheet::-webkit-scrollbar-thumb { background: var(--cb-sub); border-radius: 3px; }
     .dh { display: flex; align-items: flex-start; gap: 10px; }
@@ -2727,7 +2729,7 @@
         this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
       }
       const info = sel ? this._info[sel.id] : null;
-      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0, '', undefined, true)}</span>` +
+      const head = `<div class="dh dhs">${this._typeDot(b0)}<span class="wmain">${this._title(b0, '', undefined, true)}</span>` +
         `<button class="dx" data-act="dclose" aria-label="${esc(t('head.close'))}" ${d.busy ? 'disabled' : ''}>✕</button></div>`;
       let body = '';
       if (d.step === 'done') {

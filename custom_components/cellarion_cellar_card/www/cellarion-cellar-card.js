@@ -1151,7 +1151,7 @@
         { const pr = (x) => (/kabinett|sp[aä]tlese|auslese|eiswein|qualit[aä]tswein|landwein/i.test(x) ? 0 : 1); o._cls = o._cls.map((x, i) => [x, i]).sort((a, b) => pr(a[0]) - pr(b[0]) || a[1] - b[1]).map((x) => x[0]); }
         o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
           (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type],
-          Object.values(o.p || {}).map((v) => (Array.isArray(v) ? v.join(' ') : v)).join(' ')].join(' '));
+          Object.keys(o.p || {}).filter((k) => !isInfoKey(k)).map((k) => (Array.isArray(o.p[k]) ? o.p[k].join(' ') : o.p[k])).join(' ')].join('\u0001')); // the long info texts and source links are not searched // fields are separated, so a phrase cannot run across two fields
         return o;
       });
       const count = (get) => {
@@ -1252,9 +1252,18 @@
       return all.slice().sort((a, b) => pos(a) - pos(b));
     }
     _orderedDefs() { return this._allDefs().filter((d) => !this._fh.has(d.id)); }
+    // Search terms: with several words, the whole phrase first (e.g. "cote d" = Côte des Blancs ...); only when no wine contains the phrase, every word on its own
+    _qToks() {
+      const q = norm(this._f.q).trim().replace(/\s+/g, ' ');
+      if (this._qc && this._qc.q === q && this._qc.d === this._data) return this._qc.r;
+      const toks = q.split(' ').filter(Boolean);
+      const r = toks.length > 1 && this._data && this._data.bottles.some((b) => b._hay.includes(q)) ? [q] : toks;
+      this._qc = { q, d: this._data, r };
+      return r;
+    }
     _filtered(skip, grp) {
       const f = this._f;
-      const toks = norm(f.q).split(/\s+/).filter(Boolean);
+      const toks = this._qToks();
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
       const gid = grp || skip, skipDef = gid && this._allDefs().find((d) => d.id === gid);
       const noOther = gid !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
@@ -1845,7 +1854,7 @@
     // Highlight search terms in the text (ignoring case and accents, like the search itself)
     _hl(text) {
       text = String(text == null ? '' : text);
-      const toks = norm(this._f.q).split(/\s+/).filter(Boolean);
+      const toks = this._qToks();
       if (!toks.length) return esc(text);
       let n = '';
       const map = [];

@@ -129,6 +129,8 @@
   };
   const srcLink = (o) => (o ? `<div class="dpur" style="margin-top:12px"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)} ↗</a></div>` : '');
 
+  // Search: a term matches at the start of a word (prefix), not in the middle ("lanc" does not find "Blancs"); n = normalized text
+  const wordAt = (n, t, from) => { let at = n.indexOf(t, from || 0); while (at > 0 && /[\p{L}\p{N}]/u.test(n[at - 1])) at = n.indexOf(t, at + 1); return at; };
   function statusOf(b, year) {
     const f = b.drinkFrom, t = b.drinkTo, p1 = b.peakFrom, p2 = b.peakUntil;
     if (f && year < f) return 'notready';
@@ -1257,7 +1259,7 @@
       const q = norm(this._f.q).trim().replace(/\s+/g, ' ');
       if (this._qc && this._qc.q === q && this._qc.d === this._data) return this._qc.r;
       const toks = q.split(' ').filter(Boolean);
-      const r = toks.length > 1 && this._data && this._data.bottles.some((b) => b._hay.includes(q)) ? [q] : toks;
+      const r = toks.length > 1 && this._data && this._data.bottles.some((b) => wordAt(b._hay, q) >= 0) ? [q] : toks;
       this._qc = { q, d: this._data, r };
       return r;
     }
@@ -1277,7 +1279,7 @@
           // Grapes: the wine must have all chosen grapes (AND group); every other filter holds one value
           for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'grape' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }
         }
-        for (const t of toks) if (!b._hay.includes(t)) return false;
+        for (const t of toks) if (wordAt(b._hay, t) < 0) return false;
         return true;
       });
     }
@@ -1862,8 +1864,8 @@
       const chars = Array.from(text);
       const on = new Array(chars.length).fill(false);
       toks.forEach((t) => {
-        let at = n.indexOf(t);
-        while (at >= 0) { for (let k = at; k < at + t.length; k++) on[map[k]] = true; at = n.indexOf(t, at + 1); }
+        let at = wordAt(n, t);
+        while (at >= 0) { for (let k = at; k < at + t.length; k++) on[map[k]] = true; at = wordAt(n, t, at + 1); }
       });
       let out = '', open = false;
       chars.forEach((ch, i) => {

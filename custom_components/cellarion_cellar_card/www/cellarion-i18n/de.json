@@ -367,5 +367,8 @@
  "stat.rebuy": "Nachkaufen?",
  "stat.rebuyHint": "Mindestens zweimal getrunken, nichts mehr im Bestand",
  "flag.stat3": "Statistik: drei Bereiche (Test)",
- "flag.stat3Sub": "Reiter Bestand | Archiv | Gesamt in der Statistik."
+ "flag.stat3Sub": "Reiter Bestand | Archiv | Gesamt in der Statistik.",
+ "flag.archgone": "Archiv: nur Weine ohne Flasche (Test)",
+ "flag.archgoneSub": "Archiv zeigt nur Weine, von denen keine Flasche mehr da ist (jeder Jahrgang). Getrunkene Jahrgänge von Bestandsweinen stehen im Detail unter „Getrunken“.",
+ "det.drunkSec": "Getrunken ({n})"
 }

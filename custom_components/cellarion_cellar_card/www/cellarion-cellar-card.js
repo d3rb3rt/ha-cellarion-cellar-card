@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total)
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }, { id: 'archgone' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
   const STANDARD = ['infosplit', 'history']; // former flags, now always on: infosplit = data fields for list and details are set separately (own selection and order); history = archive of the drunk wines
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
@@ -302,6 +302,9 @@
     .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-drunk); border-radius: 10px; background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
     .hempty .dpur { display: block; margin-top: 2px; }
+    .hempty.dsec { margin-top: 14px; }
+    .dsech { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+    .dsech b { margin: 0; }
     .hrow .hinfo, .hinfo { color: var(--cb-sub); font-size: .9em; white-space: nowrap; }
     .wrow, .frow {
       width: 100%; display: flex; align-items: center; gap: 10px; box-sizing: border-box;
@@ -1326,8 +1329,9 @@
       const f = this._f;
       const hp = src === 'hist' || (!src && this._histMode());
       // History = only used up: a drunk vintage with a bottle of the same wine and vintage still in the cellar is not listed
-      const left = hp ? new Set(this._data.bottles.map((b) => (b.wine || b.name) + '|' + (b.vintage || 'NV'))) : null;
-      const pool = hp ? (this._data.history || []).filter((h) => src === 'hist' || !left.has(h.wine + '|' + (h.vintage || 'NV'))) : this._data.bottles;
+      const gone = this._flag('archgone'); // flag archgone: a wine with any bottle left (any vintage) is not archived
+      const left = hp ? new Set(this._data.bottles.map((b) => (b.wine || b.name) + (gone ? '' : '|' + (b.vintage || 'NV')))) : null;
+      const pool = hp ? (this._data.history || []).filter((h) => src === 'hist' || !left.has(h.wine + (gone ? '' : '|' + (h.vintage || 'NV')))) : this._data.bottles;
       const toks = this._qToks();
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
       const gid = grp || skip, skipDef = gid && this._allDefs().find((d) => d.id === gid);
@@ -2775,6 +2779,19 @@
         };
         hint = `<div class="hempty"><b>${esc(t('hist.empty'))}</b>${bottles.slice(0, 12).map(line).join('')}</div>`;
       }
+      // Flag archgone: drunk bottles of this wine (all vintages) as a collapsible section
+      let drunkSec = '';
+      const dh = !hist && this._flag('archgone') ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine).sort((a, b) => String(b.at || '').localeCompare(String(a.at || ''))) : [];
+      if (dh.length) {
+        const dOpen = !!(d && d.drunkOpen);
+        const dt3 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
+        const ln = (b) => {
+          const rk = 'hist.reason.' + (b.reason || 'drank'), why = I18N.dict[rk] !== undefined ? t(rk) : String(b.reason || '');
+          const rt = typeof b.rating === 'number' ? ' · ' + (b.scale && !/star/i.test(b.scale) ? b.rating + ' ' + b.scale : '★ ' + b.rating) : '';
+          return `<span class="dpur">${esc((b.vintage || 'NV') + ' · ✓ ' + why + (b.at ? ' ' + dt3(b.at) : '') + rt)}</span>` + (b.note ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
+        };
+        drunkSec = `<div class="hempty dsec"><button class="dsech" data-act="ddrunk" aria-expanded="${dOpen}"><b>${esc(t('det.drunkSec', { n: dh.length }))}</b><span class="chev">${dOpen ? '▾' : '▸'}</span></button>${dOpen ? dh.slice(0, 40).map(ln).join('') : ''}</div>`;
+      }
       // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
@@ -2782,7 +2799,7 @@
       const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${botsSec}${hist ? this._histBar(sel) : actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
     }
     // Bottom bar of a drunk entry: no take-out, only the link to Cellarion (not for wines that are only in the log)
     _histBar(sel) {
@@ -3012,6 +3029,7 @@
       else if (act === 'drnav') { this._rackStep(Number(el.dataset.dir) || 1); return; }
       else if (act === 'dmore') d.more = !d.more;
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
+      else if (act === 'ddrunk') { d.drunkOpen = !d.drunkOpen; }
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }
       else if (act === 'dask') { d.step = 'confirm'; d.err = ''; }
       else if (act === 'dtake') { d.sel = el.dataset.id; d.more = false; d.botsOpen = false; d.step = 'confirm'; d.err = ''; } // tap on a bottle in the rack picture

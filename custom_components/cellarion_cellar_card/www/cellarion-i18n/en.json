@@ -367,5 +367,8 @@
  "stat.rebuy": "Buy again?",
  "stat.rebuyHint": "Drunk at least twice, none left in stock",
  "flag.stat3": "Statistics: three areas (test)",
- "flag.stat3Sub": "Tabs Stock | Archive | Total in the statistics."
+ "flag.stat3Sub": "Tabs Stock | Archive | Total in the statistics.",
+ "flag.archgone": "Archive: only wines with no bottle left (test)",
+ "flag.archgoneSub": "Archive shows only wines with no bottle left (any vintage). Drunk vintages of stock wines appear in the detail view under \"Drunk\".",
+ "det.drunkSec": "Drunk ({n})"
 }

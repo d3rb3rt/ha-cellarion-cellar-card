@@ -1690,9 +1690,15 @@
           this._ddItems.fmode = { label: t('fmode.title'), items: fmItems, cur: fmCur.t, curV: fmCur.v, hint: t('fmode.hint') };
           fmChip = `<button type="button" class="sel fs fm${this._multi() ? ' hasv' : ''}" data-act="dd" data-id="fmode" aria-haspopup="listbox" aria-label="${esc(t('fmode.title') + ': ' + fmCur.t)}">${esc(this._multi() ? fmCur.t : t('fmode.title'))}</button>`;
         }
-        // Flag history: one switch "History" (only drunk bottles), as long as the consumption log has entries
+        // Flag history: pull-down "Stock / Archive" (the list shows the cellar or only the used-up wines), as long as the consumption log has entries
         const hOn = this._flag('history') && !!(d.history && d.history.length), hSet = this._fs('hist');
-        const histChip = hOn ? `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="histtoggle" aria-pressed="${hSet.size ? 'true' : 'false'}" aria-label="${esc(t('filter.history'))}">${esc(t('filter.history'))}</button>` : '';
+        let histChip = '';
+        if (hOn) {
+          const srcItems = [{ v: 'stock', t: t('filter.stock') }, { v: 'hist', t: t('filter.history') }];
+          const srcCur = srcItems.find((o) => o.v === (hSet.size ? 'hist' : 'stock'));
+          this._ddItems.src = { label: t('filter.source'), items: srcItems, cur: srcCur.t, curV: srcCur.v };
+          histChip = `<button type="button" class="sel fs${hSet.size ? ' hasv' : ''}" data-act="dd" data-id="src" aria-haspopup="listbox" aria-label="${esc(t('filter.source') + ': ' + srcCur.t)}">${esc(srcCur.t)}</button>`;
+        }
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0) + (hOn ? 1 : 0);
         this._nChips = nChips;
         html += `<div class="fwrap${this._more || this._fixedHdr() ? ' fopen' : ''}"><div class="more open" style="--fcols:${Math.max(4, Math.ceil(nChips / 2))}">` +
@@ -3033,6 +3039,7 @@
     },
     ddpick(t) {
       const id = this._dd, v = t.dataset.v;
+      if (id === 'src') { this._dd = null; const S = this._fs('hist'); if (v === 'hist') S.add('1'); else S.clear(); this._open = new Set(); this._renderDlg(); this._renderAll(); return; } // source: stock / archive
       if (id === 'fmode') { this._dd = null; this._setFm(v); this._renderDlg(); this._renderAll(); return; } // filter mode: Standard / OR / NOT
       if (this._multi() && id && id !== 'sort' && id !== 'cellarsel') { // OR / NOT: a pick adds a value and the list stays open (more values can follow)
         this._fsAdd(id, v); this._renderAll();

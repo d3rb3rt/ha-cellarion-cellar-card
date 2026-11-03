@@ -631,6 +631,8 @@
     .setv2 .fhead { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--cb-sub); } /* column headlines above the filter list: name / visibility / sort */
     .setv2 .fhead .fl { min-height: 28px; cursor: default; }
     .setv2 .fhead .fhs { flex: none; width: 126px; text-align: center; }
+    .setv2 .fcb { flex: none; width: 63px; display: flex; align-items: center; justify-content: center; min-height: 44px; } /* two checkbox columns (list, details) of the data fields */
+    .setv2 .fhead .fcb { min-height: 28px; }
     .setv2 .fhead .fhg, .setv2 .gripsp { flex: none; width: 48px; text-align: center; }
     .setv2 .fseg button { flex: 1; padding: 0; text-align: center; }
     .setv2 .fseg { flex: none; display: inline-flex; gap: 2px; width: 126px; } /* three states of a filter: visible / behind ... / off. Quiet: no frame, no solid fill; only the deviation from "visible" gets the accent */
@@ -933,7 +935,7 @@
       // The old single item "cls" (classification) became one item per kind (cls0..cls3)
       const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : [x])));
       this._io = Array.isArray(I.order) ? expand(I.order) : [];
-      // show = ids shown in the list ("on"); "off:<id>" = not shown anywhere (list, details, info tab); neither = only in the details ("...")
+      // show = ids shown in the list; "off:<id>" = not shown in the details (rows, header, info tab); list and details are set independently
       const sh = (Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']).map(String);
       this._is = new Set(expand(sh.filter((x) => !x.startsWith('off:'))));
       this._iOff = new Set(expand(sh.filter((x) => x.startsWith('off:')).map((x) => x.slice(4))));
@@ -1878,7 +1880,7 @@
     // Line 1: wine name and producer, line 2: the info items (setting "Info in the list"). The price is vintage info and sits
     // on the right of the row, so it is only added here where there is no vintage (single is undefined: flat list, detail header).
     // Every item is one unit with its own trailing dot, so a line break falls between the items.
-    _title(b, pr, single) {
+    _title(b, pr, single, detail) {
       pr = pr || '';
       const txt = (d) => {
         if (d.id === 'price') return this._priceOnly(pr);
@@ -1892,7 +1894,7 @@
       const swap = this._sort === 'producer' && b.producer;
       const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
         : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
-      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
+      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && !(detail && this._iOff.has(d.id)) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
       const all = head.concat(infos);
       const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
       return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
@@ -2159,12 +2161,12 @@
       const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
       const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
-      // Three states per data field, like the filters: on (list and details) / "..." (details only) / off (nowhere); the price has on/off only
-      const iseg = (id, st, more) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis'), t('istate.visTip')], ...(more ? [['more', t('fstate.more'), t('istate.moreTip')]] : []), ['off', t('fstate.off'), t('istate.offTip')]].map(([v, l, tip]) =>
-        `<button type="button" class="${st === v ? 'on' : ''}" data-act="istate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}" title="${esc(tip)}" aria-label="${esc(tip)}">${esc(l)}</button>`).join('') + `</span>`;
-      const istOf = (d) => this._iOff.has(d.id) ? 'off' : this._is.has(d.id) ? 'vis' : (d.fixed ? 'off' : 'more');
-      const frowI = (d) => { const st = istOf(d); return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${iseg(d.id, st, !d.fixed)}${d.fixed ? '<span class="gripsp"></span>' : grip}</div>`; };
-      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoSub'))}</div>` + fhead + `<div class="dlist" data-g="i">` + iord.map(frowI).join('') + `</div>` +
+      // Data fields: two independent columns, "List" and "Details" (the price only has the list); the info tab follows the details
+      const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) + ' – ' + t(col === 'l' ? 'fhead.list' : 'fhead.details') }))}"></span>`;
+      const frowI = (d) => `<div class="frow${this._is.has(d.id) || (!d.fixed && !this._iOff.has(d.id)) ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>` +
+        icb(d, 'l', this._is.has(d.id)) + (d.fixed ? '<span class="fcb"></span>' : icb(d, 'd', !this._iOff.has(d.id))) + (d.fixed ? '<span class="gripsp"></span>' : grip) + `</div>`;
+      const ihead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fcb">${esc(t('fhead.list'))}</span><span class="fcb">${esc(t('fhead.details'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
+      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoSub'))}</div>` + ihead + `<div class="dlist" data-g="i">` + iord.map(frowI).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map(frowI).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
@@ -2185,7 +2187,7 @@
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         grp(t('set2.grpList')) +
-        sec('info', t('set.info'), t('set2.sumFilters', { n: idefs.filter((d) => !this._iOff.has(d.id) && (d.id !== 'price' || this._is.has('price'))).length, all: idefs.length }), infoBody, sw('info')) +
+        sec('info', t('set.info'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id) || (!d.fixed && !this._iOff.has(d.id))).length, all: idefs.length }), infoBody, sw('info')) +
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
@@ -2715,7 +2717,7 @@
         this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
       }
       const info = sel ? this._info[sel.id] : null;
-      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0)}</span>` +
+      const head = `<div class="dh">${this._typeDot(b0)}<span class="wmain">${this._title(b0, '', undefined, true)}</span>` +
         `<button class="dx" data-act="dclose" aria-label="${esc(t('head.close'))}" ${d.busy ? 'disabled' : ''}>✕</button></div>`;
       let body = '';
       if (d.step === 'done') {
@@ -2960,10 +2962,9 @@
       this._setFilters(this._fo, Array.from(hid));
       this._renderAll(); this._renderSet();
     },
-    istate(t) {
-      const id = t.dataset.id, v = t.dataset.v, is = new Set(this._is), off = new Set(this._iOff);
-      is.delete(id); off.delete(id);
-      if (v === 'vis') is.add(id); else if (v === 'off' && id !== 'price') off.add(id); // the price has only on/off (list only)
+    icol(t) { // one checkbox of the data fields: column l = in the list, column d = in the details
+      const id = t.dataset.id, is = new Set(this._is), off = new Set(this._iOff);
+      if (t.dataset.col === 'l') { is.has(id) ? is.delete(id) : is.add(id); } else { off.has(id) ? off.delete(id) : off.add(id); }
       this._is = is; this._iOff = off;
       this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), this._infoShowArr()); this._renderSet(); this._renderAll();
     },

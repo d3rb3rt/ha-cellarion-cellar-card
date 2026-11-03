@@ -328,7 +328,6 @@
  "info.lbl.vineyard_name": "Lage",
  "info.lbl.village": "Ort",
  "info.back": "Zurück",
- "istate.visTip": "In Liste und Details",
- "istate.moreTip": "Nur in den Details",
- "istate.offTip": "Aus, wird nirgends angezeigt"
+ "fhead.list": "Liste",
+ "fhead.details": "Details"
 }

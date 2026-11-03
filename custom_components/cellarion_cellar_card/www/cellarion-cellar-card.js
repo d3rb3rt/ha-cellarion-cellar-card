@@ -175,7 +175,7 @@
       --s-window: var(--cellarion-maturity-peak, var(--success-color, #2fa84f));
       --cb-hl: color-mix(in srgb, var(--warning-color, #ffc107) 38%, transparent);
       --s-unknown: var(--cb-ring);
-      --s-drunk: var(--cb-sub);
+      --s-drunk: var(--cellarion-maturity-drunk, #a98bd8);
       display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--cb-text);
       font-size: var(--cb-row-font, 14px);
     }
@@ -287,9 +287,9 @@
     .hrow { cursor: pointer; }
     .hrow > .vmid, .hrow > .fmid { opacity: .62; }
     .yv.hv { font-style: italic; font-weight: 600; color: var(--cb-text); }
-    .wine.hist > .wrow.hrow .wname, .frow.hrow .wname { color: var(--s-late); } /* a wine that is only drunk: its name in the warning colour */
-    .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-late); border-radius: 10px; background: color-mix(in srgb, var(--s-late) 12%, transparent); }
-    .hempty b { display: block; margin-bottom: 4px; color: var(--s-late); }
+    .wine.hist > .wrow.hrow .wname, .frow.hrow .wname { color: var(--s-drunk); } /* a wine that is only drunk: its name in the warning colour */
+    .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-drunk); border-radius: 10px; background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
+    .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
     .hempty .dpur { display: block; margin-top: 2px; }
     .hrow .hinfo, .hinfo { color: var(--cb-sub); font-size: .9em; white-space: nowrap; }
     .wrow, .frow {

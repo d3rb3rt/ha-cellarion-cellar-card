@@ -2146,7 +2146,7 @@
       const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
       const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow;
-      const infoBody = `<div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
+      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoSub'))}</div><div class="dlist" data-g="i">` + iord.map((d) => frow(d, this._is.has(d.id), 'i')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frow(d, this._is.has(d.id), '')).join('');
       const racksBody = racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +

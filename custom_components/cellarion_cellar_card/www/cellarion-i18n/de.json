@@ -344,5 +344,6 @@
  "hist.more": "+{n} getrunken",
  "hist.reason.drank": "getrunken",
  "hist.reason.gifted": "verschenkt",
- "hist.reason.sold": "verkauft"
+ "hist.reason.sold": "verkauft",
+ "hist.empty": "Leer – nicht mehr im Keller"
 }

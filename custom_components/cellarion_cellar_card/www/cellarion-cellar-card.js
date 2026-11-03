@@ -175,7 +175,7 @@
       --s-window: var(--cellarion-maturity-peak, var(--success-color, #2fa84f));
       --cb-hl: color-mix(in srgb, var(--warning-color, #ffc107) 38%, transparent);
       --s-unknown: var(--cb-ring);
-      --s-drunk: var(--cb-ring);
+      --s-drunk: var(--cb-sub);
       display: flex; flex-direction: column; flex: 1; min-height: 0; color: var(--cb-text);
       font-size: var(--cb-row-font, 14px);
     }
@@ -284,9 +284,12 @@
     .sdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--cb-ring); }
     .wine { border-bottom: 1px solid var(--cb-line); }
     /* flag history: drunk entries (from the consumption log) are dimmed and not tappable */
-    .hrow { opacity: .6; cursor: default; }
-    .wine.hist > .wrow { opacity: .6; }
-    .yv.hv { opacity: .55; font-style: italic; }
+    .hrow { cursor: pointer; }
+    .hrow > :not(.yv), .wine.hist > .wrow > .wmain, .wine.hist > .wrow > .wright > .wloc { opacity: .62; }
+    .yv.hv { font-style: italic; font-weight: 600; color: var(--cb-text); }
+    .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--cb-ring); border-radius: 10px; }
+    .hempty b { display: block; margin-bottom: 4px; }
+    .hempty .dpur { display: block; margin-top: 2px; }
     .hrow .hinfo, .hinfo { color: var(--cb-sub); font-size: .9em; white-space: nowrap; }
     .wrow, .frow {
       width: 100%; display: flex; align-items: center; gap: 10px; box-sizing: border-box;
@@ -1166,13 +1169,16 @@
       // History (flag): drunk / gifted / sold bottles of the consumption log as pseudo bottles, only used by the list; the wine id is taken from a bottle of the same wine and producer
       const wkey = (n, p) => norm(n) + '|' + norm(p);
       const wineOf = new Map();
-      (data.bottles || []).forEach((b) => { if (b.wine) wineOf.set(wkey(b.name, b.producer), b.wine); });
+      const sampleOf = new Map();
+      bottles.forEach((b) => { if (b.wine) { wineOf.set(wkey(b.name, b.producer), b.wine); if (!sampleOf.has(wkey(b.name, b.producer))) sampleOf.set(wkey(b.name, b.producer), b); } });
       const hist = !this._flag('history') ? [] : (data.history || []).filter((h) => !multi || all || (h.cellar || cl[0].id) === sel).map((h) => {
         const o = Object.assign({}, h);
         const k = wkey(o.name, o.producer);
         o.vintage = o.vintage || 'NV';
         o.wine = wineOf.get(k) || 'h:' + k;
         o._hist = true;
+        const sm = sampleOf.get(k); // wine facts of a bottle of the same wine in the cellar (if there is one)
+        if (sm) ['country', 'region', 'appellation', 'grapes', '_cls', 'p'].forEach((f) => { if (o[f] === undefined) o[f] = sm[f]; });
         o._status = 'drunk';
         o._cn = multi ? names.get(o.cellar || cl[0].id) || '' : '';
         o._price = priceKey(o);
@@ -1319,7 +1325,7 @@
       // Entry = wine + vintage
       const m = new Map();
       bottles.forEach((b) => {
-        const k = (b.wine || b.name) + '|' + (b.vintage || 'NV');
+        const k = (b.wine || b.name) + '|' + (b.vintage || 'NV') + (b._hist ? '|h' : '');
         let e = m.get(k);
         if (!e) { e = { wine: b.wine || b.name, vintage: String(b.vintage || 'NV'), b, bottles: [] }; m.set(k, e); }
         e.bottles.push(b);
@@ -1989,7 +1995,7 @@
       if (g.entries.length === 1 && g.entries[0].hist) {
         // Only drunk: one dimmed row, not tappable
         const e = g.entries[0];
-        return `<div class="wine hist"><div class="wrow hrow">${this._typeDot(g.b)}<span class="wmain">${this._title(g.b, '', true)}</span>` +
+        return `<div class="wine hist"><div class="wrow hrow" data-act="detail" data-h="1" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(g.b)}<span class="wmain">${this._title(g.b, '', true)}</span>` +
           `<span class="wright"><span class="wloc locs">${this._histInfo(e)}</span><span class="wvint yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span></span></div></div>`;
       }
       if (g.entries.length === 1) {
@@ -2012,7 +2018,7 @@
         `<span class="wcount">${(g.count ? esc(t('count.bottlesShort', { n: g.count })) : esc(t('hist.drunkN', { n: g.hn }))).replace(/ /g, '&nbsp;')}</span><span class="chev">${open ? '▾' : '▸'}</span></span></button>`;
       if (open) {
         html += `<div class="vlist">` + g.entries.map((e) => {
-          if (e.hist) return `<div class="vrow hrow"><span class="vyear yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="vmid">${this._histInfo(e)}</span></div>`;
+          if (e.hist) return `<div class="vrow hrow" data-act="detail" data-h="1" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span><span class="vmid">${this._histInfo(e)}</span></div>`;
           const pr = this._is.has('price') ? this._priceTxt(e.bottles) : '';
           return `<div class="vrow" data-act="detail" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0"><span class="vyear yv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
             (pr ? `<span class="wprice vprl">${esc(pr)}</span>` : '') +
@@ -2025,7 +2031,7 @@
 
     _flatRow(e) {
       if (e.hist) {
-        return `<div class="frow hrow">${this._typeDot(e.b)}<span class="fyear yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
+        return `<div class="frow hrow" data-act="detail" data-h="1" data-w="${esc(e.wine)}" data-v="${esc(e.vintage)}" role="button" tabindex="0">${this._typeDot(e.b)}<span class="fyear yv hv" style="--yc:var(--s-${e.status})">${esc(e.vintage)}</span>` +
           `<span class="fmid">${this._title(e.b, '')}<span class="locs">${this._histInfo(e)}</span></span>` +
           `<span class="vstat">${this._sdot(e.status)}${esc(STATUS_LABEL.drunk)}</span></div>`;
       }
@@ -2380,6 +2386,7 @@
     // ---------- Detail view and take-out ----------
     _detBottles() {
       const d = this._det;
+      if (d.hist) return (this._data.history || []).filter((b) => (b.wine || b.name) === d.wine && String(b.vintage || 'NV') === d.vintage).sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
       const list = this._data.bottles.filter((b) => (b.wine || b.name) === d.wine && String(b.vintage || 'NV') === d.vintage);
       return list.sort((a, b) => (a._loc === NO_LOC) - (b._loc === NO_LOC) || de.compare(a._loc, b._loc));
     }
@@ -2512,6 +2519,14 @@
     _viewV2(sel, bottles, info) {
       const yr = new Date().getFullYear();
       const d = this._det;
+      const hist = !!(d && d.hist); // drunk entry (flag history): same view, "empty" hint instead of the take-out bar
+      if (hist) { // wine facts of a wine that is not in the cellar any more come from the bottle details
+        const wf = (info && info.wineFacts) || {};
+        sel = Object.assign({}, sel);
+        ['country', 'region', 'appellation'].forEach((f) => { if (!sel[f] && wf[f]) sel[f] = wf[f]; });
+        if (!(sel.grapes || []).length && wf.grapes) sel.grapes = wf.grapes;
+        if (!(sel._cls || []).length && wf.classification) sel._cls = String(wf.classification).split(/\s*,\s*/).filter(Boolean);
+      }
       // Region and classification are already in the title line: only country and (differing) appellation here
       const origin = Array.from(new Set([sel.country, sel.appellation !== sel.region && !this._dOff('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
       const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
@@ -2611,6 +2626,7 @@
       const _nRack = _inRack.reduce((n, [, arr]) => n + arr.length, 0);
       const _places = _inRack.map(([l, arr]) => _split(l)[1] ? _split(l)[1] + (arr.length > 1 && _inRack.length > 1 ? ' ×' + arr.length : '') : '').filter(Boolean).join(', ');
       const _cnt = t('det.bottlesN', { n: _nRack });
+      const _dcnt = t('hist.drunkN', { n: bottles.length });
       const _ctag = this._allCellars() && sel._cn ? `<span class="ctag">${esc(sel._cn)}</span>` : ''; // all cellars together: the cellar of the chosen place
       const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
       const botsSec = '';
@@ -2620,14 +2636,30 @@
         `<button class="btn on" data-act="dask">${esc(t('det.take'))}</button>` +
         (sel.where && sel.where.rack ? `<button class="btn rbtn round" data-act="drack" aria-pressed="${!!(d && d.rackBig)}" title="${esc(t('det.rackBig'))}" aria-label="${esc(t('det.rackBig'))}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M9 3v18M15 3v18"/></svg></button>` : '') +
         (this._edUrl(sel) ? `<a class="btn clink" href="${esc(this._edUrl(sel))}" target="_blank" rel="noopener" title="${esc(t('det.editIn'))}"><span>${esc(t('det.openIn'))}</span><img class="clogo" src="${CEL_LOGO}" alt="" width="10" height="24"></a>` : '') + `</div>`;
+      let hint = '';
+      if (hist) {
+        const dt2 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
+        const line = (b) => {
+          const rk = 'hist.reason.' + (b.reason || 'drank'), why = I18N.dict[rk] !== undefined ? t(rk) : String(b.reason || '');
+          const rt = typeof b.rating === 'number' ? ' · ' + (b.scale && !/star/i.test(b.scale) ? b.rating + ' ' + b.scale : '★ ' + b.rating) : '';
+          return `<span class="dpur">${esc('✓ ' + why + (b.at ? ' ' + dt2(b.at) : '') + rt)}</span>` + (b.note ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
+        };
+        hint = `<div class="hempty"><b>${esc(t('hist.empty'))}</b>${bottles.slice(0, 12).map(line).join('')}</div>`;
+      }
       // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
-      const bigMap = d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
+      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
+      const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${maturity + about + noteHtml}${botsSec}${actBar}`;
+      return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${botsSec}${hist ? this._histBar(sel) : actBar}`;
+    }
+    // Bottom bar of a drunk entry: no take-out, only the link to Cellarion (not for wines that are only in the log)
+    _histBar(sel) {
+      const u = String(sel.wine || '').startsWith('h:') ? '' : this._edUrl(sel);
+      return `<div class="dact d2act"><button class="btn" data-act="dclose">${esc(t('det.done'))}</button>` +
+        (u ? `<a class="btn clink" href="${esc(u)}" target="_blank" rel="noopener" title="${esc(t('det.editIn'))}"><span>${esc(t('det.openIn'))}</span><img class="clogo" src="${CEL_LOGO}" alt="" width="10" height="24"></a>` : '') + `</div>`;
     }
     _renderDlg() { this._renderDlg0(); this._hsync(); this._dlgTop(); this._swipe(); }
     // Phone: the popup starts below the dashboard header (the navigation stays visible)
@@ -3010,7 +3042,7 @@
     },
     detail(t) {
       if (t.classList.contains('wrow') && this._open.size) { this._open = new Set(); this._renderList(); }
-      this._det = { wine: t.dataset.w, vintage: t.dataset.v, step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
+      this._det = { wine: t.dataset.w, vintage: t.dataset.v, hist: t.dataset.h === '1', step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
       this._renderDlg();
     },
     statopen() { this._det = null; this._stat = { path: [], all: false }; this._renderDlg(); },

@@ -344,5 +344,6 @@
  "hist.more": "+{n} drunk",
  "hist.reason.drank": "drunk",
  "hist.reason.gifted": "gifted",
- "hist.reason.sold": "sold"
+ "hist.reason.sold": "sold",
+ "hist.empty": "Empty – no longer in the cellar"
 }

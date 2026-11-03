@@ -2631,6 +2631,9 @@
       const _places = _inRack.map(([l, arr]) => _split(l)[1] ? _split(l)[1] + (arr.length > 1 && _inRack.length > 1 ? ' ×' + arr.length : '') : '').filter(Boolean).join(', ');
       const _cnt = t('det.bottlesN', { n: _nRack });
       const _dcnt = t('hist.drunkN', { n: bottles.length });
+      // flag history: drunk bottles of this wine and vintage in brackets behind the count
+      const _hn = !hist && this._flag('history') ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).length : 0;
+      const _dn = _hn ? ' (' + t('hist.drunkN', { n: _hn }) + ')' : '';
       const _ctag = this._allCellars() && sel._cn ? `<span class="ctag">${esc(sel._cn)}</span>` : ''; // all cellars together: the cellar of the chosen place
       const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
       const botsSec = '';
@@ -2654,7 +2657,7 @@
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
+      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
       return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${botsSec}${hist ? this._histBar(sel) : actBar}`;

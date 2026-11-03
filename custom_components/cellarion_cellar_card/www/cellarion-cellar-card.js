@@ -287,8 +287,8 @@
     .hrow { cursor: pointer; }
     .hrow > :not(.yv), .wine.hist > .wrow > .wmain, .wine.hist > .wrow > .wright > .wloc { opacity: .62; }
     .yv.hv { font-style: italic; font-weight: 600; color: var(--cb-text); }
-    .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--cb-ring); border-radius: 10px; }
-    .hempty b { display: block; margin-bottom: 4px; }
+    .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-late); border-radius: 10px; background: color-mix(in srgb, var(--s-late) 12%, transparent); }
+    .hempty b { display: block; margin-bottom: 4px; color: var(--s-late); }
     .hempty .dpur { display: block; margin-top: 2px; }
     .hrow .hinfo, .hinfo { color: var(--cb-sub); font-size: .9em; white-space: nowrap; }
     .wrow, .frow {

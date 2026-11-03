@@ -70,7 +70,7 @@ def _only_first_cellar_racks(path):
     return RACKS
 
 
-def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks):
+def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks, history=None):
     spec = importlib.util.spec_from_file_location("bestand_dev", DEV)
     dev = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dev)
@@ -78,15 +78,16 @@ def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks):
     dev.token = lambda: "t"
     dev.get_cond = lambda path, tok, etag: (200, inv, 'W/"x"')
     dev.get = lambda path, tok: racks(path)
+    dev.fetch_history_raw = lambda tok: history  # no network: the consumption log is passed in
     dev.refresh()
     return json.loads(pathlib.Path(dev.CACHE_FILE).read_text(encoding="utf-8"))
 
 
-def _integration_inventory(inv=INVENTORY, racks=_only_first_cellar_racks):
+def _integration_inventory(inv=INVENTORY, racks=_only_first_cellar_racks, history=None):
     async def get(path):
         return racks(path)
 
-    return asyncio.run(api.build_inventory(inv, get))
+    return asyncio.run(api.build_inventory(inv, get, None, history))
 
 
 def test_inventory_matches_development_setup(tmp_path, capsys):
@@ -138,3 +139,36 @@ def test_two_own_cellars_match_development_setup(tmp_path, capsys):
     assert dev["total"] == 3 and dev["racks"] == ["R", "Shelf"]
     assert [b["cellar"] for b in dev["bottles"]] == ["c1", "c2", "c2"]
     assert dev["cellars"][1]["rackGeo"] == {"Shelf": {"cols": 4, "rows": [2, 2]}}
+
+
+# Consumption log (list_history): same slim rows in both setups; rows of cellars that are not delivered stay out; without rows no key
+HISTORY = [
+    {"bottle_id": "1" * 24, "wine": {"name": "Mellifera", "producer": "Lointier", "type": "sparkling"}, "vintage": "NV", "status": "drank",
+     "cellar_id": "c1", "price": 50, "currency": "EUR", "rating": None, "drink_from": 2024, "drink_to": 2030,
+     "consumed_at": "2026-11-03T14:24:12.400Z", "consumed_reason": "drank", "consumed_rating": None, "consumed_rating_scale": None, "consumed_note": None},
+    {"bottle_id": "2" * 24, "wine": {"name": "Alte Reben", "producer": "Zilliken", "type": "white"}, "vintage": "2021", "status": "gifted",
+     "cellar_id": "c1", "consumed_at": "2026-11-01T19:43:12.700Z", "consumed_reason": "gifted", "consumed_rating": 4.5,
+     "consumed_rating_scale": "stars", "consumed_note": "x" * 600},
+    {"bottle_id": "3" * 24, "wine": {"name": "Elsewhere", "type": "red"}, "vintage": "2010", "status": "drank", "cellar_id": "c2",
+     "consumed_at": "2026-10-01T10:00:00.000Z", "consumed_reason": "drank"},  # shared cellar: left out
+]
+
+
+def test_history_matches_development_setup(tmp_path, capsys):
+    dev = _dev_inventory(tmp_path, history=HISTORY)
+    capsys.readouterr()
+    integ = _integration_inventory(history=HISTORY)
+    for d in (dev, integ):
+        d.pop("generated", None)
+    assert integ == dev
+    h = dev["history"]
+    assert [x["name"] for x in h] == ["Mellifera", "Alte Reben"]
+    assert h[0] == {"id": "1" * 24, "name": "Mellifera", "producer": "Lointier", "type": "sparkling", "vintage": "NV",
+                    "at": "2026-11-03T14:24:12.400Z", "reason": "drank", "price": 50, "currency": "EUR"}
+    assert h[1]["rating"] == 4.5 and h[1]["scale"] == "stars" and len(h[1]["note"]) == 500
+
+
+def test_no_history_means_no_key(tmp_path, capsys):
+    dev = _dev_inventory(tmp_path, history=[])
+    capsys.readouterr()
+    assert "history" not in dev and "history" not in _integration_inventory(history=[])

@@ -210,6 +210,45 @@ class McpClient:
 # ---------- inventory ----------
 
 
+async def fetch_history(mcp: McpClient) -> list[JsonDict] | None:
+    """The consumption log (drunk, gifted, sold; newest first) through the read-only MCP tool list_history.
+    None on an error: the inventory must not fail because of it."""
+    try:
+        rows: list[JsonDict] = []
+        offset = 0
+        while offset < 2000:
+            part = await mcp.tool("list_history", {"limit": 50, "offset": offset})
+            if not isinstance(part, list) or not part:
+                break
+            rows += part
+            if len(part) < 50:
+                break
+            offset += 50
+        return rows
+    except Exception:  # noqa: BLE001 - any failure just means "no history this time"
+        return None
+
+
+def slim_history(rows: Any, ids: list[str]) -> list[JsonDict]:
+    """Reduce the consumption log to what the card needs (only the delivered cellars). Short keys:
+    at = date (ISO), reason = drank/gifted/sold, rating/scale = rating given when drunk, note = note."""
+    first, multi = ids[0], len(ids) > 1
+    out: list[JsonDict] = []
+    for r in rows or []:
+        cb = r.get("cellar_id") or first
+        if cb not in ids:
+            continue
+        w = r.get("wine") or {}
+        h = {"id": r.get("bottle_id"), "name": w.get("name"), "producer": w.get("producer"), "type": w.get("type"),
+             "vintage": r.get("vintage") or "NV", "at": r.get("consumed_at"), "reason": r.get("consumed_reason") or r.get("status"),
+             "rating": r.get("consumed_rating"), "scale": r.get("consumed_rating_scale"), "note": str(r.get("consumed_note") or "")[:500],
+             "price": r.get("price"), "currency": r.get("currency")}
+        if multi:
+            h["cellar"] = cb
+        out.append({k: v for k, v in h.items() if v not in (None, "", [])})
+    return out
+
+
 def own_cellars(cellars: list[JsonDict]) -> list[JsonDict]:
     """The user's own cellars (role owner; a missing role counts as owner). Cellars shared with the user are left out;
     without an own one the first stays."""
@@ -240,10 +279,10 @@ def rack_geo(racks: list[JsonDict], geo: dict[str, JsonDict]) -> dict[str, JsonD
             if (g := geo.get(r.get("id")) or geo.get(r.get("name"))) and g.get("rows")}
 
 
-def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None) -> JsonDict:
+def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None, history: list[JsonDict] | None = None) -> JsonDict:
     """Compact inventory from GET /api/inventory: the cellars (id, name, total, racks, rackGeo), bottles with places and personal fields.
     The card picks one cellar or shows all together; cellar/cellarId/racks/rackGeo at the top are the first cellar's name and id and the
-    sum of all racks (for cards without the cellar list)."""
+    sum of all racks (for cards without the cellar list). history = raw rows of list_history (optional)."""
     cellars = pick_cellars(inv.get("cellars") or [], cellar_ids)
     ids = [c.get("id") or c.get("_id") for c in cellars]
     first = ids[0]
@@ -270,7 +309,7 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None
     for c, cid in zip(cellars, ids):
         rs = [r for r in all_racks if (r.get("cellar") or first) == cid]
         out.append({"id": cid, "name": c.get("name"), "total": count[cid], "racks": [r["name"] for r in rs], "rackGeo": rack_geo(rs, geo)})
-    return {
+    data: JsonDict = {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "cellar": cellars[0].get("name"),
         "cellarId": first,
@@ -281,15 +320,20 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None
         "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
     }
+    hist = slim_history(history, ids)
+    if hist:  # only with entries, so a cellar without history looks as before
+        data["history"] = hist
+    return data
 
 
-async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None) -> JsonDict:
+async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None,
+                          history: list[JsonDict] | None = None) -> JsonDict:
     """Compact inventory from an already fetched /api/inventory. Only the rack layout (shelves, places per row) is read on top, per cellar."""
     geo: dict[str, JsonDict] = {}
     for c in pick_cellars(inv.get("cellars") or [], cellar_ids):
         cid = c.get("id") or c.get("_id")
         geo.update(geometry((await get(f"/api/racks?cellar={cid}&summary=1")).get("racks")))
-    return build(inv, geo, cellar_ids)
+    return build(inv, geo, cellar_ids, history)
 
 
 async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,

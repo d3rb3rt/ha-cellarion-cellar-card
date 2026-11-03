@@ -255,7 +255,12 @@ class Hub:
                 inv, etag = await self._get_inventory(None)  # re-read the rack layout once a day
             changed = False
             if inv is not None:
-                self.data = await api.build_inventory(inv, self._get, self._cellar_id)
+                mcp = await self._mcp_client()
+                raw = await api.fetch_history(mcp) if mcp is not None else None
+                old = (self.data or {}).get("history")
+                self.data = await api.build_inventory(inv, self._get, self._cellar_id, raw)
+                if raw is None and old:  # list_history not reachable: keep the last history
+                    self.data["history"] = old
                 self.data["url"] = self.url  # base address of the Cellarion server, for the "edit in Cellarion" link
                 self._etag, self._geo_at = etag, time.time()
                 body = {k: v for k, v in self.data.items() if k != "generated"}

@@ -284,7 +284,6 @@
  "set2.grpDev": "Development",
  "set2.mode": "Color scheme",
  "set2.sumFilters": "{n} of {all} shown",
- "set2.sumInfo": "{n} shown",
  "set2.sumRacks": {
   "one": "{n} rack",
   "other": "{n} racks"

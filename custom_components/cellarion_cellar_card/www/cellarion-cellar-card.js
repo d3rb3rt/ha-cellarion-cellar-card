@@ -2857,7 +2857,13 @@
           const rt = typeof b.rating === 'number' ? ' · ' + (b.scale && !/star/i.test(b.scale) ? b.rating + ' ' + b.scale : '★ ' + b.rating) : '';
           return `<span class="dpur">${esc('✓ ' + why + (b.at ? ' ' + dt2(b.at) : '') + rt)}</span>` + (b.note ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
         };
-        hint = `<div class="hempty"><b>${esc(t('hist.empty'))}</b>${bottles.slice(0, 12).map(line).join('')}</div>`;
+        // identical entries (same date, reason, rating, note) become one line with a count; the newest three lines are visible, the rest behind a button
+        const grp = new Map();
+        bottles.slice(0, 200).forEach((b) => { const k = [b.at, b.reason, b.rating, b.scale, b.note].join('|'); if (grp.has(k)) grp.get(k).n++; else grp.set(k, { b, n: 1 }); });
+        const rows = Array.from(grp.values()), hOpen = !!(d && d.drunkOpen), shownR = hOpen ? rows : rows.slice(0, 3);
+        const gl = (r) => (r.n > 1 ? line(r.b).replace('<span class="dpur">', '<span class="dpur">' + esc(r.n + '× ')) : line(r.b));
+        hint = `<div class="hempty"><b>${esc(t('hist.empty'))}</b>${shownR.map(gl).join('')}` +
+          (rows.length > 3 ? `<button class="dsech" data-act="ddrunk" aria-expanded="${hOpen}">${esc(hOpen ? t('det.drunkLess') : t('det.drunkMore', { n: rows.length - 3 }))}</button>` : '') + `</div>`;
       }
       // Drunk bottles of this vintage (own history) as a section above the take-out bar; other vintages are reached via the vintage bar
       let drunkSec = '';

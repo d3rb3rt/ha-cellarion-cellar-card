@@ -22,7 +22,8 @@ STORAGE_VERSION = 1
 
 FRONTEND_URL_BASE = "/cellarion-cellar-card-files"
 CARD_FILENAME = "cellarion-cellar-card.js"
-IMAGE_URL_BASE = "/cellarion-cellar-card-img"
+IMAGE_URL_BASE = "/api/cellarion_cellar_card/img"  # authenticated view, see images.py
+IMAGE_URL_TTL_HOURS = 24  # lifetime of a signed image URL
 IMAGE_DIR_NAME = "cellarion_cellar_card_img"
 
 STREAM_DEBOUNCE = 3  # seconds to wait after a change event (several changes become one refresh)

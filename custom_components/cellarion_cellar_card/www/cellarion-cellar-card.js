@@ -496,6 +496,7 @@
     .d2st .loc, .d2st .d2sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     .d2st .bi { display: none; }
     .d2st { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+    .wvj { margin-right: .15em; }
     .d2moreb { display: block; margin: 4px 0 0; padding: 2px 14px; border: 0; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); font: inherit; font-size: .85em; cursor: pointer; }
     .d2pill { flex: none; font-size: .85em; padding: 3px 10px; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); white-space: nowrap; }
     .d2pill.hot { background: var(--cb-on); color: var(--cb-on-text); }
@@ -2019,8 +2020,9 @@
         return v ? this._hl([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
       };
       const swap = this._sort === 'producer' && b.producer;
-      const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
-        : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
+      const vj = detail && this._flag('detrows') && b.vintage && String(b.vintage).toUpperCase() !== 'NV' ? `<span class="wvj">${esc(b.vintage)}</span> ` : ''; // detail header (flag detrows): the vintage always in front of the wine name, empty without one
+      const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', vj + this._hl(b.name)]]
+        : [['wname', vj + this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
       const infos = this._infoDefs().filter((d) => this._is.has(d.id) && !(detail && (this._dOff(d.id) || this._flag('detrows'))) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
       const all = head.concat(infos);
       const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
@@ -2848,7 +2850,8 @@
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + dataBlock + mine + `</div>`;
+      const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>');
+      const main = `<div class="d2main"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` + dataBlock + mine + `</div>`;
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
       return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;

@@ -629,7 +629,7 @@
     .setv2 input[type=checkbox] { -webkit-appearance: none; appearance: none; box-sizing: border-box; border: 2px solid color-mix(in srgb, var(--cb-text) 60%, transparent); border-radius: 5px; background: transparent center / 14px no-repeat; }
     .setv2 input[type=checkbox]:checked { background-color: var(--cb-on); border-color: var(--cb-on); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
     .setv2 .ssel { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; text-align: left; cursor: pointer; }
-    .setv2 .snum { width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; }
+    .setv2 .snum { width: 4.5em; text-align: center; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; }
     .setv2 .snum:focus { outline: none; border-color: var(--cb-on); }
     .setv2 .ssel.open { border-color: var(--cb-on); }
     .setv2 .ssarr { flex: none; color: var(--cb-sub); font-size: .8em; }

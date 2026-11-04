@@ -305,7 +305,8 @@
     .hempty .dpur { display: block; margin-top: 2px; }
     .hempty.dsec { margin-top: 14px; }
     .d2sub.dgone { color: var(--s-drunk); font-weight: 600; }
-    .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 0; }
+    .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+    .d2top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; }
     .vbar .vlbl { font-size: .85em; color: var(--cb-muted, var(--secondary-text-color)); margin-right: 2px; }
     .vchip { padding: 3px 10px; border: 1px solid var(--cb-line); border-radius: 14px; background: none; color: var(--cb-text); font: inherit; font-size: .9em; cursor: pointer; }
     .vchip.gone { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
@@ -2857,7 +2858,7 @@
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
       const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? ['<span class="d2sub dgone">✓ ' + esc(_dn) + '</span>'] : []);
-      const main = `<div class="d2main"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` + dataBlock + mine + `</div>`;
+      let main = `<div class="d2main"><div class="d2top"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div><!--vb--></div>` + dataBlock + mine + `</div>`;
       // Vintage bar: the other vintages of this wine (in stock: with count; completely drunk: purple)
       const wk = d.wine, cur = String(sel.vintage || 'NV');
       const vm = new Map();
@@ -2870,7 +2871,7 @@
       const vbar = vlist.length ? `<div class="vbar"><span class="vlbl">${esc(t('det.vints'))}</span>` + vlist.map(([v, g]) =>
         `<button type="button" class="vchip${g ? ' gone' : ''}" data-act="dvint" data-v="${esc(v)}" data-h="${g ? 1 : 0}" title="${esc(g ? t('hist.empty') : t('det.bottlesN', { n: vm.get(v) }))}">${esc(v)}${g ? '' : ' · ' + vm.get(v)}</button>`).join('') + `</div>` : '';
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
-      this._vbar = vbar; // shown inside the header (together with the title)
+      main = main.replace('<!--vb-->', vbar); // own stock and other vintages share one line (wraps on narrow screens)
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
       return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
     }
@@ -3070,9 +3071,8 @@
         this._queueInfo(sel.id, bottles.slice(0, 12).map((b) => b.id));
       }
       const info = sel ? this._info[sel.id] : null;
-      const head = `<div class="dh dhs">${this._typeDot(b0)}<span class="wmain">${this._title(b0, '', undefined, true)}<!--vb--></span>` +
+      const head = `<div class="dh dhs">${this._typeDot(b0)}<span class="wmain">${this._title(b0, '', undefined, true)}</span>` +
         `<button class="dx" data-act="dclose" aria-label="${esc(t('head.close'))}" ${d.busy ? 'disabled' : ''}>✕</button></div>`;
-      this._vbar = '';
       let body = '';
       if (d.step === 'done') {
         body = `<div class="dask">${esc(t('det.taken'))}</div><div>${esc(d.snap.name)} ${esc(d.snap.vintage || '')}${d.snap._loc !== NO_LOC ? ' · ' + esc(d.snap._loc) : ''}<br>` +
@@ -3092,7 +3092,7 @@
         body = this._viewV2(sel, bottles, info);
       }
       const top = el.firstElementChild ? el.firstElementChild.scrollTop : 0;
-      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">${head.replace('<!--vb-->', this._vbar || '')}${body}</div>`;
+      el.innerHTML = `<div class="dsheet" role="dialog" aria-modal="true">${head}${body}</div>`;
       if (el.firstElementChild) el.firstElementChild.scrollTop = top;
       el.hidden = false;
     }

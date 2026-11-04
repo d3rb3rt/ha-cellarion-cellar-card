@@ -380,5 +380,10 @@
  "flag.detrows": "Datenfelder in den Details als Zeilen (Test)",
  "flag.detrowsSub": "Alle Datenfelder der Details (Cellarion, eigene und Flaschendaten wie Preis) sind Zeilen untereinander in einem Block, mit Reihenfolge und Haken aus den Datenfeldern für die Details. Kopfzeile nur Name und Weingut.",
  "filter.country": "Land",
- "info.lbl.country": "Land"
+ "info.lbl.country": "Land",
+ "dstate.visTip": "Sichtbar in den Details",
+ "dstate.moreTip": "Hinter dem Aufklapp-Pfeil",
+ "dstate.offTip": "Aus, wird in den Details nicht gezeigt",
+ "det.dmoreShow": "Weitere Datenfelder anzeigen",
+ "det.dmoreHide": "Weitere Datenfelder ausblenden"
 }

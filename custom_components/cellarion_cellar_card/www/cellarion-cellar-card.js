@@ -495,6 +495,7 @@
     .d2st .loc, .d2st .d2sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     .d2st .bi { display: none; }
     .d2st { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+    .d2moreb { display: block; margin: 4px 0 0; padding: 2px 14px; border: 0; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); font: inherit; font-size: .85em; cursor: pointer; }
     .d2pill { flex: none; font-size: .85em; padding: 3px 10px; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); white-space: nowrap; }
     .d2pill.hot { background: var(--cb-on); color: var(--cb-on-text); }
     .d2pop { position: absolute; left: 12px; right: 12px; bottom: 100%; margin-bottom: 6px; max-height: 45vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: var(--cb-card); border: 1px solid var(--cb-line); border-radius: 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.45); z-index: 2; }
@@ -983,7 +984,8 @@
       this._ido = expand(ord.filter((x) => x.startsWith('d:')).map((x) => x.slice(2)));
       // show = ids shown in the list; "off:<id>" = not shown in the details (rows, header, info tab); list and details are set independently
       const sh = (Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']).map(String);
-      this._is = new Set(expand(sh.filter((x) => !x.startsWith('off:'))));
+      this._is = new Set(expand(sh.filter((x) => !x.startsWith('off:') && !x.startsWith('more:'))));
+      this._iMore = new Set(expand(sh.filter((x) => x.startsWith('more:')).map((x) => x.slice(5)))); // behind the expand arrow in the details (flag detrows)
       this._iOff = new Set(expand(sh.filter((x) => x.startsWith('off:')).map((x) => x.slice(4))));
     }
     _infoDefs(det) { // det: the order of the details (only with flag infosplit), without the price
@@ -1000,7 +1002,7 @@
     _priceOnly(pr) { const m = String(pr || '').match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
     _infoOrderArr() { return (this._io || []).concat((this._ido || []).map((x) => 'd:' + x)); }
     _dOff(id) { return this._flag('infosplit') && this._iOff.has(id); } // off in the details (only with flag infosplit)
-    _infoShowArr() { return Array.from(this._is).concat(Array.from(this._iOff).map((x) => 'off:' + x)); }
+    _infoShowArr() { return Array.from(this._is).concat(Array.from(this._iOff).map((x) => 'off:' + x), Array.from(this._iMore).map((x) => 'more:' + x)); }
     // Id of the data field (see _infoDefs) behind an info attribute key
     _infoDefId(k) {
       const ti = INFO_TIER.indexOf(k);
@@ -2404,8 +2406,9 @@
       // Data fields: one checkbox per field (list; with flag infosplit a second section sets the details with its own order); the price only has the list
       const split = this._flag('infosplit');
       const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) }))}"></span>`;
-      const frowI = (d, col) => { const on = col === 'l' ? this._is.has(d.id) : !this._iOff.has(d.id); return `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${icb(d, col, on)}${d.fixed ? '<span class="gripsp"></span>' : grip}</div>`; };
-      const ihead = (col) => `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fcb">${esc(t(col === 'l' ? 'fhead.list' : 'fhead.details'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
+      const dseg = (id, st) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis'), t('dstate.visTip')], ['more', t('fstate.more'), t('dstate.moreTip')], ['off', t('fstate.off'), t('dstate.offTip')]].map(([v, l, tip]) => `<button type="button" class="${st === v ? 'on' : ''}" data-act="dstate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}" title="${esc(tip)}" aria-label="${esc(tip)}">${esc(l)}</button>`).join('') + `</span>`; // details with flag detrows: shown / behind the arrow / off
+      const frowI = (d, col) => { const on = col === 'l' ? this._is.has(d.id) : !this._iOff.has(d.id); if (col === 'd' && this._flag('detrows')) { const st = this._iOff.has(d.id) ? 'off' : this._iMore.has(d.id) ? 'more' : 'vis'; return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${dseg(d.id, st)}${grip}</div>`; } return `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${icb(d, col, on)}${d.fixed ? '<span class="gripsp"></span>' : grip}</div>`; };
+      const ihead = (col) => `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="${col === 'd' && this._flag('detrows') ? 'fhs' : 'fcb'}">${esc(t(col === 'l' ? 'fhead.list' : col === 'd' && this._flag('detrows') ? 'fhead.vis' : 'fhead.details'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
       const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t(split ? 'set.infoListSub' : 'set.infoSub'))}</div>` + ihead('l') + `<div class="dlist" data-g="i">` + iord.map((d) => frowI(d, 'l')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frowI(d, 'l')).join('');
       const ddefs = split ? this._infoDefs(true) : [];
@@ -2734,7 +2737,7 @@
         const vn = ex.find((x) => x.key === 'vineyard_name'), vnText = vn ? vn.text : this._infoVal(sel, 'vineyard_name');
         const drow = [];
         this._infoDefs(true).filter((d) => !this._dOff(d.id)).forEach((d) => {
-          const add = (k, v, ik) => { if (v) drow.push({ k, v, ik: ik && im[ik] ? ik : '' }); };
+          const add = (k, v, ik) => { if (v) drow.push({ k, v, ik: ik && im[ik] ? ik : '', more: this._iMore.has(d.id) }); };
           if (/^cls[0-3]$/.test(d.id)) {
             const g = Number(d.id.slice(3)), c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g).join(', ');
             add(t('cls.g' + g), esc(c), INFO_TIER[g] && im[INFO_TIER[g]] ? INFO_TIER[g] : (g === 0 && !vnText ? 'vineyard_name' : ''));
@@ -2750,7 +2753,10 @@
           }
         });
         ex.filter((x) => x.key !== 'vineyard_name').forEach((x) => drow.push({ k: x.label || infoLbl(x.key), v: esc(x.text), ik: x.key }));
-        dataBlock = `<div class="d2mine d2data">` + (drow.length ? `<dl class="dfacts" style="margin:0">${drow.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl>` : '') +
+        const dOpen = !!(d && d.dmore), nMore = drow.filter((r) => r.more).length;
+        const dl = (rs) => `<dl class="dfacts" style="margin:0">${rs.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl>`;
+        dataBlock = `<div class="d2mine d2data">` + (drow.length ? dl(drow.filter((r) => !r.more || dOpen)) : '') +
+          (nMore ? `<button type="button" class="d2moreb${dOpen ? ' open' : ''}" data-act="drmore" aria-expanded="${dOpen}" aria-label="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}" title="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}">${dOpen ? '▴' : '▾'}</button>` : '') +
           (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
       }
       const mineRows = rows.filter((r) => r[1]);
@@ -3076,6 +3082,7 @@
       else if (act === 'drnav') { this._rackStep(Number(el.dataset.dir) || 1); return; }
       else if (act === 'dmore') d.more = !d.more;
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
+      else if (act === 'drmore') d.dmore = !d.dmore;
       else if (act === 'ddrunk') { d.drunkOpen = !d.drunkOpen; }
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }
       else if (act === 'dask') { d.step = 'confirm'; d.err = ''; }
@@ -3301,6 +3308,13 @@
       }
       this._setFilters(this._fo, Array.from(hid));
       this._renderAll(); this._renderSet();
+    },
+    dstate(t) { // details (flag detrows): v 'vis' shown, 'more' behind the arrow, 'off' not shown
+      const id = t.dataset.id, v = t.dataset.v, off = new Set(this._iOff), more = new Set(this._iMore);
+      off.delete(id); more.delete(id);
+      if (v === 'off') off.add(id); else if (v === 'more') more.add(id);
+      this._iOff = off; this._iMore = more;
+      this._setInfo(this._infoDefs().filter((d) => !d.fixed).map((d) => d.id), this._infoShowArr()); this._renderSet(); this._renderAll();
     },
     icol(t) { // one checkbox of the data fields: column l = in the list, column d = in the details
       const id = t.dataset.id, is = new Set(this._is), off = new Set(this._iOff);

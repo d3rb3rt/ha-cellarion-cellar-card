@@ -2726,33 +2726,36 @@
         return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
       }));
       const loadingInfo = !info || info.loading;
-      // Flag detrows: all data fields (Cellarion and personal) as rows in the order of the data-field settings; empty and switched-off ones are left out.
-      // Vineyard rank and the vineyard name (extension) are one row "Vineyard: Name | Rank" as before.
+      // Flag detrows: ONE block, every data field (Cellarion, personal, bottle data) is a row in the order of the data-field settings;
+      // empty and switched-off ones are left out. Vineyard name (extension) and vineyard rank are two rows.
       let dataBlock = '';
       if (drows) {
         const im = infoMap(sel.p), ex = this._infoExtra(im, sel) || [];
-        const vn = ex.find((x) => x.key === 'vineyard_name');
+        const vn = ex.find((x) => x.key === 'vineyard_name'), vnText = vn ? vn.text : this._infoVal(sel, 'vineyard_name');
         const drow = [];
         this._infoDefs(true).filter((d) => !this._dOff(d.id)).forEach((d) => {
+          const add = (k, v, ik) => { if (v) drow.push({ k, v, ik: ik && im[ik] ? ik : '' }); };
           if (/^cls[0-3]$/.test(d.id)) {
             const g = Number(d.id.slice(3)), c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g).join(', ');
-            if (g === 0 && vn) drow.push({ k: infoLbl('vineyard_name'), v: esc(vn.text + (c ? ' | ' + c : '')), ik: 'vineyard_name' });
-            else if (c) drow.push({ k: t('cls.g' + g), v: esc(c), ik: im[INFO_TIER[g]] ? INFO_TIER[g] : (g === 0 && im.vineyard_name ? 'vineyard_name' : '') });
-          } else if (d.id === 'country') { if (sel.country) drow.push({ k: t('filter.country'), v: esc(sel.country), ik: im.country ? 'country' : '' }); }
-          else if (d.id === 'region') { if (sel.region) drow.push({ k: t('filter.region'), v: esc(sel.region), ik: im.region ? 'region' : '' }); }
-          else if (d.id === 'appellation') { if (sel.appellation) drow.push({ k: t('filter.appellation'), v: esc(sel.appellation), ik: im.appellation ? 'appellation' : '' }); }
-          else if (d.id === 'grape') { if ((sel.grapes || []).length) drow.push({ k: t('filter.grape'), v: esc(sel.grapes.join(', ')), ik: im.grape ? 'grape' : '' }); }
+            add(t('cls.g' + g), esc(c), INFO_TIER[g] && im[INFO_TIER[g]] ? INFO_TIER[g] : (g === 0 && !vnText ? 'vineyard_name' : ''));
+          } else if (d.id === 'vname') add(infoLbl('vineyard_name'), esc(vnText), 'vineyard_name');
+          else if (d.id === 'country') add(t('filter.country'), esc(sel.country), 'country');
+          else if (d.id === 'region') add(t('filter.region'), esc(sel.region), 'region');
+          else if (d.id === 'appellation') add(t('filter.appellation'), esc(sel.appellation), 'appellation');
+          else if (d.id === 'grape') add(t('filter.grape'), esc((sel.grapes || []).join(', ')), 'grape');
+          else if (d.bottle) { const r = rows[BOTTLE_ROWS.findIndex((x) => x[0] === d.id)]; if (r) add(r[0], r[1], ''); }
           else if (d.personal) {
             const l = d.label, vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
-            if (vs.length) drow.push({ k: l, v: esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : ''), ik: '' });
+            add(l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : '', '');
           }
         });
-        if (!vn || !(this._infoDefs(true).some((d) => d.id === 'cls0' && !this._dOff(d.id)))) ex.filter((x) => x.key !== 'vineyard_name' || !drow.some((r) => r.ik === 'vineyard_name')).forEach((x) => drow.push({ k: x.label || infoLbl(x.key), v: esc(x.text), ik: x.key }));
-        dataBlock = drow.length ? `<div class="d2mine d2data"><div class="d2h">${esc(t('det.data'))}</div><dl class="dfacts" style="margin:0">${drow.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl></div>` : '';
+        ex.filter((x) => x.key !== 'vineyard_name').forEach((x) => drow.push({ k: x.label || infoLbl(x.key), v: esc(x.text), ik: x.key }));
+        dataBlock = `<div class="d2mine d2data">` + (drow.length ? `<dl class="dfacts" style="margin:0">${drow.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl>` : '') +
+          (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
       }
       const mineRows = rows.filter((r) => r[1]);
       // Values from lot()/fields are already escaped, the brand too; labels are escaped here
-      const mine = `<div class="d2mine"><div class="d2h">${esc(t('det.mine'))}</div>` +
+      const mine = drows ? '' : `<div class="d2mine"><div class="d2h">${esc(t('det.mine'))}</div>` +
         (mineRows.length ? `<dl class="dfacts" style="margin:0">${mineRows.map((r) => `<dt>${esc(r[0])}</dt><dd>${r[1]}</dd>`).join('')}</dl>` : '') +
         (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
       // Leave out the first note paragraph with the merchant (e.g. "Bought at ..."): it is already under My data

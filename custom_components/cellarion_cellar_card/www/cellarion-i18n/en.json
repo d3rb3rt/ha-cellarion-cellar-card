@@ -378,7 +378,7 @@
  "arch.nSub": "A text search also shows archive hits when stock has fewer hits than entered here. 0 = only when nothing is found in stock.",
  "det.data": "Wine data",
  "flag.detrows": "Data fields in the details as rows (test)",
- "flag.detrowsSub": "Every data field (Cellarion and personal) as one row in a \"Wine data\" block, in the order and with the checkboxes of the details data fields. The header line only has name and producer.",
+ "flag.detrowsSub": "All data fields of the details (Cellarion, personal and bottle data such as price) are rows in one block, with the order and checkboxes of the details data fields. The header line only has name and producer.",
  "filter.country": "Country",
  "info.lbl.country": "Country"
 }

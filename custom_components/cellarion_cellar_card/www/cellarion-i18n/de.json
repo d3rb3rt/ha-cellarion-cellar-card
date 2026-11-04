@@ -297,7 +297,7 @@
  "set2.fieldsSub": "Persönliche Felder. Löschen entfernt das Feld samt allen Werten in Cellarion.",
  "flag.setv2": "Neue Einstellungen (Test)",
  "flag.setv2Sub": "Nüchterne Einstellungsseite mit Gruppen und eingeklappten Listen.",
- "cls.g0": "Lage",
+ "cls.g0": "Lagenstufe",
  "cls.g1": "Prädikat",
  "cls.g2": "Reifung",
  "cls.g3": "Sonstige",

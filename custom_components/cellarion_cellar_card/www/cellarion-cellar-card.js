@@ -2968,7 +2968,7 @@
       // One row instead of two: "Lage: Name | Stufe" (tier = official vineyard rank; the personal field "Cru / Lage" is only a fallback and its row goes away)
       const nameDd = el.querySelector('dl.dfacts dd[data-ik="vineyard_name"]');
       const cru = rows.find((r) => r.dt.isConnected && /^cru\s*\/\s*lage$/i.test(r.k));
-      if (nameDd) {
+      if (nameDd && !this._flag('detrows')) { // with flag detrows name and rank are two rows
         const off = (sel._cls || []).filter((v) => this._clsPos(v)[0] === 0).join(', ');
         const tier = off || (cru && cru.dd ? cru.dd.textContent.trim() : '');
         if (tier) nameDd.textContent = nameDd.textContent.trim() + ' | ' + tier;

@@ -1686,7 +1686,7 @@
       const d = this._data, f = this._f, c = this._cfg;
       this._ddItems = {};
       const nAct = this._nAct();
-      const active = (f.q ? 1 : 0) + nAct > 1; // a single filter or the search is removed by its own cross; reset only for several
+      const active = (f.q ? 1 : 0) + nAct + (this._multi() ? 1 : 0) > 1; // a single filter or the search is removed by its own cross; reset only for several (the NOT/OR mode pill counts as one)
       const gear = `<button class="btn round gear" data-act="setopen" title="${esc(t('head.settings'))}" aria-label="${esc(t('head.settings'))}">` +
         `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7m7.4-2.5c.04-.33.1-.66.1-1s-.06-.67-.1-1l2.1-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42L9.12 5.07a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11c-.04.33-.1.66-.1 1s.06.67.1 1l-2.1 1.65a.5.5 0 0 0-.12.64l2 3.46c.13.22.39.3.6.22l2.5-1c.52.4 1.08.73 1.7 1l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.62-.27 1.18-.6 1.7-1l2.5 1c.23.09.47 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></button>`;
       const stat = `<button class="btn round st" data-act="statopen" title="${esc(t('stat.title'))}" aria-label="${esc(t('stat.title'))}">` +

@@ -57,6 +57,8 @@ class Hub:
         self._mcp: api.McpClient | None = None
         self._refresh_handle: asyncio.TimerHandle | None = None
         self._fingerprint: str | None = None
+        self._inv_path = INVENTORY_PATH + "?include=consumed"  # stock and archive (drunk, gifted, sold) in one call, with its own ETag
+        self._archive_ok = True  # False once the server turned out not to know include=consumed: the last archive is kept
         self._etag: str | None = None  # of the last /api/inventory answer: an unchanged inventory answers 304
         self._geo_at: float = 0.0  # when the rack layout was last read
         self.changed_at: str | None = None  # when the inventory last changed
@@ -97,7 +99,7 @@ class Hub:
             headers["If-None-Match"] = etag
         for attempt in (1, 2):
             try:
-                async with self._session.get(self.url + INVENTORY_PATH, headers=headers,
+                async with self._session.get(self.url + self._inv_path, headers=headers,
                                              timeout=aiohttp.ClientTimeout(total=60)) as resp:
                     if resp.status == 304:
                         return None, etag
@@ -105,6 +107,11 @@ class Hub:
                         raise CellarionAuthError("token rejected")
                     if resp.status == 403:
                         raise CellarionAuthError(f"token lacks the scope for GET {INVENTORY_PATH}")
+                    if resp.status == 400 and self._inv_path != INVENTORY_PATH:  # Cellarion older than v1.294: no include=consumed, stock only
+                        self._inv_path = INVENTORY_PATH
+                        headers.pop("If-None-Match", None)
+                        self._archive_ok = False
+                        continue
                     if resp.status == 404:
                         raise CellarionError(f"{INVENTORY_PATH} not found: this needs Cellarion v1.275 or newer")
                     if resp.status == 429 and attempt == 1:
@@ -254,7 +261,7 @@ class Hub:
 
         One request for the whole cellar; an unchanged inventory answers 304 and nothing else is read.
         The rack layout (shelves, places per row) is read along with every changed inventory, and at least once a day.
-        force = ignore the 304 and read everything again, the history included (the reload button of the card).
+        force = ignore the 304 and read everything again, the archive included (the reload button of the card).
         """
         async with self._lock:
             inv, etag = await self._get_inventory(self._etag if self.data is not None and not force else None)
@@ -262,14 +269,10 @@ class Hub:
                 inv, etag = await self._get_inventory(None)  # re-read the rack layout once a day
             changed = False
             if inv is not None:
-                mcp = await self._mcp_client()
-                raw = await api.fetch_history(mcp) if mcp is not None else None
                 old = (self.data or {}).get("history")
-                self.data = await api.build_inventory(inv, self._get, self._cellar_id, raw)
-                if raw is None and old:  # list_history not reachable: keep the last history
+                self.data = await api.build_inventory(inv, self._get, self._cellar_id)
+                if not self._archive_ok and old:  # server without include=consumed: keep the last archive
                     self.data["history"] = old
-                elif mcp is not None and self.data.get("history"):  # wine facts of drunk wines that are not in the cellar any more
-                    await api.enrich_history(self.data["history"], old, mcp)
                 self.data["url"] = self.url  # base address of the Cellarion server, for the "edit in Cellarion" link
                 self._etag, self._geo_at = etag, time.time()
                 body = {k: v for k, v in self.data.items() if k != "generated"}

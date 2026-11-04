@@ -229,116 +229,27 @@ class McpClient:
 # ---------- inventory ----------
 
 
-async def fetch_history(mcp: McpClient) -> list[JsonDict] | None:
-    """The consumption log (drunk, gifted, sold; newest first) through the read-only MCP tool list_history.
-    None on an error: the inventory must not fail because of it."""
-    try:
-        rows: list[JsonDict] = []
-        offset = 0
-        while offset < 2000:
-            part = await mcp.tool("list_history", {"limit": 50, "offset": offset})
-            if not isinstance(part, list) or not part:
-                break
-            rows += part
-            if len(part) < 50:
-                break
-            offset += 50
-        return rows
-    except Exception:  # noqa: BLE001 - any failure just means "no history this time"
-        return None
-
-
-HIST_FACT_KEYS = ("wine", "country", "region", "appellation", "grapes", "classification", "p")  # p = personal data fields of the wine
-
-
-def wine_key(name: Any, producer: Any) -> str:
-    return f"{str(name or '').strip().casefold()}|{str(producer or '').strip().casefold()}"
-
-
-def slim_history(rows: Any, ids: list[str], wines: JsonDict | None = None) -> list[JsonDict]:
-    """Reduce the consumption log to what the card needs (only the delivered cellars). Short keys:
-    at = date (ISO), reason = drank/gifted/sold, rating/scale = rating given when drunk, note = note.
-    wines = the wines of the inventory: a wine that is still in the cellar gives wine id, country, region, appellation, grapes, classification."""
-    first, multi = ids[0], len(ids) > 1
-    known: dict[str, tuple[Any, JsonDict]] = {}
-    for wid, w in (wines or {}).items():
-        known.setdefault(wine_key(w.get("name"), w.get("producer")), (wid, w))
-    out: list[JsonDict] = []
-    for r in rows or []:
-        cb = r.get("cellar_id") or first
-        if cb not in ids:
-            continue
-        w = r.get("wine") or {}
-        h = {"id": r.get("bottle_id"), "name": w.get("name"), "producer": w.get("producer"), "type": w.get("type"),
-             "vintage": r.get("vintage") or "NV", "at": r.get("consumed_at"), "reason": r.get("consumed_reason") or r.get("status"),
-             "drinkFrom": r.get("drink_from"), "drinkTo": r.get("drink_to"), "peakFrom": r.get("peak_from"), "peakUntil": r.get("peak_until"),
-             "rating": r.get("consumed_rating"), "scale": r.get("consumed_rating_scale"), "note": str(r.get("consumed_note") or "")[:500],
-             "price": r.get("price"), "currency": r.get("currency")}
-        if multi:
-            h["cellar"] = cb
-        kw = known.get(wine_key(w.get("name"), w.get("producer")))
-        if kw:
-            wid, kv = kw
-            h.update({"wine": wid, "country": kv.get("country"), "region": kv.get("region"), "appellation": kv.get("appellation"),
-                      "grapes": [str(g) for g in (kv.get("grapes") or []) if g], "classification": kv.get("classification")})
-        out.append({k: v for k, v in h.items() if v not in (None, "", [])})
-    return out
-
-
-def history_facts(g: JsonDict) -> JsonDict:
-    """Wine facts of a bottle from the MCP tool get_bottle (for wines that are not in the cellar any more)."""
-    w = (g or {}).get("wine") or {}
-    cl = w.get("classification") or ", ".join(str(x) for x in (w.get("classifications") or []) if x)
-    f = {"wine": w.get("wine_id"), "country": w.get("country"), "region": w.get("region"), "appellation": w.get("appellation"),
-         "grapes": [str(x) for x in (w.get("grapes") or []) if x], "classification": cl}
-    return {k: v for k, v in f.items() if v not in (None, "", [])}
-
-
-def history_personal(g: JsonDict) -> dict[str, str]:
-    """Personal data fields of the wine (wine-level entries) from the MCP tool list_personal_data: {field: value}."""
-    return personal((g or {}).get("wine_entries"))
-
-
-async def enrich_history(hist: list[JsonDict] | None, old: list[JsonDict] | None, mcp: McpClient, limit: int = 80) -> list[JsonDict] | None:
-    """Rows of wines that are not in the cellar have no wine facts yet: take them from the rows of the last data, otherwise ask
-    get_bottle (at most `limit` wines per run; the rest follows with the next runs). The personal data fields of the wine come along
-    as p (list_personal_data), also for rows of the last data without p."""
-    prev: dict[str, JsonDict] = {}
-    for r in old or []:
-        if r.get("wine"):
-            prev.setdefault(wine_key(r.get("name"), r.get("producer")), r)
-    found: dict[str, JsonDict] = {}
-    n = 0
-    for h in hist or []:
-        if h.get("wine"):
-            continue
-        k = wine_key(h.get("name"), h.get("producer"))
-        if k not in found:
-            src = prev.get(k)
-            if src:
-                found[k] = {f: src[f] for f in HIST_FACT_KEYS if f in src}
-                if "p" not in found[k] and n < limit:
-                    n += 1
-                    try:
-                        found[k]["p"] = history_personal(await mcp.tool("list_personal_data", {"bottle_id": h["id"]}))
-                    except Exception as err:  # noqa: BLE001 - the facts are a nicety
-                        _LOGGER.debug("History personal data unavailable: %s", err)
-            elif n < limit:
-                n += 1
-                try:
-                    found[k] = history_facts(await mcp.tool("get_bottle", {"bottle_id": h["id"]}))
-                except Exception as err:  # noqa: BLE001 - the facts are a nicety
-                    _LOGGER.debug("History facts unavailable: %s", err)
-                    found[k] = {}
-                if found[k]:
-                    try:
-                        found[k]["p"] = history_personal(await mcp.tool("list_personal_data", {"bottle_id": h["id"]}))
-                    except Exception as err:  # noqa: BLE001
-                        _LOGGER.debug("History personal data unavailable: %s", err)
-            else:
-                found[k] = {}
-        h.update(found[k])
-    return hist
+def hist_row(b: JsonDict, wine: JsonDict | None, cb: str, multi: bool) -> JsonDict:
+    """One finished bottle (drunk, gifted, sold; status other than active) from GET /api/inventory?include=consumed as an archive row.
+    Short keys: at = date (ISO), reason = drank/gifted/sold/other, rating/scale = rating given when finished, note = note,
+    wine/country/region/appellation/grapes/classification = wine facts, p = personal data fields. The card ignores the old place of the bottle."""
+    w = wine or {}
+    c = b.get("consumed") or {}
+    win = b.get("window") or {}
+    h: JsonDict = {"id": b.get("id"), "wine": b.get("wine"), "name": w.get("name"), "producer": w.get("producer"),
+                   "type": w.get("type") or ("other" if w.get("category") == "other" else None),
+                   "vintage": b.get("vintage") or "NV", "at": c.get("at"), "reason": b.get("status"),
+                   "drinkFrom": win.get("drinkFrom"), "drinkTo": win.get("drinkTo"), "peakFrom": win.get("peakFrom"), "peakUntil": win.get("peakUntil"),
+                   "rating": c.get("rating"), "scale": c.get("ratingScale"), "note": str(c.get("note") or "")[:500],
+                   "price": b.get("price"), "currency": b.get("currency"),
+                   "country": w.get("country"), "region": w.get("region"), "appellation": w.get("appellation"),
+                   "grapes": [str(g) for g in (w.get("grapes") or []) if g], "classification": w.get("classification")}
+    p = personal(b.get("personal"))
+    if p:
+        h["p"] = p
+    if multi:
+        h["cellar"] = cb
+    return {k: v for k, v in h.items() if v not in (None, "", [])}
 
 
 def own_cellars(cellars: list[JsonDict]) -> list[JsonDict]:
@@ -371,21 +282,25 @@ def rack_geo(racks: list[JsonDict], geo: dict[str, JsonDict]) -> dict[str, JsonD
             if (g := geo.get(r.get("id")) or geo.get(r.get("name"))) and g.get("rows")}
 
 
-def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None, history: list[JsonDict] | None = None) -> JsonDict:
+def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None) -> JsonDict:
     """Compact inventory from GET /api/inventory: the cellars (id, name, total, racks, rackGeo), bottles with places and personal fields.
     The card picks one cellar or shows all together; cellar/cellarId/racks/rackGeo at the top are the first cellar's name and id and the
-    sum of all racks (for cards without the cellar list). history = raw rows of list_history (optional)."""
+    sum of all racks (for cards without the cellar list). With include=consumed the finished bottles (status other than active) become the archive (history)."""
     cellars = pick_cellars(inv.get("cellars") or [], cellar_ids)
     ids = [c.get("id") or c.get("_id") for c in cellars]
     first = ids[0]
     multi = len(ids) > 1
     wines = inv.get("wines") or {}
     bottles: list[JsonDict] = []
+    hist: list[JsonDict] = []
     labels: set[str] = set()
     count = dict.fromkeys(ids, 0)
     for b in inv.get("bottles") or []:
         cb = b.get("cellar") or first
         if cb not in count:  # cellars that are not delivered (the inventory also holds cellars shared with the user)
+            continue
+        if b.get("status") not in (None, "active"):  # drunk / gifted / sold: archive, not stock
+            hist.append(hist_row(b, wines.get(b.get("wine")), cb, multi))
             continue
         s = slim(b, wines.get(b.get("wine")), place(b.get("location"), geo))
         if multi:
@@ -412,20 +327,21 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None
         "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
     }
-    hist = slim_history(history, ids, wines)
     if hist:  # only with entries, so a cellar without history looks as before
+        hist.sort(key=lambda h: h.get("at") or "", reverse=True)  # newest first
         data["history"] = hist
+    if inv.get("consumedTruncated"):
+        data["historyTruncated"] = True  # Cellarion delivers only the newest 10,000 finished bottles
     return data
 
 
-async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None,
-                          history: list[JsonDict] | None = None) -> JsonDict:
+async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None) -> JsonDict:
     """Compact inventory from an already fetched /api/inventory. Only the rack layout (shelves, places per row) is read on top, per cellar."""
     geo: dict[str, JsonDict] = {}
     for c in pick_cellars(inv.get("cellars") or [], cellar_ids):
         cid = c.get("id") or c.get("_id")
         geo.update(geometry((await get(f"/api/racks?cellar={cid}&summary=1")).get("racks")))
-    return build(inv, geo, cellar_ids, history)
+    return build(inv, geo, cellar_ids)
 
 
 async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,

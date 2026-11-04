@@ -70,7 +70,7 @@ def _only_first_cellar_racks(path):
     return RACKS
 
 
-def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks, history=None):
+def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks):
     spec = importlib.util.spec_from_file_location("bestand_dev", DEV)
     dev = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dev)
@@ -78,16 +78,15 @@ def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks, hist
     dev.token = lambda: "t"
     dev.get_cond = lambda path, tok, etag: (200, inv, 'W/"x"')
     dev.get = lambda path, tok: racks(path)
-    dev.fetch_history_raw = lambda tok: history  # no network: the consumption log is passed in
     dev.refresh()
     return json.loads(pathlib.Path(dev.CACHE_FILE).read_text(encoding="utf-8"))
 
 
-def _integration_inventory(inv=INVENTORY, racks=_only_first_cellar_racks, history=None):
+def _integration_inventory(inv=INVENTORY, racks=_only_first_cellar_racks):
     async def get(path):
         return racks(path)
 
-    return asyncio.run(api.build_inventory(inv, get, None, history))
+    return asyncio.run(api.build_inventory(inv, get, None))
 
 
 def test_inventory_matches_development_setup(tmp_path, capsys):
@@ -141,84 +140,42 @@ def test_two_own_cellars_match_development_setup(tmp_path, capsys):
     assert dev["cellars"][1]["rackGeo"] == {"Shelf": {"cols": 4, "rows": [2, 2]}}
 
 
-# Consumption log (list_history): same slim rows in both setups; rows of cellars that are not delivered stay out; without rows no key
-HISTORY = [
-    {"bottle_id": "1" * 24, "wine": {"name": "Mellifera", "producer": "Lointier", "type": "sparkling"}, "vintage": "NV", "status": "drank",
-     "cellar_id": "c1", "price": 50, "currency": "EUR", "rating": None, "drink_from": 2024, "drink_to": 2030,
-     "consumed_at": "2026-11-03T14:24:12.400Z", "consumed_reason": "drank", "consumed_rating": None, "consumed_rating_scale": None, "consumed_note": None},
-    {"bottle_id": "2" * 24, "wine": {"name": "Alte Reben", "producer": "Zilliken", "type": "white"}, "vintage": "2021", "status": "gifted",
-     "cellar_id": "c1", "consumed_at": "2026-11-01T19:43:12.700Z", "consumed_reason": "gifted", "consumed_rating": 4.5,
-     "consumed_rating_scale": "stars", "consumed_note": "x" * 600},
-    {"bottle_id": "3" * 24, "wine": {"name": "Elsewhere", "type": "red"}, "vintage": "2010", "status": "drank", "cellar_id": "c2",
-     "consumed_at": "2026-10-01T10:00:00.000Z", "consumed_reason": "drank"},  # shared cellar: left out
+# Archive: finished bottles (status other than active) of GET /api/inventory?include=consumed become the history rows, same in both setups;
+# bottles of cellars that are not delivered stay out; without finished bottles no key
+def _finished(bid, wine, cellar, status, at, vintage="NV", **kw):
+    return {"id": bid * 24, "wine": wine, "cellar": cellar, "status": status, "vintage": vintage, "price": 50, "currency": "EUR",
+            "consumed": {"at": at, "rating": kw.get("rating"), "ratingScale": kw.get("scale"), "note": kw.get("note")},
+            "maturity": None, "window": {"drinkFrom": 2024, "drinkTo": 2030}, "location": None, "place": "R1l",
+            "personal": kw.get("personal", [])}
+
+
+FINISHED = [
+    _finished("1", "w1", "c1", "drank", "2026-11-01T19:43:12.700Z", "2021", rating=4.5, scale="stars", note="x" * 600,
+              personal=[{"level": "wine", "key": "Subregion", "value": "Cote des Bar"}]),
+    _finished("2", "w2", "c1", "gifted", "2026-11-03T14:24:12.400Z"),
+    _finished("3", "w1", "c2", "drank", "2026-10-01T10:00:00.000Z"),  # shared cellar: left out
 ]
 
 
 def test_history_matches_development_setup(tmp_path, capsys):
-    dev = _dev_inventory(tmp_path, history=HISTORY)
+    inv = {**INVENTORY, "bottles": INVENTORY["bottles"] + FINISHED, "consumedTotal": 3, "consumedTruncated": True}
+    dev = _dev_inventory(tmp_path, inv=inv)
     capsys.readouterr()
-    integ = _integration_inventory(history=HISTORY)
+    integ = _integration_inventory(inv=inv)
     for d in (dev, integ):
         d.pop("generated", None)
     assert integ == dev
+    assert dev["total"] == 6  # finished bottles are not stock
+    assert dev["historyTruncated"] is True
     h = dev["history"]
-    assert [x["name"] for x in h] == ["Mellifera", "Alte Reben"]
-    assert h[0] == {"id": "1" * 24, "name": "Mellifera", "producer": "Lointier", "type": "sparkling", "vintage": "NV",
-                    "at": "2026-11-03T14:24:12.400Z", "reason": "drank", "price": 50, "currency": "EUR", "drinkFrom": 2024, "drinkTo": 2030}
+    assert [x["id"] for x in h] == ["2" * 24, "1" * 24]  # newest first
+    assert h[0]["reason"] == "gifted" and h[0]["drinkFrom"] == 2024 and "location" not in h[0] and "where" not in h[0]
     assert h[1]["rating"] == 4.5 and h[1]["scale"] == "stars" and len(h[1]["note"]) == 500
+    assert h[1]["p"] == {"Subregion": "Cote des Bar"} and h[1]["wine"] == "w1" and h[1]["name"]  # wine facts and personal fields come with the bottle
 
 
-def test_no_history_means_no_key(tmp_path, capsys):
-    dev = _dev_inventory(tmp_path, history=[])
+def test_no_finished_bottles_means_no_history_key(tmp_path, capsys):
+    dev = _dev_inventory(tmp_path)
     capsys.readouterr()
-    assert "history" not in dev and "history" not in _integration_inventory(history=[])
-
-
-# Wine facts of drunk wines: from the wines of the inventory, otherwise from get_bottle (same result in both setups)
-LP = {"wine_entries": [{"level": "wine", "key": "Subregion", "value": "Cote des Bar"}, {"level": "wine", "key": "Bubbles", "value": "Champagner"}]}
-GB = {"wine": {"wine_id": "w9", "name": "Elsewhere", "country": "Austria", "region": "Wachau", "appellation": None,
-               "grapes": ["Gruener Veltliner"], "classification": None, "classifications": ["Smaragd", "Ried"]}}
-
-
-def test_history_facts_match_development_setup(tmp_path):
-    spec = importlib.util.spec_from_file_location("bestand_dev", DEV)
-    dev = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(dev)
-    rows = [{"id": "1" * 24, "name": "Elsewhere", "vintage": "2010"}, {"id": "2" * 24, "name": "Elsewhere", "vintage": "2012"},
-            {"id": "3" * 24, "name": "Known", "wine": "w1", "country": "Germany"}]
-    calls: list[str] = []
-
-    def call(bid):
-        calls.append(bid)
-        return GB
-
-    d = [dict(r) for r in rows]
-    dev.enrich_history(d, None, call, call_p=lambda bid: LP)
-
-    class FakeMcp:
-        def __init__(self):
-            self.n = []
-
-        async def tool(self, name, args):
-            if name == "list_personal_data":
-                return LP
-            assert name == "get_bottle"
-            self.n.append(args["bottle_id"])
-            return GB
-
-    m = FakeMcp()
-    i = [dict(r) for r in rows]
-    asyncio.run(api.enrich_history(i, None, m))
-    assert d == i and calls == ["1" * 24] and m.n == ["1" * 24]  # one call per wine
-    assert d[0]["p"] == {"Subregion": "Cote des Bar", "Bubbles": "Champagner"}  # personal fields of the wine
-    assert d[0]["wine"] == "w9" and d[0]["classification"] == "Smaragd, Ried" and d[1]["region"] == "Wachau" and "wine" in d[2]
-    # facts of the last data are reused without a call
-    d2 = [dict(rows[0])]
-    dev.enrich_history(d2, d, lambda bid: 1 / 0, call_p=lambda bid: 1 / 0)
-    assert d2[0]["region"] == "Wachau" and d2[0]["p"]["Subregion"] == "Cote des Bar"
-    # rows of the last data without p get them with one call
-    old = [{k: v for k, v in d[0].items() if k != "p"}]
-    d3, i3 = [dict(rows[0])], [dict(rows[0])]
-    dev.enrich_history(d3, old, lambda bid: 1 / 0, call_p=lambda bid: LP)
-    asyncio.run(api.enrich_history(i3, old, FakeMcp()))
-    assert d3 == i3 and d3[0]["p"]["Bubbles"] == "Champagner"
+    assert "history" not in dev and "history" not in _integration_inventory()
+    assert "historyTruncated" not in dev

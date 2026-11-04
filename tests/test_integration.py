@@ -16,7 +16,8 @@ INVENTORY = {"schema": 1, "cellars": [{"id": "c1", "name": "HK4", "role": "owner
              "bottles": [{"id": "b" * 24, "wine": "w1", "cellar": "c1", "vintage": "2021", "window": {},
                           "location": {"rack": "r1", "rackName": "Cabinet", "position": 8, "shelf": 2, "row": 1, "col": 2},
                           "personal": [{"key": "Stil", "value": "Sekt", "level": "wine"}]}]}
-INV_URL = "https://cellarion.example/api/inventory"
+INV_URL = "https://cellarion.example/api/inventory?include=consumed"  # stock and archive in one call
+INV_PLAIN_URL = "https://cellarion.example/api/inventory"
 RACKS_URL = "https://cellarion.example/api/racks?cellar=c1&summary=1"
 
 
@@ -166,8 +167,7 @@ async def test_rack_layout_is_read_again_after_a_day(hass, aioclient_mock):
     aioclient_mock.get(RACKS_URL, json=RACKS)
     hub._geo_at -= 25 * 3600
     answers = [(None, 'W/"v1"'), (INVENTORY, 'W/"v2"')]  # first 304, then the full read without If-None-Match
-    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory, \
-            patch.object(hub, "_mcp_client", AsyncMock(return_value=None)):  # the MCP session (history) is not part of this test
+    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory:
         await hub.refresh()
     assert [c.args[0] for c in get_inventory.call_args_list] == ['W/"v1"', None]
     assert len(calls(aioclient_mock, RACKS_URL)) == 1
@@ -181,6 +181,19 @@ async def test_old_server_without_inventory_endpoint_gives_a_clear_error(hass, a
     aioclient_mock.get(INV_URL, status=404)
     with pytest.raises(CellarionError, match="v1.275"):
         await hub.refresh()
+
+
+async def test_server_without_include_consumed_falls_back_to_stock_only(hass, aioclient_mock):
+    from custom_components.cellarion_cellar_card.hub import Hub
+
+    hub = Hub(hass, "x", "https://cellarion.example", "cel_x")
+    aioclient_mock.get(INV_URL, status=400)  # Cellarion older than v1.294 does not know include=consumed
+    aioclient_mock.get(INV_PLAIN_URL, json=INVENTORY, headers={"ETag": 'W/"p1"'})
+    aioclient_mock.get(RACKS_URL, json=RACKS)
+    with patch.object(hub, "_mcp_client", AsyncMock(return_value=None)):
+        await hub.refresh()
+    assert hub.data["total"] > 0 and "history" not in hub.data
+    assert hub._inv_path == "/api/inventory" and hub._archive_ok is False
 
 
 # ----- taking over a 1.x setup (integration "my_cellarion") -----

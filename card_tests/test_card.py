@@ -190,7 +190,7 @@ def test_settings_page_marks_fixed_and_switchable_scopes(card):
     assert count(page, ".setv2") == 1
     assert count(page, "[data-act=fdelask]") == 0  # data fields are managed in Cellarion, not in the card
     assert count(page, ".sone") >= 3  # settings with a single possible scope show only their icon, no switch
-    assert count(page, ".sscopeb button.sw2") == 2  # the collapsed Filter and Info sections keep a real switch
+    assert count(page, ".sscopeb button.sw2") == 3  # the collapsed Filter, Info (list) and Info (details) sections keep a real switch
     first = ".sscopeb button.sw2[data-k=filters]"
     click(page, first)
     page.wait_for_timeout(300)

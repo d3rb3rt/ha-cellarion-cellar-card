@@ -378,5 +378,7 @@
  "arch.nSub": "Bei der Volltextsuche kommen Archivtreffer dazu, wenn der Bestand weniger Treffer hat als hier eingetragen. 0 = nur, wenn im Bestand nichts gefunden wird.",
  "det.data": "Weindaten",
  "flag.detrows": "Datenfelder in den Details als Zeilen (Test)",
- "flag.detrowsSub": "Jedes Datenfeld (von Cellarion und eigene) eine Zeile untereinander in einem Block „Weindaten“, in der Reihenfolge und mit den Häkchen der Datenfelder für die Details. Kopfzeile nur Name und Weingut."
+ "flag.detrowsSub": "Jedes Datenfeld (von Cellarion und eigene) eine Zeile untereinander in einem Block „Weindaten“, in der Reihenfolge und mit den Häkchen der Datenfelder für die Details. Kopfzeile nur Name und Weingut.",
+ "filter.country": "Land",
+ "info.lbl.country": "Land"
 }

@@ -103,7 +103,7 @@
       .replace(/[̀-ͯ]/g, '');
 
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
-  const INFO_ORDER = ['producer', 'vineyard_name', 'village', 'region', 'appellation', 'grape', 'vineyard_rank', 'ripeness', 'ageing']; // built-in attributes (tab order)
+  const INFO_ORDER = ['producer', 'vineyard_name', 'village', 'country', 'region', 'appellation', 'grape', 'vineyard_rank', 'ripeness', 'ageing']; // built-in attributes (tab order)
   const INFO_PERS = ['vineyard_name', 'village']; // personal fields that get a built-in row label
   const INFO_TIER = ['vineyard_rank', 'ripeness', 'ageing']; // classification kind by the group index of _clsPos
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
@@ -988,7 +988,7 @@
     }
     _infoDefs(det) { // det: the order of the details (only with flag infosplit), without the price
       const std = [0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g })) // clsg: shown as "Classification: <kind>", like in the filter settings
-        .concat([['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
+        .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       const all = std.concat(pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
@@ -1004,7 +1004,7 @@
     // Id of the data field (see _infoDefs) behind an info attribute key
     _infoDefId(k) {
       const ti = INFO_TIER.indexOf(k);
-      if (k === 'region' || k === 'appellation' || k === 'grape') return k;
+      if (k === 'country' || k === 'region' || k === 'appellation' || k === 'grape') return k;
       if (ti >= 0) return 'cls' + ti;
       const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
       return d ? d.id : '';
@@ -1300,6 +1300,7 @@
       const std = [
         { id: 'types', label: t('filter.types'), defs: TYPES, dot: '--w-', get: (b) => b._type },
         { id: 'grape', label: t('filter.grape'), get: (b) => b.grapes || [] },
+        { id: 'country', label: t('filter.country'), get: (b) => b.country || null },
         { id: 'region', label: t('filter.region'), get: (b) => b.region },
         { id: 'appellation', label: t('filter.appellation'), get: (b) => b.appellation || null },
         { id: 'producer', label: t('filter.producer'), get: (b) => b.producer, sort: byProd },
@@ -2004,6 +2005,7 @@
       const txt = (d) => {
         if (d.id === 'price') return this._priceOnly(pr);
         if (/^cls[0-3]$/.test(d.id)) { const c = (b._cls || []).filter((v) => this._clsPos(v)[0] === Number(d.id.slice(3))); return c.length ? this._hl(c.join(', ')) : ''; }
+        if (d.id === 'country') return b.country ? this._hl(b.country) : '';
         if (d.id === 'region') return b.region ? this._hl(b.region) : '';
         if (d.id === 'appellation') return b.appellation ? this._hl(b.appellation) : '';
         if (d.id === 'grape') return b.grapes && b.grapes.length ? this._hl(b.grapes.join(', ')) : '';
@@ -2669,7 +2671,7 @@
       }
       // Region and classification are already in the title line: only country and (differing) appellation here
       const drows = this._flag('detrows'); // flag detrows: every data field is one row in its own block (details order), not in the header line / sub line / "My data"
-      const origin = Array.from(new Set([sel.country, !drows && sel.appellation !== sel.region && !this._dOff('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
+      const origin = Array.from(new Set([!drows && !this._dOff('country') ? sel.country : '', !drows && sel.appellation !== sel.region && !this._dOff('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
       const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
       let bar = '';
       if (df && dt) {
@@ -2736,7 +2738,8 @@
             const g = Number(d.id.slice(3)), c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g).join(', ');
             if (g === 0 && vn) drow.push({ k: infoLbl('vineyard_name'), v: esc(vn.text + (c ? ' | ' + c : '')), ik: 'vineyard_name' });
             else if (c) drow.push({ k: t('cls.g' + g), v: esc(c), ik: im[INFO_TIER[g]] ? INFO_TIER[g] : (g === 0 && im.vineyard_name ? 'vineyard_name' : '') });
-          } else if (d.id === 'region') { if (sel.region) drow.push({ k: t('filter.region'), v: esc(sel.region), ik: im.region ? 'region' : '' }); }
+          } else if (d.id === 'country') { if (sel.country) drow.push({ k: t('filter.country'), v: esc(sel.country), ik: im.country ? 'country' : '' }); }
+          else if (d.id === 'region') { if (sel.region) drow.push({ k: t('filter.region'), v: esc(sel.region), ik: im.region ? 'region' : '' }); }
           else if (d.id === 'appellation') { if (sel.appellation) drow.push({ k: t('filter.appellation'), v: esc(sel.appellation), ik: im.appellation ? 'appellation' : '' }); }
           else if (d.id === 'grape') { if ((sel.grapes || []).length) drow.push({ k: t('filter.grape'), v: esc(sel.grapes.join(', ')), ik: im.grape ? 'grape' : '' }); }
           else if (d.personal) {
@@ -2871,6 +2874,7 @@
     _infoVal(sel, k) {
       if (!sel) return '';
       if (k === 'producer') return sel.producer || '';
+      if (k === 'country') return sel.country || '';
       if (k === 'region') return sel.region || '';
       if (k === 'appellation') return sel.appellation || '';
       if (k === 'grape') return (sel.grapes || []).join(', ');
@@ -2969,6 +2973,7 @@
       const sub = Array.from(el.querySelectorAll('.d2sub'));
       if (im.appellation && !done.has('appellation')) mark(sub.find((n) => n.textContent.trim() === sel.appellation), 'appellation', infoLbl('appellation'));
       if (im.grape && !done.has('grape')) mark(sub.find((n) => n.textContent.trim() === (sel.grapes || []).join(', ')), 'grape', infoLbl('grape'));
+      if (im.country && !done.has('country')) mark(sub.find((n) => n.textContent.trim() === sel.country), 'country', infoLbl('country'));
       if (im.region && !done.has('region')) mark(Array.from(el.querySelectorAll('.dh .wreg')).find((n) => n.textContent.trim() === sel.region), 'region', infoLbl('region'));
     }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.

@@ -1545,7 +1545,8 @@
         if (e.key === 'Escape' && this._det && !this._det.busy) { this._det = null; this._renderDlg(); return; }
         if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('input[type=search]')) {
           e.target.blur();
-          const hits = this._listEl ? this._listEl.querySelectorAll('[data-act="detail"]') : []; // only one hit left: Enter opens its detail view
+          if (this._qTimer) { clearTimeout(this._qTimer); this._qTimer = 0; this._renderAll(); } // typed just now: filter first
+          const hits = this.shadowRoot.querySelectorAll('.list [data-act="detail"]'); // only one hit left: Enter opens its detail view
           if (hits.length === 1 && !this._det) ACTIONS.detail.call(this, hits[0]);
         }
       });

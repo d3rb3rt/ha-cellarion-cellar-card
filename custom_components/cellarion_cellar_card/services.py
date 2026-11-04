@@ -52,7 +52,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
     async def settings(call: ServiceCall) -> dict[str, Any]:
         d = call.data
         return {"ok": True, "settings": await _guard(_hub(call.hass).set_settings(
-            d["filter_order"], d["filter_hidden"], d.get("language"), d.get("rack_settings"), d.get("keep_state"), d.get("hide_other"),
+            d.get("filter_order"), d.get("filter_hidden"), d.get("language"), d.get("rack_settings"), d.get("keep_state"), d.get("hide_other"),
             d.get("info_order"), d.get("info_show"), d.get("arch_n")))}
 
     async def producer_sort(call: ServiceCall) -> dict[str, Any]:
@@ -70,8 +70,8 @@ def async_setup_services(hass: HomeAssistant) -> None:
                                  schema=vol.Schema({vol.Optional("max_age", default=300): vol.All(vol.Coerce(int), vol.Range(min=0))}))
     hass.services.async_register(DOMAIN, "bottle", bottle, schema=vol.Schema({vol.Required("id"): BOTTLE_ID}), supports_response=only)
     hass.services.async_register(DOMAIN, "settings", settings, supports_response=only, schema=vol.Schema({
-        vol.Required("filter_order"): [cv.string],
-        vol.Required("filter_hidden"): [cv.string],
+        vol.Optional("filter_order"): [cv.string],
+        vol.Optional("filter_hidden"): [cv.string],
         vol.Optional("language"): cv.string,
         vol.Optional("rack_settings"): dict,
         vol.Optional("keep_state"): cv.boolean,

@@ -142,15 +142,19 @@ class Hub:
     def settings(self) -> JsonDict:
         return self._settings
 
-    async def set_settings(self, filter_order: list[str], filter_hidden: list[str], language: str | None,
+    async def set_settings(self, filter_order: list[str] | None, filter_hidden: list[str] | None, language: str | None,
                            rack_settings: JsonDict | None, keep_state: bool | None = None,
                            hide_other: bool | None = None, info_order: list[str] | None = None,
                            info_show: list[str] | None = None, arch_n: int | None = None) -> JsonDict:
         """Settings shared by all devices: filter order/visibility, language, per-rack place display."""
         s = self._settings
-        s["filterOrder"] = [str(x) for x in filter_order][:60]
-        s["filterHidden"] = [str(x) for x in filter_hidden][:60]
-        if language and re.fullmatch(r"[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?", language):
+        if filter_order is not None:  # None = leave unchanged, so a call without it never clears the filter choice
+            s["filterOrder"] = [str(x) for x in filter_order][:60]
+        if filter_hidden is not None:
+            s["filterHidden"] = [str(x) for x in filter_hidden][:60]
+        if language is None:
+            pass
+        elif language and re.fullmatch(r"[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?", language):
             s["language"] = language
         else:
             s.pop("language", None)  # empty = automatic (language of the Home Assistant user)

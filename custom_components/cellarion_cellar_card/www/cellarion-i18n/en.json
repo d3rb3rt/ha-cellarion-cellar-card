@@ -381,5 +381,7 @@
  "dstate.moreTip": "Behind the expand arrow",
  "dstate.offTip": "Off, not shown in the details",
  "det.dmoreShow": "Show more data fields",
- "det.dmoreHide": "Hide more data fields"
+ "det.dmoreHide": "Hide more data fields",
+ "det.dmoreN": "{n} more",
+ "det.dmoreLess": "Less"
 }

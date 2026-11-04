@@ -381,5 +381,7 @@
  "dstate.moreTip": "Hinter dem Aufklapp-Pfeil",
  "dstate.offTip": "Aus, wird in den Details nicht gezeigt",
  "det.dmoreShow": "Weitere Datenfelder anzeigen",
- "det.dmoreHide": "Weitere Datenfelder ausblenden"
+ "det.dmoreHide": "Weitere Datenfelder ausblenden",
+ "det.dmoreN": "{n} weitere",
+ "det.dmoreLess": "Weniger"
 }

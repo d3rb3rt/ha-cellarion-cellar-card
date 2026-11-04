@@ -497,7 +497,8 @@
     .d2st .bi { display: none; }
     .d2st { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
     .wvj { margin-right: .15em; }
-    .d2moreb { display: block; margin: 4px 0 0; padding: 2px 14px; border: 0; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); font: inherit; font-size: .85em; cursor: pointer; }
+    .d2moreb { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 0; padding: 5px 14px; border: 1px solid var(--cb-line); border-radius: 14px; background: transparent; color: var(--cb-text); font: inherit; font-size: .9em; cursor: pointer; }
+    .d2moreb:hover { background: var(--cb-chip); }
     .d2pill { flex: none; font-size: .85em; padding: 3px 10px; border-radius: 12px; background: var(--cb-chip); color: var(--cb-sub); white-space: nowrap; }
     .d2pill.hot { background: var(--cb-on); color: var(--cb-on-text); }
     .d2pop { position: absolute; left: 12px; right: 12px; bottom: 100%; margin-bottom: 6px; max-height: 45vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: var(--cb-card); border: 1px solid var(--cb-line); border-radius: 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.45); z-index: 2; }
@@ -2762,7 +2763,7 @@
         const dOpen = !!(d && d.dmore), nMore = drow.filter((r) => r.more).length;
         const dl = (rs) => `<dl class="dfacts" style="margin:0">${rs.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl>`;
         dataBlock = `<div class="d2mine d2data">` + (drow.length ? dl(drow.filter((r) => !r.more || dOpen)) : '') +
-          (nMore ? `<button type="button" class="d2moreb${dOpen ? ' open' : ''}" data-act="drmore" aria-expanded="${dOpen}" aria-label="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}" title="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}">${dOpen ? '▴' : '▾'}</button>` : '') +
+          (nMore ? `<button type="button" class="d2moreb${dOpen ? ' open' : ''}" data-act="drmore" aria-expanded="${dOpen}" aria-label="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}" title="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}"><span aria-hidden="true">${dOpen ? '▴' : '▾'}</span> ${esc(dOpen ? t('det.dmoreLess') : t('det.dmoreN', { n: nMore }))}</button>` : '') +
           (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
       }
       const mineRows = rows.filter((r) => r[1]);

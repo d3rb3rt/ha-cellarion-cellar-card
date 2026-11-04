@@ -105,6 +105,7 @@
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
   const INFO_ORDER = ['producer', 'vineyard_name', 'village', 'country', 'region', 'appellation', 'grape', 'vineyard_rank', 'ripeness', 'ageing']; // built-in attributes (tab order)
   const INFO_PERS = ['vineyard_name', 'village']; // personal fields that get a built-in row label
+  const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const INFO_TIER = ['vineyard_rank', 'ripeness', 'ageing']; // classification kind by the group index of _clsPos
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
   const infoNorm = (s) => String(s == null ? '' : s).trim().toLowerCase().replace(/[\s-]+/g, '_');
@@ -992,7 +993,9 @@
       const std = [0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g })) // clsg: shown as "Classification: <kind>", like in the filter settings
         .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
-      const all = std.concat(pers);
+      // Flag detrows: the details also list the vineyard name and the bottle data (price, purchase date ...) as data fields
+      const more = det && this._flag('detrows') ? [{ id: 'vname', label: infoLbl('vineyard_name') }].concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
+      const all = std.concat(more, pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
       // The price is special (bottle data, not wine data): always last, not sortable
       const byList = all.slice().sort((a, b) => pos(a) - pos(b));
@@ -1007,6 +1010,7 @@
     _infoDefId(k) {
       const ti = INFO_TIER.indexOf(k);
       if (k === 'country' || k === 'region' || k === 'appellation' || k === 'grape') return k;
+      if (k === 'vineyard_name') return this._flag('detrows') ? 'vname' : '';
       if (ti >= 0) return 'cls' + ti;
       const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
       return d ? d.id : '';

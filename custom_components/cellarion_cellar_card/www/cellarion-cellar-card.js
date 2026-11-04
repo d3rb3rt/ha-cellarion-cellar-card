@@ -2977,6 +2977,7 @@
       const css = '<style>.xscrim{position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.25)}' +
         '.xdrop{position:absolute;z-index:7;top:var(--xt,0px);left:0;right:0;margin:0 auto;width:100%;max-width:560px;max-height:calc(100% - var(--xt,0px) - 12px);overflow-y:auto;box-sizing:border-box;' +
         'padding:14px 16px;background:var(--cb-card);color:var(--cb-text);border-radius:14px;box-shadow:0 6px 28px rgba(0,0,0,.5);border:1px solid var(--cb-line);overscroll-behavior:contain}' +
+        '.xdrop .dpur{color:var(--cb-text);font-size:.95em;line-height:1.5}.xdrop .dpur a{color:var(--primary-color,#8ab4f8)}' +
         '.xdrop.xin{animation:xdown .22s ease-out}@keyframes xdown{from{clip-path:inset(0 0 100% 0);opacity:.4;transform:translateY(-8px)}to{clip-path:inset(0 0 0 0);opacity:1;transform:none}}@media(min-width:700px){.xdrop{width:calc(100% - 64px);max-width:496px}}</style>';
       const old = el.querySelector('.xscrim'); if (old) { old.remove(); const od = el.querySelector('.xdrop'); if (od) od.remove(); }
       el.insertAdjacentHTML('beforeend', css + '<div class="xscrim" data-act="dxback"></div><div class="xdrop' + (anim ? ' xin' : '') + '" style="--xt:' + (x.top || 0) + 'px" role="dialog" aria-modal="true"><div class="dh"><button class="dx" data-act="dxback" aria-label="' + esc(t('info.back')) + '">←</button>' +

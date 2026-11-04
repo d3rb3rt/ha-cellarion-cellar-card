@@ -629,6 +629,8 @@
     .setv2 input[type=checkbox] { -webkit-appearance: none; appearance: none; box-sizing: border-box; border: 2px solid color-mix(in srgb, var(--cb-text) 60%, transparent); border-radius: 5px; background: transparent center / 14px no-repeat; }
     .setv2 input[type=checkbox]:checked { background-color: var(--cb-on); border-color: var(--cb-on); background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>"); }
     .setv2 .ssel { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; text-align: left; cursor: pointer; }
+    .setv2 .snum { width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; }
+    .setv2 .snum:focus { outline: none; border-color: var(--cb-on); }
     .setv2 .ssel.open { border-color: var(--cb-on); }
     .setv2 .ssarr { flex: none; color: var(--cb-sub); font-size: .8em; }
     .setv2 .ssopts { display: flex; flex-direction: column; margin-top: 4px; border: 1px solid var(--cb-line); border-radius: 6px; background: var(--cb-card); max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -2429,7 +2431,7 @@
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
-        (this._flag('history') ? grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw(null, 'device'), sel('setarchn', [0, 3, 5, 10, 20].map((v) => [v, v ? t('arch.nN', { n: v }) : t('arch.n0')]), this._archN())) : '') +
+        (this._flag('history') ? grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw(null, 'device'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) : '') +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -3154,6 +3156,7 @@
       this._renderAll();
     }
     _onInput(e) {
+      if (e.target.dataset && e.target.dataset.archn !== undefined) { this._local.archN = Math.max(0, Math.min(99, parseInt(e.target.value, 10) || 0)); this._saveState(); this._renderAll(); return; }
       if (e.target.dataset && e.target.dataset.wzq !== undefined && this._wz) { this._wz.q = e.target.value; this._renderWzList(); return; }
       if (!e.target.matches || !e.target.matches('input[type=search]')) return;
       this._f.q = e.target.value;
@@ -3238,7 +3241,6 @@
       const k = t.dataset.key, v = t.dataset.v;
       this._selOpen = null;
       if (k === 'setlang') ACTIONS.lang.call(this, { dataset: { v } });
-      else if (k === 'setarchn') { this._local.archN = Number(v) || 0; this._saveState(); this._renderSet(); this._renderAll(); }
       else if (k === 'setscale') { ACTIONS.scale.call(this, { dataset: { v } }); this._renderSet(); }
     },
     // Settings, filters: set the state of a filter (v: 'vis' visible, 'more' behind "...", 'off' never offered)

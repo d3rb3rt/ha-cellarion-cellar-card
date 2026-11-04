@@ -375,7 +375,5 @@
  "det.drunkLess": "weniger",
  "set2.grpArch": "Archiv",
  "arch.nTitle": "Archivtreffer in der Suche",
- "arch.nSub": "Bei der Volltextsuche kommen Archivtreffer dazu, wenn der Bestand weniger Treffer hat als hier gewählt.",
- "arch.n0": "nur wenn nichts im Bestand gefunden wird",
- "arch.nN": "bei weniger als {n} Treffern"
+ "arch.nSub": "Bei der Volltextsuche kommen Archivtreffer dazu, wenn der Bestand weniger Treffer hat als hier eingetragen. 0 = nur, wenn im Bestand nichts gefunden wird."
 }

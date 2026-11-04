@@ -375,7 +375,5 @@
  "det.drunkLess": "less",
  "set2.grpArch": "Archive",
  "arch.nTitle": "Archive hits in the search",
- "arch.nSub": "A text search also shows archive hits when the stock has fewer hits than chosen here.",
- "arch.n0": "only when nothing is found in stock",
- "arch.nN": "with fewer than {n} hits"
+ "arch.nSub": "A text search also shows archive hits when stock has fewer hits than entered here. 0 = only when nothing is found in stock."
 }

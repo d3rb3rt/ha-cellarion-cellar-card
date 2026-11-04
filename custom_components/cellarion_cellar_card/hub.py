@@ -8,10 +8,12 @@ import json
 import logging
 import re
 import time
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
 import aiohttp
+from homeassistant.components.http.auth import async_sign_path
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import dt as dt_util
@@ -20,7 +22,7 @@ from homeassistant.helpers.storage import Store
 
 from . import api
 from .const import (
-    GEO_MAX_AGE, IMAGE_DIR_NAME, IMAGE_URL_BASE, INVENTORY_PATH, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
+    GEO_MAX_AGE, IMAGE_DIR_NAME, IMAGE_URL_BASE, IMAGE_URL_TTL_HOURS, INVENTORY_PATH, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
     STREAM_RETRY_MAX, STREAM_RETRY_MIN, STREAM_SILENCE, USER_AGENT, signal_updated,
 )
 
@@ -314,7 +316,7 @@ class Hub:
             return None
         if not await api.download_image(self._session, self.url, path, self._image_dir() / name):
             return None
-        return f"{IMAGE_URL_BASE}/{name}"
+        return async_sign_path(self.hass, f"{IMAGE_URL_BASE}/{name}", timedelta(hours=IMAGE_URL_TTL_HOURS))
 
     async def bottle(self, bottle_id: str) -> JsonDict:
         mcp = await self._mcp_client()

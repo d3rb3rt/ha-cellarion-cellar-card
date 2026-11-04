@@ -1,4 +1,4 @@
-"""Serve the bundled card (and cached label images) and register the card as a dashboard resource."""
+"""Serve the bundled card, the authenticated label image view, and register the card as a dashboard resource."""
 
 from __future__ import annotations
 
@@ -10,22 +10,23 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 from homeassistant.util.hass_dict import HassKey
 
-from .const import CARD_FILENAME, DOMAIN, FRONTEND_URL_BASE, IMAGE_DIR_NAME, IMAGE_URL_BASE, LEGACY_FRONTEND_URL_BASE
+from .const import CARD_FILENAME, DOMAIN, FRONTEND_URL_BASE, IMAGE_DIR_NAME, LEGACY_FRONTEND_URL_BASE
+from .images import CellarImageView
 
 _LOGGER = logging.getLogger(__name__)
 REGISTERED: HassKey[bool] = HassKey(f"{DOMAIN}_frontend_registered")
 
 
 async def async_register_frontend(hass: HomeAssistant) -> None:
-    """Serve the card folder (card + cellarion-i18n/) and the image cache, add the card as a resource once."""
+    """Serve the card folder (card + cellarion-i18n/), register the image view, add the card as a resource once."""
     if hass.data.get(REGISTERED):
         return
     image_dir = Path(hass.config.path(IMAGE_DIR_NAME))
     await hass.async_add_executor_job(lambda: image_dir.mkdir(parents=True, exist_ok=True))
     await hass.http.async_register_static_paths([
         StaticPathConfig(FRONTEND_URL_BASE, str(Path(__file__).parent / "www"), cache_headers=False),
-        StaticPathConfig(IMAGE_URL_BASE, str(image_dir), cache_headers=True),
     ])
+    hass.http.register_view(CellarImageView(image_dir))  # label images need a login or a signed URL
     hass.data[REGISTERED] = True
 
     integration = await async_get_integration(hass, DOMAIN)

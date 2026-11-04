@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }, { id: 'archgone' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }, { id: 'archgone' }, { id: 'detrows' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
   const STANDARD = ['infosplit', 'history']; // former flags, now always on: infosplit = data fields for list and details are set separately (own selection and order); history = archive of the drunk wines
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
@@ -2013,7 +2013,7 @@
       const swap = this._sort === 'producer' && b.producer;
       const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', this._hl(b.name)]]
         : [['wname', this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
-      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && !(detail && this._dOff(d.id)) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
+      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && !(detail && (this._dOff(d.id) || this._flag('detrows'))) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
       const all = head.concat(infos);
       const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
       return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
@@ -2668,7 +2668,8 @@
         if (!(sel._cls || []).length && wf.classification) sel._cls = String(wf.classification).split(/\s*,\s*/).filter(Boolean);
       }
       // Region and classification are already in the title line: only country and (differing) appellation here
-      const origin = Array.from(new Set([sel.country, sel.appellation !== sel.region && !this._dOff('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
+      const drows = this._flag('detrows'); // flag detrows: every data field is one row in its own block (details order), not in the header line / sub line / "My data"
+      const origin = Array.from(new Set([sel.country, !drows && sel.appellation !== sel.region && !this._dOff('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
       const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
       let bar = '';
       if (df && dt) {
@@ -2718,11 +2719,34 @@
         [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
         [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
-      ].concat(this._infoDefs(true).filter((d) => d.personal && !this._dOff(d.id)).map((d) => d.label).map((l) => { // personal fields in the order of the data-field settings (not those set to off)
+      ].concat(drows ? [] : this._infoDefs(true).filter((d) => d.personal && !this._dOff(d.id)).map((d) => d.label).map((l) => { // personal fields in the order of the data-field settings (not those set to off)
         const vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
         return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
       }));
       const loadingInfo = !info || info.loading;
+      // Flag detrows: all data fields (Cellarion and personal) as rows in the order of the data-field settings; empty and switched-off ones are left out.
+      // Vineyard rank and the vineyard name (extension) are one row "Vineyard: Name | Rank" as before.
+      let dataBlock = '';
+      if (drows) {
+        const im = infoMap(sel.p), ex = this._infoExtra(im, sel) || [];
+        const vn = ex.find((x) => x.key === 'vineyard_name');
+        const drow = [];
+        this._infoDefs(true).filter((d) => !this._dOff(d.id)).forEach((d) => {
+          if (/^cls[0-3]$/.test(d.id)) {
+            const g = Number(d.id.slice(3)), c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g).join(', ');
+            if (g === 0 && vn) drow.push({ k: infoLbl('vineyard_name'), v: esc(vn.text + (c ? ' | ' + c : '')), ik: 'vineyard_name' });
+            else if (c) drow.push({ k: t('cls.g' + g), v: esc(c), ik: im[INFO_TIER[g]] ? INFO_TIER[g] : (g === 0 && im.vineyard_name ? 'vineyard_name' : '') });
+          } else if (d.id === 'region') { if (sel.region) drow.push({ k: t('filter.region'), v: esc(sel.region), ik: im.region ? 'region' : '' }); }
+          else if (d.id === 'appellation') { if (sel.appellation) drow.push({ k: t('filter.appellation'), v: esc(sel.appellation), ik: im.appellation ? 'appellation' : '' }); }
+          else if (d.id === 'grape') { if ((sel.grapes || []).length) drow.push({ k: t('filter.grape'), v: esc(sel.grapes.join(', ')), ik: im.grape ? 'grape' : '' }); }
+          else if (d.personal) {
+            const l = d.label, vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
+            if (vs.length) drow.push({ k: l, v: esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : ''), ik: '' });
+          }
+        });
+        if (!vn || !(this._infoDefs(true).some((d) => d.id === 'cls0' && !this._dOff(d.id)))) ex.filter((x) => x.key !== 'vineyard_name' || !drow.some((r) => r.ik === 'vineyard_name')).forEach((x) => drow.push({ k: x.label || infoLbl(x.key), v: esc(x.text), ik: x.key }));
+        dataBlock = drow.length ? `<div class="d2mine d2data"><div class="d2h">${esc(t('det.data'))}</div><dl class="dfacts" style="margin:0">${drow.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl></div>` : '';
+      }
       const mineRows = rows.filter((r) => r[1]);
       // Values from lot()/fields are already escaped, the brand too; labels are escaped here
       const mine = `<div class="d2mine"><div class="d2h">${esc(t('det.mine'))}</div>` +
@@ -2807,8 +2831,8 @@
       // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
-      const grapes = this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + mine + `</div>`;
+      const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
+      const main = `<div class="d2main"><div><b>${esc(sel.vintage || 'NV')}</b>${[origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => ' · <span class="d2sub">' + esc(x) + '</span>').join('')}</div>` + dataBlock + mine + `</div>`;
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
       return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
@@ -2912,8 +2936,10 @@
         const key = keys.find((k) => !done.has(k) && (INFO_ORDER.indexOf(k) < 0 || INFO_PERS.indexOf(k) >= 0) && names.indexOf(k) >= 0);
         if (key && r.dd) { mark(r.dd, key, INFO_PERS.indexOf(key) >= 0 ? infoLbl(key) : r.k); done.add(key); }
       });
+      // Flag detrows: the built-in rows of the data block carry their attribute (data-dik)
+      el.querySelectorAll('.d2data dd[data-dik]').forEach((dd) => { const k = dd.dataset.dik; if (im[k] && !done.has(k)) { mark(dd, k, infoLbl(k)); done.add(k); } });
       // Rows an extension adds (no personal field needed)
-      this._infoExtra(im, sel).forEach((x) => {
+      (this._flag('detrows') ? [] : this._infoExtra(im, sel)).forEach((x) => {
         const dl = el.querySelector('.d2mine dl.dfacts');
         if (done.has(x.key) || !dl) return;
         const lbl = x.label || infoLbl(x.key);

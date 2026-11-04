@@ -305,6 +305,12 @@
     .hempty .dpur { display: block; margin-top: 2px; }
     .hempty.dsec { margin-top: 14px; }
     .d2top .d2sub { color: var(--cb-text); font-weight: 700; font-size: 1.05em; }
+    .d2top { position: relative; }
+    .d2sub.dlink { border: 0; background: none; padding: 0; font: inherit; font-size: 1em; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+    .dnpop { position: absolute; left: 0; right: 0; top: 100%; z-index: 8; margin-top: 4px; max-height: 40vh; overflow-y: auto; padding: 10px 12px; border: 1px solid var(--s-drunk); border-radius: 10px; background: var(--cb-card); box-shadow: 0 6px 20px rgba(0,0,0,.45); cursor: pointer; }
+    .dnitem + .dnitem { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--cb-line); }
+    .dnitem b { display: block; color: var(--s-drunk); font-weight: 600; margin-bottom: 2px; }
+    .dnitem span { white-space: pre-line; color: var(--cb-text); font-weight: 400; }
     .d2top .d2sub.dgone { color: var(--s-drunk); font-weight: 600; font-size: 1em; }
     .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
     .d2top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; margin: 4px 0 0; }
@@ -2843,13 +2849,14 @@
       // Drunk bottles of this vintage (own history) as a section above the take-out bar; other vintages are reached via the vintage bar
       let drunkSec = '';
       const dh = !hist ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).sort((a, b) => String(b.at || '').localeCompare(String(a.at || ''))) : [];
+      const noteOv = dh.some((h) => h.note); // drunk entries with a note: the note sits in an overlay behind the drunk mark in the header line
       if (dh.length) {
         const dOpen = !!(d && d.drunkOpen);
         const dt3 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
         const ln = (b) => {
           const rk = 'hist.reason.' + (b.reason || 'drank'), why = I18N.dict[rk] !== undefined ? t(rk) : String(b.reason || '');
           const rt = typeof b.rating === 'number' ? ' · ' + (b.scale && !/star/i.test(b.scale) ? b.rating + ' ' + b.scale : '★ ' + b.rating) : '';
-          return `<span class="dpur">${esc('✓ ' + why + (b.at ? ' ' + dt3(b.at) : '') + rt)}</span>` + (b.note ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
+          return `<span class="dpur">${esc('✓ ' + why + (b.at ? ' ' + dt3(b.at) : '') + rt)}</span>` + (b.note && !noteOv ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
         };
         const shown = dOpen ? dh.slice(0, 40) : dh.slice(0, 3); // the latest three are always visible, more behind a button
         drunkSec = `<div class="hempty dsec"><b>${esc(t('det.drunkSec', { n: dh.length }))}</b>${shown.map(ln).join('')}` +
@@ -2859,7 +2866,7 @@
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const mainParts = [origin, grapes, hist ? '' : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? ['<span class="d2sub dgone">✓ ' + esc(_dn) + '</span>'] : []);
+      const mainParts = [origin, grapes, hist ? '' : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? [noteOv ? `<button type="button" class="d2sub dgone dlink" data-act="dnote" aria-expanded="${!!(d && d.dnote)}" title="${esc(t('det.dnote'))}">${esc(_dn)}</button>` : '<span class="d2sub dgone">' + esc(_dn) + '</span>'] : []);
       this._vbar = '';
       let top = `<div class="d2top">${mainParts.length || !drows ? `<div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` : ''}<!--vb--></div>`;
       const main = `<div class="d2main">` + dataBlock + mine + `</div>`;
@@ -2875,6 +2882,13 @@
       const vbar = vlist.length ? `<div class="vbar"><span class="vlbl">${esc(t('det.vints'))}</span>` + vlist.map(([v, g]) =>
         `<button type="button" class="vchip${g ? ' gone' : ''}" data-act="dvint" data-v="${esc(v)}" data-h="${g ? 1 : 0}" title="${esc(g ? t('hist.empty') : t('det.bottlesN', { n: vm.get(v) }))}">${esc(v)}${g ? '' : ' · ' + vm.get(v)}</button>`).join('') + `</div>` : '';
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
+      if (noteOv && d && d.dnote) {
+        const dt4 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
+        top = top.replace(/<\/div>$/, '') + `<div class="dnpop" data-act="dnote" role="dialog">${dh.filter((h) => h.note).map((h) => {
+          const rt = typeof h.rating === 'number' ? ' · ' + (h.scale && !/star/i.test(h.scale) ? h.rating + ' ' + h.scale : '★ ' + h.rating) : '';
+          return `<div class="dnitem"><b>${esc(dt4(h.at) + rt)}</b><span>${esc(h.note)}</span></div>`;
+        }).join('')}</div></div>`;
+      }
       top = top.replace('<!--vb-->', vbar); // own stock and other vintages share one line in the header, under the title (aligned with the vintage; wraps on narrow screens)
       this._vbar = /<div/.test(top.replace('<div class="d2top">', '')) ? top : ''; // nothing to show: no empty line
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
@@ -3116,6 +3130,7 @@
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
       else if (act === 'drmore') d.dmore = !d.dmore;
       else if (act === 'ddrunk') { d.drunkOpen = !d.drunkOpen; }
+      else if (act === 'dnote') d.dnote = !d.dnote;
       else if (act === 'dvint') { if (d.busy) return; this._det = { wine: d.wine, vintage: el.dataset.v, hist: el.dataset.h === '1', step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' }; }
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }
       else if (act === 'dask') { d.step = 'confirm'; d.err = ''; }

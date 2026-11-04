@@ -384,5 +384,6 @@
  "det.dmoreHide": "Hide more data fields",
  "det.dmoreN": "{n} more",
  "det.dmoreLess": "Less",
- "det.vints": "Other vintages"
+ "det.vints": "Other vintages",
+ "det.dnote": "Notes on drunk bottles"
 }

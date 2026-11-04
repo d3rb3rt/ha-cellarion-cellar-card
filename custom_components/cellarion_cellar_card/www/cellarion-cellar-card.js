@@ -1518,9 +1518,12 @@
         else if (this._autoFolded && !this._more && this._upAcc >= 24 && !this._fixedHdr()) { this._autoFolded = false; this._more = true; this._upAcc = 0; this._renderHead(); }
       }, { passive: true });
       // Only moving down the list folds the filters (finger up / wheel down); moving up unfolds them again (see the scroll listener)
-      this._listEl.addEventListener('touchstart', (e) => { this._ty = e.touches[0].clientY; }, { passive: true });
+      this._listEl.addEventListener('touchstart', (e) => { this._ty = this._ty0 = e.touches[0].clientY; }, { passive: true });
       this._listEl.addEventListener('touchmove', (e) => {
         const y = e.touches[0].clientY;
+        // Scrolling the list = done typing: release the search field, otherwise every header rebuild (fold/unfold) focuses it again and the Android keyboard keeps popping up
+        const ae = this.shadowRoot.activeElement;
+        if (ae && ae.matches && ae.matches('input[type=search]') && Math.abs(y - (this._ty0 === undefined ? y : this._ty0)) > 8) ae.blur();
         if (this._ty !== undefined && y < this._ty - 4) fold();
         this._ty = y;
       }, { passive: true });

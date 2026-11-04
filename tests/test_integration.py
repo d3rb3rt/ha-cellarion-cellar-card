@@ -166,7 +166,8 @@ async def test_rack_layout_is_read_again_after_a_day(hass, aioclient_mock):
     aioclient_mock.get(RACKS_URL, json=RACKS)
     hub._geo_at -= 25 * 3600
     answers = [(None, 'W/"v1"'), (INVENTORY, 'W/"v2"')]  # first 304, then the full read without If-None-Match
-    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory:
+    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory, \
+            patch.object(hub, "_mcp_client", AsyncMock(return_value=None)):  # the MCP session (history) is not part of this test
         await hub.refresh()
     assert [c.args[0] for c in get_inventory.call_args_list] == ['W/"v1"', None]
     assert len(calls(aioclient_mock, RACKS_URL)) == 1

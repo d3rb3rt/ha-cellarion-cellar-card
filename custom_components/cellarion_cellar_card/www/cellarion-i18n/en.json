@@ -372,5 +372,10 @@
  "flag.archgoneSub": "Archive shows only wines with no bottle left (any vintage). Drunk vintages of stock wines appear in the detail view under \"Drunk\".",
  "det.drunkSec": "Drunk ({n})",
  "det.drunkMore": "+{n} more",
- "det.drunkLess": "less"
+ "det.drunkLess": "less",
+ "set2.grpArch": "Archive",
+ "arch.nTitle": "Archive hits in the search",
+ "arch.nSub": "A text search also shows archive hits when the stock has fewer hits than chosen here.",
+ "arch.n0": "only when nothing is found in stock",
+ "arch.nN": "with fewer than {n} hits"
 }

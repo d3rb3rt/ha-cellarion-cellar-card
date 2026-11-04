@@ -951,6 +951,7 @@
     }
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
     // Setting 'show Other in the list' (central for all devices, overridable per device; default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen or a search term is entered
+    _archN() { const v = this._local && this._local.archN; return v === undefined || isNaN(Number(v)) ? 0 : Number(v); } // setting Archive: archive rows in the search below this many stock hits (device only)
     _showOther() { const L = this._local || {}, S = this._shared || {}; return !(L.hideOther !== undefined ? L.hideOther : S.hideOther); }
     _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')) && !norm(this._f.q || '').trim() && !this._allDefs().some((d) => d.personal && this._fs(d.id).size); } // a search term, the Other type or a chosen personal-field value always finds Other items too
     _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
@@ -1823,7 +1824,7 @@
       // Flag history: a search with fewer than 5 rows also shows the matching drunk vintages (dimmed vintage rows)
       if (!hm && this._flag('history') && String(this._f.q || '').trim() && this._data.history && this._data.history.length) {
         const rows = this._view === 'flat' ? entries0.length : this._groups(entries0).length;
-        if (rows < 5) {
+        if (rows < Math.max(1, this._archN())) { // setting Archive: below N stock hits the search also shows archive rows (0 = only without any stock hit)
           const inStock = new Set(this._data.bottles.map((b) => b.wine || b.name)); // only wines with no bottle left in the cellar
           const he = this._entries(this._filtered(null, null, 'hist')).filter((e) => !inStock.has(e.wine));
           nHist = he.reduce((n, e) => n + e.bottles.length, 0);
@@ -2428,6 +2429,7 @@
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
+        (this._flag('history') ? grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw(null, 'device'), sel('setarchn', [0, 3, 5, 10, 20].map((v) => [v, v ? t('arch.nN', { n: v }) : t('arch.n0')]), this._archN())) : '') +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -3236,6 +3238,7 @@
       const k = t.dataset.key, v = t.dataset.v;
       this._selOpen = null;
       if (k === 'setlang') ACTIONS.lang.call(this, { dataset: { v } });
+      else if (k === 'setarchn') { this._local.archN = Number(v) || 0; this._saveState(); this._renderSet(); this._renderAll(); }
       else if (k === 'setscale') { ACTIONS.scale.call(this, { dataset: { v } }); this._renderSet(); }
     },
     // Settings, filters: set the state of a filter (v: 'vis' visible, 'more' behind "...", 'off' never offered)

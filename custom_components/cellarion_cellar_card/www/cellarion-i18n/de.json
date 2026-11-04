@@ -372,5 +372,10 @@
  "flag.archgoneSub": "Archiv zeigt nur Weine, von denen keine Flasche mehr da ist (jeder Jahrgang). Getrunkene Jahrgänge von Bestandsweinen stehen im Detail unter „Getrunken“.",
  "det.drunkSec": "Getrunken ({n})",
  "det.drunkMore": "+{n} weitere",
- "det.drunkLess": "weniger"
+ "det.drunkLess": "weniger",
+ "set2.grpArch": "Archiv",
+ "arch.nTitle": "Archivtreffer in der Suche",
+ "arch.nSub": "Bei der Volltextsuche kommen Archivtreffer dazu, wenn der Bestand weniger Treffer hat als hier gewählt.",
+ "arch.n0": "nur wenn nichts im Bestand gefunden wird",
+ "arch.nN": "bei weniger als {n} Treffern"
 }

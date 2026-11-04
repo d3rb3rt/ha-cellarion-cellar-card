@@ -2702,7 +2702,7 @@
       }
       const st = sel._status;
       // The bar shows the status by its color; without a bar the status text stays as a fallback
-      const maturity = bar || `<div>${this._sdot(st)} ${esc(STATUS_LABEL[st])}</div>`;
+      const maturity = bar || (d && d.hist ? '' : `<div>${this._sdot(st)} ${esc(STATUS_LABEL[st])}</div>`); // drunk entry: the hint box already says it
       const pr = info && info.profile;
       const lab = (v) => { const key = 'prof.' + v; const x = t(key); return x === key ? String(v) : x; };
       let about = '';
@@ -2859,9 +2859,9 @@
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? ['<span class="d2sub dgone">✓ ' + esc(_dn) + '</span>'] : []);
+      const mainParts = [origin, grapes, hist ? '' : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? ['<span class="d2sub dgone">✓ ' + esc(_dn) + '</span>'] : []);
       this._vbar = '';
-      let top = `<div class="d2top"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div><!--vb--></div>`;
+      let top = `<div class="d2top">${mainParts.length || !drows ? `<div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` : ''}<!--vb--></div>`;
       const main = `<div class="d2main">` + dataBlock + mine + `</div>`;
       // Vintage bar: the other vintages of this wine (in stock: with count; completely drunk: purple)
       const wk = d.wine, cur = String(sel.vintage || 'NV');
@@ -2876,7 +2876,7 @@
         `<button type="button" class="vchip${g ? ' gone' : ''}" data-act="dvint" data-v="${esc(v)}" data-h="${g ? 1 : 0}" title="${esc(g ? t('hist.empty') : t('det.bottlesN', { n: vm.get(v) }))}">${esc(v)}${g ? '' : ' · ' + vm.get(v)}</button>`).join('') + `</div>` : '';
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       top = top.replace('<!--vb-->', vbar); // own stock and other vintages share one line in the header, under the title (aligned with the vintage; wraps on narrow screens)
-      this._vbar = top;
+      this._vbar = /<div/.test(top.replace('<div class="d2top">', '')) ? top : ''; // nothing to show: no empty line
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
       return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
     }

@@ -385,6 +385,9 @@
     }
     .dh .wtitle { flex-wrap: wrap; gap: 0 6px; }
     .dh .wprod { white-space: normal; }
+    .dsheet > .dh .wl1 { display: block; }
+    .dsheet > .dh .wl1 > .wname.d::after { display: none; }
+    .dsheet > .dh .wl1 > .wprod { display: block; margin-top: 2px; }
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wsub { color: var(--cb-sub); font-size: .86em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wright { display: contents; }

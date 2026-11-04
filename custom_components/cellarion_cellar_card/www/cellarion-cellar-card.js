@@ -2858,7 +2858,8 @@
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
       const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? ['<span class="d2sub dgone">✓ ' + esc(_dn) + '</span>'] : []);
-      let main = `<div class="d2main"><div class="d2top"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div><!--vb--></div>` + dataBlock + mine + `</div>`;
+      let top = `<div class="d2top"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div><!--vb--></div>`;
+      const main = `<div class="d2main">` + dataBlock + mine + `</div>`;
       // Vintage bar: the other vintages of this wine (in stock: with count; completely drunk: purple)
       const wk = d.wine, cur = String(sel.vintage || 'NV');
       const vm = new Map();
@@ -2871,9 +2872,9 @@
       const vbar = vlist.length ? `<div class="vbar"><span class="vlbl">${esc(t('det.vints'))}</span>` + vlist.map(([v, g]) =>
         `<button type="button" class="vchip${g ? ' gone' : ''}" data-act="dvint" data-v="${esc(v)}" data-h="${g ? 1 : 0}" title="${esc(g ? t('hist.empty') : t('det.bottlesN', { n: vm.get(v) }))}">${esc(v)}${g ? '' : ' · ' + vm.get(v)}</button>`).join('') + `</div>` : '';
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
-      main = main.replace('<!--vb-->', vbar); // own stock and other vintages share one line (wraps on narrow screens)
-      if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
+      top = top.replace('<!--vb-->', vbar); // own stock and other vintages share one line above the picture (wraps on narrow screens)
+      if (bigMap) return `${top}<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
+      return `${top}<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
     }
     // Bottom bar of a drunk entry: no take-out, only the link to Cellarion (not for wines that are only in the log)
     _histBar(sel) {

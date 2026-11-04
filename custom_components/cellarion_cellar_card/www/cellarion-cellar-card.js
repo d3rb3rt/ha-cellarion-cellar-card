@@ -305,7 +305,7 @@
     .hempty .dpur { display: block; margin-top: 2px; }
     .hempty.dsec { margin-top: 14px; }
     .d2sub.dgone { color: var(--s-drunk); font-weight: 600; }
-    .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 0 10px; }
+    .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -8px 0 -2px; }
     .vbar .vlbl { font-size: .85em; color: var(--cb-muted, var(--secondary-text-color)); margin-right: 2px; }
     .vchip { padding: 3px 10px; border: 1px solid var(--cb-line); border-radius: 14px; background: none; color: var(--cb-text); font: inherit; font-size: .9em; cursor: pointer; }
     .vchip.gone { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }

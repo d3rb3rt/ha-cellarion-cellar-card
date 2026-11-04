@@ -123,6 +123,10 @@
         "info_show": {
           "name": "Info shown",
           "description": "Which info is shown behind the wine name in the list."
+        },
+        "arch_n": {
+          "name": "Archive hits in search",
+          "description": "Show archive hits in the text search when stock has fewer hits than this (0 = only without stock hits)."
         }
       }
     },

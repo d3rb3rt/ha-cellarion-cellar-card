@@ -123,6 +123,10 @@
         "info_show": {
           "name": "Angezeigte Info",
           "description": "Welche Angaben hinter dem Weinnamen in der Liste stehen."
+        },
+        "arch_n": {
+          "name": "Archivtreffer in der Suche",
+          "description": "Archivtreffer in der Textsuche zeigen, wenn der Bestand weniger Treffer hat (0 = nur ohne Bestandstreffer)."
         }
       }
     },

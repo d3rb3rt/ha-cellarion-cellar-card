@@ -145,7 +145,7 @@ class Hub:
     async def set_settings(self, filter_order: list[str], filter_hidden: list[str], language: str | None,
                            rack_settings: JsonDict | None, keep_state: bool | None = None,
                            hide_other: bool | None = None, info_order: list[str] | None = None,
-                           info_show: list[str] | None = None) -> JsonDict:
+                           info_show: list[str] | None = None, arch_n: int | None = None) -> JsonDict:
         """Settings shared by all devices: filter order/visibility, language, per-rack place display."""
         s = self._settings
         s["filterOrder"] = [str(x) for x in filter_order][:60]
@@ -164,6 +164,8 @@ class Hub:
             s["keepState"] = bool(keep_state)  # keep filters and sorting when the page reloads
         if hide_other is not None:
             s["hideOther"] = bool(hide_other)  # hide Other items (not wine) from the list unless searched or filtered
+        if arch_n is not None:
+            s["archN"] = max(0, min(99, int(arch_n)))  # archive rows in the search below this many stock hits (0 = only without hits)
         if info_order is not None:
             s["infoOrder"] = [str(x) for x in info_order][:60]  # info behind the wine name: order
         if info_show is not None:

@@ -44,6 +44,11 @@ settings:
     info_show:
       selector:
         object:
+    arch_n:
+      selector:
+        number:
+          min: 0
+          max: 99
 producer_sort:
   fields:
     name:

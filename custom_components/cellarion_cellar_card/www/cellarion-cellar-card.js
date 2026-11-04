@@ -2922,14 +2922,15 @@
       });
       // Producer
       if (im.producer) { mark(el.querySelector('.dh .wprod'), 'producer', infoLbl('producer')); done.add('producer'); }
-      // One row instead of two: "Lage: Name | Stufe"; the separate "Cru / Lage" row goes away
+      // One row instead of two: "Lage: Name | Stufe" (tier = official vineyard rank; the personal field "Cru / Lage" is only a fallback and its row goes away)
       const nameDd = el.querySelector('dl.dfacts dd[data-ik="vineyard_name"]');
       const cru = rows.find((r) => r.dt.isConnected && /^cru\s*\/\s*lage$/i.test(r.k));
-      if (nameDd && cru && cru.dd) {
-        const tier = cru.dd.textContent.trim();
+      if (nameDd) {
+        const off = (sel._cls || []).filter((v) => this._clsPos(v)[0] === 0).join(', ');
+        const tier = off || (cru && cru.dd ? cru.dd.textContent.trim() : '');
         if (tier) nameDd.textContent = nameDd.textContent.trim() + ' | ' + tier;
-        cru.dt.remove(); cru.dd.remove();
       }
+      if (cru && cru.dd && cru.dt.isConnected) { cru.dt.remove(); cru.dd.remove(); }
       // Classification in the header line: one item per kind (rank, ripeness, ageing); the item is clickable when that kind has an info text
       INFO_TIER.forEach((k, g) => {
         const c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g);

@@ -307,7 +307,7 @@
     .d2top .d2sub { color: var(--cb-text); font-weight: 700; font-size: 1.05em; }
     .d2top .d2sub.dgone { color: var(--s-drunk); font-weight: 600; font-size: 1em; }
     .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
-    .d2top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; }
+    .d2top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; margin-top: -8px; margin-bottom: -4px; }
     .vbar .vlbl { font-size: .85em; color: var(--cb-muted, var(--secondary-text-color)); margin-right: 2px; }
     .vchip { padding: 3px 10px; border: 1px solid var(--cb-line); border-radius: 14px; background: none; color: var(--cb-text); font: inherit; font-size: .9em; cursor: pointer; }
     .vchip.gone { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }

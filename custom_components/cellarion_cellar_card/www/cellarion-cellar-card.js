@@ -460,6 +460,7 @@
     .dtop { display: flex; gap: 14px; align-items: flex-start; }
     .dtop .dfacts { flex: 1; min-width: 0; }
     .d2hero { display: flex; gap: 14px; align-items: flex-start; }
+    .d2hero.noimg .d2main { margin-left: 32px; } /* no label photo: data rows start under the wine name (glass icon + gap of the header) */
     .d2hero .d2main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .d2sub { color: var(--cb-sub); }
     .d2bar { position: relative; height: 10px; border-radius: 5px; background: var(--cb-chip); margin: 18px 0 4px; }
@@ -2904,7 +2905,7 @@
       top = top.replace('<!--vb-->', vbar); // own stock and other vintages share one line in the header, under the title (aligned with the vintage; wraps on narrow screens)
       this._vbar = /<div/.test(top.replace('<div class="d2top">', '')) ? top : ''; // nothing to show: no empty line
       if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
+      return `<div class="d2hero${img ? '' : ' noimg'}">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
     }
     // Bottom bar of a drunk entry: no take-out, only the link to Cellarion (not for wines that are only in the log)
     _histBar(sel) {

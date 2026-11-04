@@ -460,6 +460,7 @@
     .dtop { display: flex; gap: 14px; align-items: flex-start; }
     .dtop .dfacts { flex: 1; min-width: 0; }
     .d2hero { display: flex; gap: 14px; align-items: flex-start; }
+    .d2hero.noimg .d2mine { border-left: 0; padding-left: 0; } /* the separator line is only needed next to the photo */
     .d2hero.noimg .d2main { margin-left: 32px; } /* no label photo: data rows start under the wine name (glass icon + gap of the header) */
     .d2hero .d2main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .d2sub { color: var(--cb-sub); }

@@ -304,7 +304,8 @@
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
     .hempty .dpur { display: block; margin-top: 2px; }
     .hempty.dsec { margin-top: 14px; }
-    .d2sub.dgone { color: var(--s-drunk); font-weight: 600; }
+    .d2top .d2sub { color: var(--cb-text); font-weight: 700; font-size: 1.05em; }
+    .d2top .d2sub.dgone { color: var(--s-drunk); font-weight: 600; font-size: 1em; }
     .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
     .d2top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; }
     .vbar .vlbl { font-size: .85em; color: var(--cb-muted, var(--secondary-text-color)); margin-right: 2px; }

@@ -243,14 +243,15 @@ class Hub:
 
     # ----- inventory -----
 
-    async def refresh(self) -> JsonDict:
+    async def refresh(self, force: bool = False) -> JsonDict:
         """Fetch the inventory from Cellarion (one run at a time).
 
         One request for the whole cellar; an unchanged inventory answers 304 and nothing else is read.
         The rack layout (shelves, places per row) is read along with every changed inventory, and at least once a day.
+        force = ignore the 304 and read everything again, the history included (the reload button of the card).
         """
         async with self._lock:
-            inv, etag = await self._get_inventory(self._etag if self.data is not None else None)
+            inv, etag = await self._get_inventory(self._etag if self.data is not None and not force else None)
             if inv is None and time.time() - self._geo_at >= GEO_MAX_AGE:
                 inv, etag = await self._get_inventory(None)  # re-read the rack layout once a day
             changed = False

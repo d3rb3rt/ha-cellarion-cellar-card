@@ -41,7 +41,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
         return _hub(call.hass).read()
 
     async def refresh(call: ServiceCall) -> dict[str, Any]:
-        return await _guard(_hub(call.hass).refresh())
+        return await _guard(_hub(call.hass).refresh(force=True))  # the reload button reads everything again, even if the inventory tag is unchanged
 
     async def sync(call: ServiceCall) -> dict[str, Any]:
         return await _guard(_hub(call.hass).sync(call.data["max_age"]))

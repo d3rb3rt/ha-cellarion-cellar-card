@@ -304,6 +304,10 @@
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
     .hempty .dpur { display: block; margin-top: 2px; }
     .hempty.dsec { margin-top: 14px; }
+    .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 0 10px; }
+    .vbar .vlbl { font-size: .85em; color: var(--cb-muted, var(--secondary-text-color)); margin-right: 2px; }
+    .vchip { padding: 3px 10px; border: 1px solid var(--cb-line); border-radius: 14px; background: none; color: var(--cb-text); font: inherit; font-size: .9em; cursor: pointer; }
+    .vchip.gone { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
     .dsech { margin-top: 6px; padding: 4px 0; border: 0; background: none; color: var(--s-drunk); font: inherit; cursor: pointer; text-align: left; }
     .hrow .hinfo, .hinfo { color: var(--cb-sub); font-size: .9em; white-space: nowrap; }
     .wrow, .frow {
@@ -2812,7 +2816,7 @@
       const _dcnt = t('hist.drunkN', { n: bottles.length });
       // flag history: drunk bottles of this wine and vintage in brackets behind the count
       const _hn = !hist && this._flag('history') ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).length : 0;
-      const _dn = _hn ? ' (' + t('hist.drunkN', { n: _hn }) + ')' : '';
+      const _dn = _hn ? ' · ' + t('hist.drunkN', { n: _hn }) : '';
       const _ctag = this._allCellars() && sel._cn ? `<span class="ctag">${esc(sel._cn)}</span>` : ''; // all cellars together: the cellar of the chosen place
       const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
       const botsSec = '';
@@ -2832,16 +2836,16 @@
         };
         hint = `<div class="hempty"><b>${esc(t('hist.empty'))}</b>${bottles.slice(0, 12).map(line).join('')}</div>`;
       }
-      // Flag archgone: drunk bottles of this wine (all vintages) as a collapsible section
+      // Drunk bottles of this vintage (own history) as a section above the take-out bar; other vintages are reached via the vintage bar
       let drunkSec = '';
-      const dh = !hist && this._flag('archgone') ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine).sort((a, b) => String(b.at || '').localeCompare(String(a.at || ''))) : [];
+      const dh = !hist ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).sort((a, b) => String(b.at || '').localeCompare(String(a.at || ''))) : [];
       if (dh.length) {
         const dOpen = !!(d && d.drunkOpen);
         const dt3 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
         const ln = (b) => {
           const rk = 'hist.reason.' + (b.reason || 'drank'), why = I18N.dict[rk] !== undefined ? t(rk) : String(b.reason || '');
           const rt = typeof b.rating === 'number' ? ' · ' + (b.scale && !/star/i.test(b.scale) ? b.rating + ' ' + b.scale : '★ ' + b.rating) : '';
-          return `<span class="dpur">${esc((b.vintage || 'NV') + ' · ✓ ' + why + (b.at ? ' ' + dt3(b.at) : '') + rt)}</span>` + (b.note ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
+          return `<span class="dpur">${esc('✓ ' + why + (b.at ? ' ' + dt3(b.at) : '') + rt)}</span>` + (b.note ? `<span class="dpur" style="white-space:pre-line">${esc(b.note)}</span>` : '');
         };
         const shown = dOpen ? dh.slice(0, 40) : dh.slice(0, 3); // the latest three are always visible, more behind a button
         drunkSec = `<div class="hempty dsec"><b>${esc(t('det.drunkSec', { n: dh.length }))}</b>${shown.map(ln).join('')}` +
@@ -2853,9 +2857,20 @@
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
       const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>');
       const main = `<div class="d2main"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` + dataBlock + mine + `</div>`;
+      // Vintage bar: the other vintages of this wine (in stock: with count; completely drunk: purple)
+      const wk = d.wine, cur = String(sel.vintage || 'NV');
+      const vm = new Map();
+      (this._data.bottles || []).forEach((b) => { if ((b.wine || b.name) === wk) { const v = String(b.vintage || 'NV'); vm.set(v, (vm.get(v) || 0) + 1); } });
+      const stock = new Set(vm.keys());
+      const gone = new Set();
+      (this._data.history || []).forEach((h) => { if ((h.wine || h.name) === wk) { const v = String(h.vintage || 'NV'); if (!stock.has(v)) gone.add(v); } });
+      const vy = (v) => (v === 'NV' ? -1 : Number(v) || 0);
+      const vlist = Array.from(stock).map((v) => [v, false]).concat(Array.from(gone).map((v) => [v, true])).filter(([v]) => v !== cur).sort((a, b) => vy(b[0]) - vy(a[0]));
+      const vbar = vlist.length ? `<div class="vbar"><span class="vlbl">${esc(t('det.vints'))}</span>` + vlist.map(([v, g]) =>
+        `<button type="button" class="vchip${g ? ' gone' : ''}" data-act="dvint" data-v="${esc(v)}" data-h="${g ? 1 : 0}" title="${esc(g ? t('hist.empty') : t('det.bottlesN', { n: vm.get(v) }))}">${esc(v)}${g ? '' : ' · ' + vm.get(v)}</button>`).join('') + `</div>` : '';
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
-      if (bigMap) return `<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
-      return `<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
+      if (bigMap) return `${vbar}<div class="rm-row rm-bigrow"><div class="rm-col">${img}${main}</div>${bigMap}</div>${actBar}`;
+      return `${vbar}<div class="d2hero">${img}${main}</div>${hint}${maturity + about + noteHtml}${drunkSec}${botsSec}${hist ? this._histBar(sel) : actBar}`;
     }
     // Bottom bar of a drunk entry: no take-out, only the link to Cellarion (not for wines that are only in the log)
     _histBar(sel) {
@@ -3092,6 +3107,7 @@
       else if (act === 'dbots') d.botsOpen = !d.botsOpen;
       else if (act === 'drmore') d.dmore = !d.dmore;
       else if (act === 'ddrunk') { d.drunkOpen = !d.drunkOpen; }
+      else if (act === 'dvint') { if (d.busy) return; this._det = { wine: d.wine, vintage: el.dataset.v, hist: el.dataset.h === '1', step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' }; }
       else if (act === 'dgrp') { d.grpOpen = d.grpOpen || new Set(); const l = el.dataset.l; if (d.grpOpen.has(l)) d.grpOpen.delete(l); else d.grpOpen.add(l); }
       else if (act === 'dask') { d.step = 'confirm'; d.err = ''; }
       else if (act === 'dtake') { d.sel = el.dataset.id; d.more = false; d.botsOpen = false; d.step = 'confirm'; d.err = ''; } // tap on a bottle in the rack picture

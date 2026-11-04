@@ -383,5 +383,6 @@
  "det.dmoreShow": "Show more data fields",
  "det.dmoreHide": "Hide more data fields",
  "det.dmoreN": "{n} more",
- "det.dmoreLess": "Less"
+ "det.dmoreLess": "Less",
+ "det.vints": "Other vintages"
 }

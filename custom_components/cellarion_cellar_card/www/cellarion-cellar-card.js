@@ -953,7 +953,7 @@
     }
     _mode() { const m = this._local && this._local.mode; return m === 'light' || m === 'dark' ? m : 'auto'; }
     // Setting 'show Other in the list' (central for all devices, overridable per device; default: shown). Off: Other items (not wine) only appear while the type filter 'other' is chosen or a search term is entered
-    _archN() { const v = this._local && this._local.archN; return v === undefined || isNaN(Number(v)) ? 0 : Number(v); } // setting Archive: archive rows in the search below this many stock hits (device only)
+    _archN() { const L = this._local || {}, S = this._shared || {}; const v = L.archN !== undefined ? L.archN : S.archN; return v === undefined || isNaN(Number(v)) ? 0 : Number(v); } // setting Archive: archive rows in the search below this many stock hits (device only)
     _showOther() { const L = this._local || {}, S = this._shared || {}; return !(L.hideOther !== undefined ? L.hideOther : S.hideOther); }
     _hideOther() { return !this._showOther() && !(this._f.types && this._f.types.has('other')) && !norm(this._f.q || '').trim() && !this._allDefs().some((d) => d.personal && this._fs(d.id).size); } // a search term, the Other type or a chosen personal-field value always finds Other items too
     _fullw() { return !!(this._local && this._local.fullw); } // setting 'force full width' (this device only)
@@ -2431,7 +2431,7 @@
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
-        (this._flag('history') ? grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw(null, 'device'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) : '') +
+        (this._flag('history') ? grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) : '') +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -2444,8 +2444,8 @@
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())).join(',') : '-');
       try {
         await this._call('settings',
-          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
-          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), an: S.archN === undefined ? 'keep' : String(S.archN), io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.archN === undefined ? {} : { arch_n: S.archN }), ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
         this._setErr = '';
       } catch (e) {
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
@@ -3156,7 +3156,7 @@
       this._renderAll();
     }
     _onInput(e) {
-      if (e.target.dataset && e.target.dataset.archn !== undefined) { this._local.archN = Math.max(0, Math.min(99, parseInt(e.target.value, 10) || 0)); this._saveState(); this._renderAll(); return; }
+      if (e.target.dataset && e.target.dataset.archn !== undefined) { const n = Math.max(0, Math.min(99, parseInt(e.target.value, 10) || 0)); if (this._local.archN !== undefined) { this._local.archN = n; this._saveState(); } else { this._shared.archN = n; this._saveSettings(); } this._renderAll(); return; }
       if (e.target.dataset && e.target.dataset.wzq !== undefined && this._wz) { this._wz.q = e.target.value; this._renderWzList(); return; }
       if (!e.target.matches || !e.target.matches('input[type=search]')) return;
       this._f.q = e.target.value;
@@ -3290,7 +3290,7 @@
     },
     scope(t) {
       const k = t.dataset.k, L = this._local, dev = L[k] !== undefined;
-      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : k === 'info' ? { order: this._infoOrderArr(), show: this._infoShowArr() } : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
+      if (t.dataset.v === 'device' && !dev) L[k] = k === 'language' ? (this._langSel || '') : k === 'keepState' ? this._keep() : k === 'hideOther' ? !this._showOther() : k === 'archN' ? this._archN() : k === 'info' ? { order: this._infoOrderArr(), show: this._infoShowArr() } : { filterOrder: this._fo.slice(), filterHidden: Array.from(this._fh) };
       else if (t.dataset.v === 'all' && dev) delete L[k];
       this._saveState();
       this._applyEff();

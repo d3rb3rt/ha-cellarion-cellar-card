@@ -543,7 +543,6 @@
     .dlg { position: fixed; inset: 0; z-index: 5; display: flex; align-items: flex-start; justify-content: center; background: rgba(0,0,0,.5); }
     /* Phone: reserve room at the bottom for the Android navigation bar (a web page cannot tell whether it is on): the list scrolls past it and the detail sheet ends above it */
     @media (max-width: 600px) {
-      .list { padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px), 40px); }
       .dlg { bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px), 40px); }
     }
     .dsheet {
@@ -943,7 +942,9 @@
       const card = this.shadowRoot.querySelector('ha-card');
       if (!card) return;
       const top = this.getBoundingClientRect().top;
-      card.style.height = Math.max(420, window.innerHeight - top - 8) + 'px';
+      // Phone: leave 40 px at the bottom for the Android navigation bar (a web page cannot tell whether it is on); the card ends above it, so the page itself does not become scrollable
+      const phone = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+      card.style.height = Math.max(420, window.innerHeight - top - 8 - (phone ? 40 : 0)) + 'px';
     }
 
     // ---------- State ----------

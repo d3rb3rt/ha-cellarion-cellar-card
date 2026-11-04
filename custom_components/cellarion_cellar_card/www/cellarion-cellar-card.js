@@ -1543,7 +1543,11 @@
         if (e.key === 'Escape' && this._wz) { if (this._wz.busy) return; this._wz = null; this._renderDlg(); return; }
         if (e.key === 'Escape' && this._set) { this._set = null; this._renderDlg(); return; }
         if (e.key === 'Escape' && this._det && !this._det.busy) { this._det = null; this._renderDlg(); return; }
-        if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('input[type=search]')) e.target.blur();
+        if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('input[type=search]')) {
+          e.target.blur();
+          const hits = this._listEl ? this._listEl.querySelectorAll('[data-act="detail"]') : []; // only one hit left: Enter opens its detail view
+          if (hits.length === 1 && !this._det) ACTIONS.detail.call(this, hits[0]);
+        }
       });
       this._renderAll();
       this._fit();

@@ -1707,7 +1707,8 @@
         const useful = (d) => { if (this._fs(d.id).size) return true; const m = cnt3(d.id, d.get); return m.size > 0 && !(m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length); };
         const hidUse = hid.filter(useful);
         const moreBtn = true; // the "..." button always exists now: behind it sit the hidden filters (if any) and the filter mode pulldown
-        const defs = this._showHid ? vis.concat(hidUse) : vis.concat(hid.filter((d) => this._fs(d.id).size));
+        const extra = new Set(this._showHid ? hidUse : hid.filter((d) => this._fs(d.id).size)), visS = new Set(vis);
+        const defs = this._allDefs().filter((d) => visS.has(d) || extra.has(d)); // filters behind "..." keep their place in the sort order when opened (not appended at the end)
         const t3 = {};
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
         const by = (x, y) => de.compare(x[0], y[0]);

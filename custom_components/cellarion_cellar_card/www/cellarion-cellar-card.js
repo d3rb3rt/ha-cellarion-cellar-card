@@ -1534,6 +1534,7 @@
       this._listEl.addEventListener('touchend', endPull, { passive: true });
       this._listEl.addEventListener('touchcancel', () => { y0 = null; pull = 0; setPtr(0); }, { passive: true });
       this.shadowRoot.addEventListener('click', (e) => this._onClick(e));
+      this.shadowRoot.addEventListener('scroll', (e) => { if (this._det && this._det.dnote && !(e.target.closest && e.target.closest('.dnpop'))) this._dnoteClose(); }, true); // scrolling closes the drunk overlay
       this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
       this.shadowRoot.addEventListener('pointerdown', (e) => this._onGrip(e));
       this.shadowRoot.addEventListener('input', (e) => this._onInput(e));
@@ -3192,7 +3193,14 @@
     }
     // Clicks: the element carries data-act; ACTIONS (below the class) maps each name to its handler.
     // Prefix groups: wz* = winery wizard, d* = detail dialog (_onDlg).
+    _dnoteClose() { // drunk overlay in the detail view: close without redrawing (keeps the scroll position)
+      if (!this._det || !this._det.dnote) return;
+      this._det.dnote = false;
+      this.shadowRoot.querySelectorAll('.dnpop').forEach((n) => n.remove());
+      this.shadowRoot.querySelectorAll('.dlink[aria-expanded]').forEach((n) => n.setAttribute('aria-expanded', 'false'));
+    }
     _onClick(e) {
+      if (this._det && this._det.dnote && !(e.target.closest && e.target.closest('[data-act="dnote"]'))) { this._dnoteClose(); return; } // click outside closes the overlay
       if (this._backdropClick(e)) return;
       const t = e.target.closest && e.target.closest('[data-act]');
       if (!t) return;

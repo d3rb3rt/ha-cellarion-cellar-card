@@ -389,6 +389,7 @@
     .dsheet > .dh .wl1 > .wit { display: inline; }
     .dsheet > .dh .wl1 > .wname.d::after { display: none; } /* no dot: it stayed at the end of the line when the producer wrapped */
     .dsheet > .dh .wl1 > .wprod { display: inline; margin-left: .6em; font-size: 1.05em; font-weight: 600; }
+    .dsheet > .dh .wl1 > .wprod::before { content: '·'; margin: 0 .5em 0 .1em; color: var(--cb-sub); font-weight: 400; } /* the dot belongs to the producer: it wraps with it and never hangs at the end of the name */
     .wname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wsub { color: var(--cb-sub); font-size: .86em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .wright { display: contents; }

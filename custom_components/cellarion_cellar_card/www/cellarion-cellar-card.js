@@ -304,6 +304,7 @@
     .hempty b { display: block; margin-bottom: 4px; color: var(--s-drunk); }
     .hempty .dpur { display: block; margin-top: 2px; }
     .hempty.dsec { margin-top: 14px; }
+    .d2sub.dgone { color: var(--s-drunk); font-weight: 600; }
     .vbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 0 10px; }
     .vbar .vlbl { font-size: .85em; color: var(--cb-muted, var(--secondary-text-color)); margin-right: 2px; }
     .vchip { padding: 3px 10px; border: 1px solid var(--cb-line); border-radius: 14px; background: none; color: var(--cb-text); font: inherit; font-size: .9em; cursor: pointer; }
@@ -2816,7 +2817,7 @@
       const _dcnt = t('hist.drunkN', { n: bottles.length });
       // flag history: drunk bottles of this wine and vintage in brackets behind the count
       const _hn = !hist && this._flag('history') ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).length : 0;
-      const _dn = _hn ? ' · ' + t('hist.drunkN', { n: _hn }) : '';
+      const _dn = _hn ? t('hist.drunkN', { n: _hn }) : ''; // shown as its own purple mark behind the count
       const _ctag = this._allCellars() && sel._cn ? `<span class="ctag">${esc(sel._cn)}</span>` : ''; // all cellars together: the cellar of the chosen place
       const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
       const botsSec = '';
@@ -2855,7 +2856,7 @@
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
       const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length }) + _dn].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>');
+      const mainParts = [origin, grapes, hist ? _dcnt : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? ['<span class="d2sub dgone">✓ ' + esc(_dn) + '</span>'] : []);
       const main = `<div class="d2main"><div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` + dataBlock + mine + `</div>`;
       // Vintage bar: the other vintages of this wine (in stock: with count; completely drunk: purple)
       const wk = d.wine, cur = String(sel.vintage || 'NV');

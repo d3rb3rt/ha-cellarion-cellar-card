@@ -2849,8 +2849,8 @@
       // Drunk bottles of this vintage (own history) as a section above the take-out bar; other vintages are reached via the vintage bar
       let drunkSec = '';
       const dh = !hist ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).sort((a, b) => String(b.at || '').localeCompare(String(a.at || ''))) : [];
-      const noteOv = dh.some((h) => h.note); // drunk entries with a note: the note sits in an overlay behind the drunk mark in the header line
-      if (dh.length) {
+      const noteOv = dh.length > 0; // drunk entries of this vintage: the drunk mark in the header line opens an overlay with all of them
+      if (false) { // the section is replaced by the overlay
         const dOpen = !!(d && d.drunkOpen);
         const dt3 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
         const ln = (b) => {
@@ -2884,9 +2884,10 @@
       const bigMap = !hist && d && d.rackBig ? this._rackMap(sel, bottles, true) : '';
       if (noteOv && d && d.dnote) {
         const dt4 = (v) => { try { return v ? new Intl.DateTimeFormat(I18N.lang || 'de', { dateStyle: 'medium' }).format(new Date(v)) : ''; } catch (x) { return String(v || '').slice(0, 10); } };
-        top = top.replace(/<\/div>$/, '') + `<div class="dnpop" data-act="dnote" role="dialog">${dh.filter((h) => h.note).map((h) => {
+        top = top.replace(/<\/div>$/, '') + `<div class="dnpop" data-act="dnote" role="dialog">${dh.slice(0, 40).map((h) => {
+          const rk = 'hist.reason.' + (h.reason || 'drank'), why = I18N.dict[rk] !== undefined ? t(rk) : String(h.reason || '');
           const rt = typeof h.rating === 'number' ? ' · ' + (h.scale && !/star/i.test(h.scale) ? h.rating + ' ' + h.scale : '★ ' + h.rating) : '';
-          return `<div class="dnitem"><b>${esc(dt4(h.at) + rt)}</b><span>${esc(h.note)}</span></div>`;
+          return `<div class="dnitem"><b>${esc(why + (h.at ? ' ' + dt4(h.at) : '') + rt)}</b>${h.note ? `<span>${esc(h.note)}</span>` : ''}</div>`;
         }).join('')}</div></div>`;
       }
       top = top.replace('<!--vb-->', vbar); // own stock and other vintages share one line in the header, under the title (aligned with the vintage; wraps on narrow screens)

@@ -535,6 +535,7 @@
     .statsheet .dh { align-items: center; }
     .shero { display: flex; flex-direction: column; align-items: center; padding: 4px 0 2px; }
     .sbig { font-size: 1.5em; font-weight: 700; color: var(--cb-text); line-height: 1.1; }
+    .sbig.sm { font-size: 1.05em; line-height: 1.3; }
     .sbig.huge { font-size: 3.2em; color: var(--cb-on); }
     .sbig.val { color: var(--cb-on); }
     .slbl { font-size: .75em; letter-spacing: .06em; text-transform: uppercase; color: var(--cb-sub); }
@@ -2302,15 +2303,22 @@
       const byN = (a, b) => b.n - a.n || de.compare(a.name, b.name);
       const wrows = (list) => ({ rows: top(list).map((w) => ({ label: w.name, sub: w.producer, n: w.n, filter: ['q', w.name] })), total: list.length, limit: lim });
       const goneW = Array.from(H.wines.entries()).filter(([k]) => !S.wines.has(k)).map(([, w]) => w);
+      const rLbl = (r) => (I18N.dict['hist.reason.' + r] !== undefined ? t('hist.reason.' + r) : String(r)); // consumption types come from the data
+      if (key.startsWith('d:r:')) {
+        const r = key.slice(4), items = H.items.filter((h) => (h.reason || 'drank') === r);
+        if (r === 'drank') { // drunk: the wines drunk most
+          const m = new Map();
+          items.forEach((h) => { const id = h.wine || h.name; const w = m.get(id) || { name: h.name, producer: h.producer, n: 0 }; w.n++; m.set(id, w); });
+          return { title: rLbl(r), sections: [wrows(Array.from(m.values()).sort(byN))] };
+        }
+        // Every other type (gifted, sold ...): one row per bottle, the note of the consumption instead of a bar, the date instead of the count
+        const list = items.slice().sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+        return { title: rLbl(r), sections: [{ rows: top(list).map((h) => ({ label: h.name, sub: h.producer, n: 1, note: h.note, text: h.at ? this._fmtDate(h.at) : '', filter: ['q', h.name] })), total: list.length, limit: lim }] };
+      }
       switch (key) {
         case 'd:wines': return { title: t('stat.wines'), sections: [wrows(Array.from(H.wines.values()).sort(byN))] };
         case 'd:gonew': return { title: t('stat.goneWines'), sections: [wrows(goneW.slice().sort(byN))] };
-        case 'd:gifted': {
-          // One row per gifted bottle: the consumption note (to whom, why) instead of a bar, the date instead of the count
-          const list = H.items.filter((h) => h.reason === 'gifted').slice().sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
-          const rows = top(list).map((h) => ({ label: h.name, sub: h.producer, n: 1, note: h.note, text: h.at ? this._fmtDate(h.at) : '', filter: ['q', h.name] }));
-          return { title: t('stat.gifted'), sections: [{ rows, total: list.length, limit: lim }] };
-        }
+        case 'd:reasons': return { title: t('stat.consumption'), sections: [{ rows: H.reasons.map(([r, n]) => ({ label: rLbl(r), n, go: 'd:r:' + r })), total: 0, limit: 99 }] };
         case 'd:gonep': {
           const stockProd = new Set(S.producers.map((x) => x[0])), m = new Map();
           goneW.forEach((w) => { if (!w.producer || stockProd.has(w.producer)) return; const o = m.get(w.producer) || { name: w.producer, n: 0 }; o.n += w.n; m.set(w.producer, o); });
@@ -2369,11 +2377,13 @@
       };
       const ago = Date.now() - 365 * 864e5;
       let value = 0, gifted = 0, recent = 0;
+      const rs = new Map();
       const years = new Map(), wines = new Map();
       hs.forEach((h) => {
         const priced = typeof h.price === 'number' && h.currency === cur;
         if (priced) value += h.price;
         if (h.reason === 'gifted') gifted++;
+        rs.set(h.reason || 'drank', (rs.get(h.reason || 'drank') || 0) + 1);
         const m = /^(\d{4})/.exec(String(h.at || ''));
         if (m) { const o = years.get(m[1]) || { n: 0, v: 0 }; o.n++; if (priced) o.v += h.price; years.set(m[1], o); }
         if (h.at && Date.parse(h.at) >= ago) recent++;
@@ -2382,7 +2392,7 @@
         if (!w) { w = { name: h.name, producer: h.producer, n: 0 }; wines.set(k, w); }
         w.n++;
       });
-      const v = { total: hs.length, wines, years, value, gifted, recent, currency: cur, items: hs,
+      const v = { total: hs.length, wines, years, value, gifted, recent, reasons: Array.from(rs.entries()).sort((a, b) => b[1] - a[1]), currency: cur, items: hs,
         types: cnt((h) => h._type), producers: cnt((h) => h.producer) };
       this._statH = { d, v, no: noOther };
       return v;
@@ -2413,7 +2423,7 @@
         const goneP = new Set(goneW.map((w) => w.producer).filter((pr) => pr && !stockProd.has(pr)));
         const goneTop = goneW.slice().sort((a, b) => b.n - a.n || de.compare(a.name, b.name)).slice(0, 8);
         return hero(H.total, t('stat.drunkHero')) +
-          `<div class="sgrid">${tileGo(num(H.wines.size), t('stat.wines'), 'd:wines')}${tileGo(num(H.gifted), t('stat.gifted'), 'd:gifted')}</div>` +
+          `<div class="sgrid">${tileGo(num(H.wines.size), t('stat.wines'), 'd:wines')}${H.reasons.length > 1 ? `<button class="stile" data-act="statgo" data-to="d:reasons"><span class="sbig sm">${esc(H.reasons.map(([r, n]) => num(n) + ' ' + (I18N.dict['hist.reason.' + r] !== undefined ? t('hist.reason.' + r) : r)).join(' · '))}</span><span class="slbl">${esc(t('stat.consumption'))}</span></button>` : ''}</div>` +
           (H.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(money(H.value))}</span><span class="slbl">${esc(t('stat.drunkValue'))}</span></button>` : '') +
           (goneW.length ? `<div class="sgrid">${tileGo(num(goneW.length), t('stat.goneWines'), 'd:gonew')}${tileGo(num(goneP.size), t('stat.goneProducers'), 'd:gonep')}</div>` +
             head(t('stat.goneTop'), t('stat.goneTopHint')) + `<div class="slist">${goneTop.map((w) => row(w.name, w.producer, w.n, goneTop[0].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +

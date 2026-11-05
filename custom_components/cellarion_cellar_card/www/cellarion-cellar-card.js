@@ -656,7 +656,9 @@
     /* Settings page: description column left, control column right (fixed proportions), plain controls */
     .setv2 .sgrp { display: flex; align-items: center; gap: 14px; margin-top: 28px; font-size: 1.1em; font-weight: 600; letter-spacing: .02em; color: var(--cb-on); }
     .setv2 .sgrp::before, .setv2 .sgrp::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--cb-on) 40%, transparent); }
-    .setv2 .dh + .sgrp, .setv2 .dh + .derr + .sgrp { margin-top: 10px; }
+    .setv2 .sethead { position: sticky; top: -16px; z-index: 5; background: var(--cb-card); margin: -16px -16px 0; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+    .setv2 .setnav { margin: 0; padding-bottom: 0; scrollbar-width: none; }
+    .setv2 .sethead + .sgrp, .setv2 .sethead + .derr + .sgrp, .setv2 .sethead + .derr + .wsub + .sgrp { margin-top: 10px; }
     .setv2 .srow { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 16px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--cb-line); }
     .setv2 .sdesc { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
     .setv2 .sdesc .wname, .setv2 .shead .wname { white-space: normal; font-size: 1em; font-weight: 400; }
@@ -2482,6 +2484,14 @@
       const sh = el.querySelector('.dsheet'); if (sh) sh.scrollTop = topPos;
     }
     // Settings page: plain list, groups, a description column (left) and a control column (right) of fixed proportions.
+    _setNavMark() { // settings: mark the pill of the group that is currently at the top
+      const sh = this._dlg && this._dlg.querySelector('.dsheet'), hd = sh && sh.querySelector('.sethead');
+      if (!sh || !hd) return;
+      const line = hd.getBoundingClientRect().bottom + 12; let cur = null;
+      sh.querySelectorAll('.sgrp[data-sg]').forEach((g) => { if (g.getBoundingClientRect().top <= line) cur = g.dataset.sg; });
+      if (sh.scrollTop + sh.clientHeight >= sh.scrollHeight - 4) { const all = sh.querySelectorAll('.sgrp[data-sg]'); if (all.length) cur = all[all.length - 1].dataset.sg; }
+      hd.querySelectorAll('.stab').forEach((b) => b.classList.toggle('on', b.dataset.g === (cur || (sh.querySelector('.sgrp') || {dataset: {}}).dataset.sg)));
+    }
     // Few options: radios or a checkbox; many options: a plain dropdown; long topics collapsed. Scope: one switch with two icons plus the text.
     _renderSet() {
       const el = this._dlg;
@@ -2513,7 +2523,8 @@
           (o ? `<div class="ssopts" role="listbox">` + opts.map(([v, n]) => `<button class="ssopt${String(v) === String(cur) ? ' on' : ''}" role="option" aria-selected="${String(v) === String(cur)}" data-act="selpick" data-key="${key}" data-v="${esc(v)}">${esc(n)}</button>`).join('') + `</div>` : '') + `</div>`;
       };
       const chkOpt = (act, extra, on, label) => `<label class="opt"><input type="checkbox" data-act="${act}"${extra || ''}${on ? ' checked' : ''}><span>${esc(label)}</span></label>`;
-      const grp = (name) => `<div class="sgrp">${esc(name)}</div>`;
+      const grps = [];
+      const grp = (name, id) => { grps.push([id, name]); return `<div class="sgrp" data-sg="${id}">${esc(name)}</div>`; };
       const sec = (id, title, sum, body, scope) => { const o = open.has(id);
         return `<div class="ssec${scope ? ' hs' : ''}"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const lbl = (d) => d.personal || d.infoOnly ? '[' + d.label + ']' : d.clsg !== undefined ? t('filter.cls') + ': ' + d.label : d.label; // split classification filters: "Classification: Vineyard rank"
@@ -2551,32 +2562,37 @@
           row(t('set.rackSide'), '', '', radios('rk-' + n + '-side', 'rack', [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]], rs.side, ` data-n="${esc(n)}" data-k="side"`)) + `</div>`; }).join('');
       const langs = [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {}));
       const shownF = fdefs.filter((d) => !this._fh.has(d.id)).length;
-      el.innerHTML = `<div class="dsheet setv2" role="dialog" aria-modal="true">` +
-        `<div class="dh"><span class="wmain"><span class="wname">${esc(t('head.settings'))}</span></span>` +
-        `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div>` +
+      let html = `<div class="dsheet setv2" role="dialog" aria-modal="true">` +
+        `<div class="sethead"><div class="dh"><span class="wmain"><span class="wname">${esc(t('head.settings'))}</span></span>` +
+        `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div><!--pills--></div>` +
         (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +
-        grp(t('set2.grpView')) +
+        grp(t('set2.grpView'), 'view') +
         row(t('set.language'), t('set.languageSub'), sw('language'), sel('setlang', langs, this._langSel || '')) +
         row(t('set2.mode'), t('set.modeSub'), sw(null, 'device'), radios('mode', 'mode', [['auto', t('set.modeAuto')], ['light', t('set.modeLight')], ['dark', t('set.modeDark')]], this._mode())) +
         row(t('set.fontSize'), t('set.fontSizeSub', { pct: sc }), sw(null, 'device'), sel('setscale', [85, 100, 115, 130, 150, 175, 200].map((v) => [v, v + ' %']), sc)) +
         row(t('set2.fullw'), t('set2.fullwSub'), sw(null, 'device'), chkOpt('fullw', '', this._fullw(), t('set.on'))) +
-        grp(t('set2.grpFilters')) +
+        grp(t('set2.grpFilters'), 'filters') +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         row(t('set.priceBands'), t('set.priceBandsSub'), sw(null, 'all'), `<input class="stxt" type="text" inputmode="numeric" data-pb value="${esc(PRICE_BANDS.filter((b) => b[0] !== Infinity).map((b) => b[0]).join(', '))}" aria-label="${esc(t('set.priceBands'))}">`) +
-        grp(t('set2.grpList')) +
+        grp(t('set2.grpList'), 'list') +
         sec('info', t('set.infoList'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id)).length, all: idefs.length }), infoBody, sw('info')) +
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
-        grp(t('set2.grpDetails')) +
+        grp(t('set2.grpDetails'), 'details') +
         sec('infod', t('set.infoDet'), t('set2.sumFilters', { n: ddefs.filter((d) => !this._iOff.has(d.id)).length, all: ddefs.length }), infoDBody, sw('info')) +
-        (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
-        grp(t('set2.grpData')) +
+        (racks.length ? grp(t('set2.grpPlaces'), 'places') + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
+        grp(t('set2.grpData'), 'data') +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
-        grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) +
-        (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
+        grp(t('set2.grpArch'), 'arch') + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) +
+        (FLAGS.length ? grp(t('set2.grpDev'), 'dev') + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
+      html = html.replace('<!--pills-->', `<div class="stabs setnav">${grps.map(([id, n]) => `<button class="stab" data-act="setgo" data-g="${id}">${esc(n)}</button>`).join('')}</div>`);
+      el.innerHTML = html;
       el.hidden = false;
+      const _sh = el.querySelector('.dsheet');
+      if (_sh) _sh.addEventListener('scroll', () => this._setNavMark(), { passive: true });
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
+      this._setNavMark();
     }
     // The filter choice applies to all devices: save it in Home Assistant, report errors only quietly
     async _saveSettings() {
@@ -3450,6 +3466,10 @@
     },
     setopen() { this._det = null; this._set = true; this._renderDlg(); },
     sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; if (o.has(id)) o.delete(id); else { o.clear(); o.add(id); } this._renderSet(); }, // one section open at a time
+    setgo(t) { // settings: pill = scroll to the group below the fixed header
+      const sh = this._dlg && this._dlg.querySelector('.dsheet'), g = sh && sh.querySelector('.sgrp[data-sg="' + t.dataset.g + '"]'), hd = sh && sh.querySelector('.sethead');
+      if (g && hd) sh.scrollTo({ top: sh.scrollTop + g.getBoundingClientRect().top - hd.getBoundingClientRect().bottom - 4, behavior: 'smooth' });
+    },
     setclose() { this._set = null; this._selOpen = null; this._renderDlg(); },
     selopen(t) { this._selOpen = this._selOpen === t.dataset.key ? null : t.dataset.key; this._renderSet(); },
     selpick(t) {

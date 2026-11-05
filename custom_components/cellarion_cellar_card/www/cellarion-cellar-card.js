@@ -2343,24 +2343,16 @@
           `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
       }
       // Total: stock and archive together
-      const reach = H.recent > 0 ? S.total / H.recent : 0;
       const sm = new Map(S.types), hm = new Map(H.types);
       const tk = Array.from(new Set([].concat(S.types.map((x) => x[0]), H.types.map((x) => x[0]))));
       tk.sort((a, b) => ((sm.get(b) || 0) + (hm.get(b) || 0)) - ((sm.get(a) || 0) + (hm.get(a) || 0)));
       const tmx = Math.max(1, ...tk.map((k) => (sm.get(k) || 0) + (hm.get(k) || 0)));
-      const rebuy = Array.from(H.wines.entries()).filter(([k, w]) => !S.wines.has(k) && w.n >= 2).sort((a, b) => b[1].n - a[1].n || de.compare(a[1].name, b[1].name)).slice(0, 8);
-      const pm = new Map();
-      S.producers.forEach(([k, n]) => pm.set(k, [n, 0]));
-      H.producers.forEach(([k, n]) => { const o = pm.get(k) || [0, 0]; o[1] = n; pm.set(k, o); });
-      const prods = Array.from(pm.entries()).sort((a, b) => (b[1][0] + b[1][1]) - (a[1][0] + a[1][1]) || de.compare(a[0], b[0])).slice(0, 8);
       return hero(S.total + H.total, t('stat.allBought')) +
         `<div class="sgrid">${tile(num(S.total), t('stat.sc.stock'), 'stock')}${tile(num(H.total), t('stat.sc.arch'), 'arch')}</div>` +
-        (reach > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(t('stat.reachYears', { n: dec(reach) }))}</span><span class="slbl">${esc(t('stat.reach'))}</span><span class="slbl">${esc(t('stat.reachHint', { n: H.recent }))}</span></div>` : '') +
+        (S.value + H.value > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(money(S.value + H.value))}</span><span class="slbl">${esc(t('stat.totalValue'))}</span><span class="slbl">${esc(t('stat.totalValueHint', { a: money(S.value), b: money(H.value) }))}</span></div>` : '') +
         head(t('stat.byType'), t('stat.stockVsArch')) +
         `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
           `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(a)} · ${num(b)}</span></button>`; }).join('')}</div>` +
-        (prods.length ? head(t('stat.producersAll'), t('stat.stockVsArch')) + `<div class="slist">${prods.map(([k, [a, b]]) => row(k, '', a + b, prods[0][1][0] + prods[0][1][1], num(a) + ' · ' + num(b), `data-act="statfilter" data-g="producer" data-v="${esc(k)}"`)).join('')}</div>` : '') +
-        (rebuy.length ? head(t('stat.rebuy'), t('stat.rebuyHint')) + `<div class="slist">${rebuy.map(([, w]) => row(w.name, w.producer, w.n, rebuy[0][1].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
         `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
     }
     _money(cur) {
@@ -2377,8 +2369,8 @@
       const nav = (title) => `<div class="dh">${key ? `<button class="dx" data-act="statback" aria-label="${esc(t('stat.back'))}">←</button>` : ''}<span class="wmain"><span class="wname">${esc(title)}</span></span>` +
         `<button class="dx" data-act="statclose" aria-label="${esc(t('head.close'))}">✕</button></div>`;
       let html;
-      const sc3 = this._flag('stat3'), scope = sc3 ? (st.scope || 'stock') : 'stock'; // flag stat3: three areas (stock | archive | total)
-      const tabs3 = sc3 && !key ? `<div class="stabs">${[['stock', t('stat.sc.stock')], ['arch', t('stat.sc.arch')], ['all', t('stat.sc.all')]].map(([k, l]) => `<button class="stab${k === scope ? ' on' : ''}" data-act="statscope" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '';
+      const sc3 = this._flag('stat3'), scope = sc3 ? (st.scope || 'all') : 'stock'; // flag stat3: three areas (stock | archive | total)
+      const tabs3 = sc3 && !key ? `<div class="stabs">${[['all', t('stat.sc.all')], ['stock', t('stat.sc.stock')], ['arch', t('stat.sc.arch')]].map(([k, l]) => `<button class="stab${k === scope ? ' on' : ''}" data-act="statscope" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '';
       if (!key && scope !== 'stock') {
         html = nav(this._data.cellar || t('stat.title')) + tabs3 + this._statScopeHtml(scope, S, num);
       } else if (!key) {

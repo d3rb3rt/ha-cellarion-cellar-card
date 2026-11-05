@@ -1000,7 +1000,7 @@
       // Info behind the wine name in the list: order + what is shown (central for all devices, overridable per device)
       const I = L.info || { order: S.infoOrder, show: S.infoShow };
       // The old single item "cls" (classification) became one item per kind (cls0..cls3)
-      const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : x === 'vname' ? ['i:vineyard_name'] : [x]))); // old ids from earlier versions (cls, vname) -> current ids
+      const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : [x])));
       const ord = Array.isArray(I.order) ? I.order.map(String) : []; // "d:<id>" entries = order in the details (flag infosplit)
       this._io = expand(ord.filter((x) => !x.startsWith('d:')));
       this._ido = expand(ord.filter((x) => x.startsWith('d:')).map((x) => x.slice(2)));

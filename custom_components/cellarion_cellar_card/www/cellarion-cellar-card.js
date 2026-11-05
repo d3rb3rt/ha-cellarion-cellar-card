@@ -3030,9 +3030,6 @@
       el.querySelectorAll('.d2data dd[data-dik]').forEach((dd) => { const k = dd.dataset.dik; if (im[k] && !done.has(k)) { mark(dd, k, infoLbl(k)); done.add(k); } });
       // Producer
       if (im.producer) { mark(el.querySelector('.dh .wprod'), 'producer', infoLbl('producer')); done.add('producer'); }
-      // One row instead of two: "Lage: Name | Stufe" (tier = official vineyard rank; the personal field "Cru / Lage" is only a fallback and its row goes away)
-      const cru = rows.find((r) => r.dt.isConnected && /^cru\s*\/\s*lage$/i.test(r.k));
-      if (cru && cru.dd && cru.dt.isConnected) { cru.dt.remove(); cru.dd.remove(); }
       // Classification in the header line: one item per kind; the item is clickable when that kind has an info text
       this._kinds().forEach((k) => {
         const c = (sel._cls || []).filter((v) => this._clsKind(v) === k);

@@ -2281,6 +2281,30 @@
           return { title: '', sections: [] };
       }
     }
+    // Flag stat3: drill-downs behind the tiles of the "Drunk" page (drunk wines, gifted, wines / producers without stock)
+    _statDrunkPage(key, S) {
+      const H = this._statHist(), all = this._stat && this._stat.all, lim = 15;
+      const top = (list) => (all || list.length <= lim ? list : list.slice(0, lim));
+      const byN = (a, b) => b.n - a.n || de.compare(a.name, b.name);
+      const wrows = (list) => ({ rows: top(list).map((w) => ({ label: w.name, sub: w.producer, n: w.n, filter: ['q', w.name] })), total: list.length, limit: lim });
+      const goneW = Array.from(H.wines.entries()).filter(([k]) => !S.wines.has(k)).map(([, w]) => w);
+      switch (key) {
+        case 'd:wines': return { title: t('stat.wines'), sections: [wrows(Array.from(H.wines.values()).sort(byN))] };
+        case 'd:gonew': return { title: t('stat.goneWines'), sections: [wrows(goneW.slice().sort(byN))] };
+        case 'd:gifted': {
+          const m = new Map();
+          H.items.filter((h) => h.reason === 'gifted').forEach((h) => { const id = h.wine || h.name; const w = m.get(id) || { name: h.name, producer: h.producer, n: 0 }; w.n++; m.set(id, w); });
+          return { title: t('stat.gifted'), sections: [wrows(Array.from(m.values()).sort(byN))] };
+        }
+        case 'd:gonep': {
+          const stockProd = new Set(S.producers.map((x) => x[0])), m = new Map();
+          goneW.forEach((w) => { if (!w.producer || stockProd.has(w.producer)) return; const o = m.get(w.producer) || { name: w.producer, n: 0 }; o.n += w.n; m.set(w.producer, o); });
+          const list = Array.from(m.values()).sort(byN);
+          return { title: t('stat.goneProducers'), sections: [{ rows: top(list).map((w) => ({ label: w.name, n: w.n, filter: ['producer', w.name] })), total: list.length, limit: lim }] };
+        }
+      }
+      return { title: '', sections: [] };
+    }
     // Flag stat3: type drill-down for "Drunk" and "Total": the most important wines, producers, countries and vintages of one wine type
     _statTypePage(k, scope, S) {
       const H = this._statHist(), items = (scope === 'arch' ? H.items : S.items.concat(H.items)).filter((b) => (b._type || '') === k);
@@ -2358,6 +2382,7 @@
       const tile = (big, label, go) => (go
         ? `<button class="stile" data-act="statscope" data-t="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`
         : `<div class="stile st"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></div>`);
+      const tileGo = (big, label, to) => `<button class="stile" data-act="statgo" data-to="${to}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`;
       const head = (label, hint) => `<div class="wsub shead">${esc(label)}</div>` + (hint ? `<div class="wsub">${esc(hint)}</div>` : '');
       const row = (label, sub, n, mx, text, attr) => `<${attr ? 'button' : 'div'} class="srow${attr ? '' : ' st'}" ${attr || ''}><span class="srl"><span class="srt">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></span>` +
         `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / Math.max(1, mx) * 100))}%"></span></span><span class="sbc">${esc(text)}</span></${attr ? 'button' : 'div'}>`;
@@ -2373,9 +2398,9 @@
         const goneP = new Set(goneW.map((w) => w.producer).filter((pr) => pr && !stockProd.has(pr)));
         const goneTop = goneW.slice().sort((a, b) => b.n - a.n || de.compare(a.name, b.name)).slice(0, 8);
         return hero(H.total, t('stat.drunkHero')) +
-          `<div class="sgrid">${tile(num(H.wines.size), t('stat.wines'))}${tile(num(H.gifted), t('stat.gifted'))}</div>` +
+          `<div class="sgrid">${tileGo(num(H.wines.size), t('stat.wines'), 'd:wines')}${tileGo(num(H.gifted), t('stat.gifted'), 'd:gifted')}</div>` +
           (H.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(money(H.value))}</span><span class="slbl">${esc(t('stat.drunkValue'))}</span></button>` : '') +
-          (goneW.length ? head(t('stat.goneHead')) + `<div class="sgrid">${tile(num(goneW.length), t('stat.goneWines'))}${tile(num(goneP.size), t('stat.goneProducers'))}</div>` +
+          (goneW.length ? head(t('stat.goneHead')) + `<div class="sgrid">${tileGo(num(goneW.length), t('stat.goneWines'), 'd:gonew')}${tileGo(num(goneP.size), t('stat.goneProducers'), 'd:gonep')}</div>` +
             head(t('stat.goneTop'), t('stat.goneTopHint')) + `<div class="slist">${goneTop.map((w) => row(w.name, w.producer, w.n, goneTop[0].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
           head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
           head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +
@@ -2428,7 +2453,7 @@
           `<div class="sgrid">${mini('countries', t('stat.topCountry'), (S.countries[0] || [])[0])}${mini('producers', t('stat.topProducer'), (S.producers[0] || [])[0])}` +
           `${mini('regions', t('stat.topRegion'), (S.regions[0] || [])[0])}${mini('grapes', t('stat.topGrape'), (S.grapes[0] || [])[0])}</div>`;
       } else {
-        const pg = key.startsWith('type:') && scope !== 'stock' ? this._statTypePage(key.slice(5), scope, S) : this._statPage(key, key === 'value' && scope !== 'stock' ? this._statValue(scope, S) : S, st.all);
+        const pg = key.startsWith('d:') ? this._statDrunkPage(key, S) : key.startsWith('type:') && scope !== 'stock' ? this._statTypePage(key.slice(5), scope, S) : this._statPage(key, key === 'value' && scope !== 'stock' ? this._statValue(scope, S) : S, st.all);
         const fAct = scope === 'arch' ? 'statarch' : 'statfilter'; // Drunk: a tap shows the archive with this filter
         html = nav(pg.title) + (pg.tabs ? `<div class="stabs">${pg.tabs.map(([k, l]) => `<button class="stab${k === pg.tab ? ' on' : ''}" data-act="stattab" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '') + pg.sections.map((sec) => {
           const mx = Math.max(1, ...sec.rows.map((r) => r.n));

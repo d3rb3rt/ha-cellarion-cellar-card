@@ -2304,16 +2304,17 @@
       const wrows = (list) => ({ rows: top(list).map((w) => ({ label: w.name, sub: w.producer, n: w.n, filter: ['q', w.name] })), total: list.length, limit: lim });
       const goneW = Array.from(H.wines.entries()).filter(([k]) => !S.wines.has(k)).map(([, w]) => w);
       const rLbl = (r) => (I18N.dict['hist.reason.' + r] !== undefined ? t('hist.reason.' + r) : String(r)); // consumption types come from the data
+      const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
       if (key.startsWith('d:r:')) {
         const r = key.slice(4), items = H.items.filter((h) => (h.reason || 'drank') === r);
         if (r === 'drank') { // drunk: the wines drunk most
           const m = new Map();
           items.forEach((h) => { const id = h.wine || h.name; const w = m.get(id) || { name: h.name, producer: h.producer, n: 0 }; w.n++; m.set(id, w); });
-          return { title: rLbl(r), sections: [wrows(Array.from(m.values()).sort(byN))] };
+          return { title: cap(rLbl(r)), sections: [wrows(Array.from(m.values()).sort(byN))] };
         }
         // Every other type (gifted, sold ...): one row per bottle, the note of the consumption instead of a bar, the date instead of the count
         const list = items.slice().sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
-        return { title: rLbl(r), sections: [{ rows: top(list).map((h) => ({ label: h.name, sub: h.producer, n: 1, note: h.note, text: h.at ? this._fmtDate(h.at) : '', filter: ['q', h.name] })), total: list.length, limit: lim }] };
+        return { title: cap(rLbl(r)), sections: [{ rows: top(list).map((h) => ({ label: h.name, sub: h.producer, n: 1, note: h.note, text: h.at ? this._fmtDate(h.at) : '', filter: ['q', h.name] })), total: list.length, limit: lim }] };
       }
       switch (key) {
         case 'd:wines': return { title: t('stat.wines'), sections: [wrows(Array.from(H.wines.values()).sort(byN))] };

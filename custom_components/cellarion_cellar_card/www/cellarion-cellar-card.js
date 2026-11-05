@@ -1215,9 +1215,10 @@
       const names = new Map(cl.map((c) => [c.id, c.name || '']));
       const per = new Map();
       (data.bottles || []).forEach((b) => { if (!this._gone.has(b.id)) { const k = b.cellar || cl[0].id; per.set(k, (per.get(k) || 0) + 1); } });
-      // Classification list of a wine; predicates (Kabinett, Spätlese ...) before the vineyard rank
+      // Classification list of a wine; tiers of kind ripeness (Kabinett, Spätlese ...) before the others (kind comes from Cellarion, see classKinds)
+      const kinds = data.classKinds || {};
       const clsOf = (c) => {
-        const pr = (x) => (/kabinett|sp[aä]tlese|auslese|eiswein|qualit[aä]tswein|landwein/i.test(x) ? 0 : 1);
+        const pr = (x) => (kinds[x.toLowerCase()] === 'ripeness' ? 0 : 1);
         return String(c || '').split(',').map((x) => x.trim()).filter(Boolean).map((x, i) => [x, i]).sort((a, b) => pr(a[0]) - pr(b[0]) || a[1] - b[1]).map((x) => x[0]);
       };
       const bottles = (data.bottles || []).filter((b) => !this._gone.has(b.id) && (!multi || all || (b.cellar || cl[0].id) === sel)).map((b) => {
@@ -1274,6 +1275,7 @@
         multi,
         url: String(data.url || 'https://cellarion.app').replace(/\/+$/, ''),
         fields: Array.isArray(data.fields) ? data.fields : [],
+        classKinds: kinds,
         bottles,
         history: hist,
         racks: cur ? (cur.racks || []) : Array.from(new Set([].concat(...cl.map((c) => c.racks || [])))),
@@ -1647,18 +1649,13 @@
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
-    // Group of a classification tier: [0 vineyard rank, 1 ripeness / predicate, 2 ageing, 3 other, index inside the group]
+    // Group of a classification tier from its kind in Cellarion (data.classKinds: tier name or synonym, lower case, to kind):
+    // [0 vineyard rank, 1 ripeness / predicate, 2 ageing, 3 other, index inside the group]; unknown tiers count as "other"
     _clsPos(v) {
-      const G = [
-        ['grosses gewächs', 'grosse lage', 'vdp grosse lage', 'erste lage', 'vdp erste lage', 'ortswein', 'vdp ortswein', 'gutswein', 'vdp gutswein', 'grand cru', 'premier cru'],
-        ['landwein', 'qualitätswein', 'steinfeder', 'federspiel', 'smaragd', 'kabinett', 'spätlese', 'auslese', 'beerenauslese', 'trockenbeerenauslese', 'eiswein'],
-        ['reserve', 'reserva', 'riserva', 'gran reserva'],
-      ];
-      const k = String(v).toLowerCase();
-      for (let g = 0; g < G.length; g++) { const i = G[g].indexOf(k); if (i >= 0) return [g, i]; }
-      return [G.length, 0];
+      const k = ((this._data && this._data.classKinds) || {})[String(v).toLowerCase()], g = INFO_TIER.indexOf(k);
+      return [g >= 0 ? g : INFO_TIER.length, 0];
     }
-    // Pick list of one classification kind: fixed order (e.g. Grosses Gewächs, VDP Grosse Lage, Grand Cru ...), not by count
+    // Pick list of one classification kind: by group, then alphabetical, not by count
     _optsCls(map, selected) {
       const pos = (v) => this._clsPos(v);
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });

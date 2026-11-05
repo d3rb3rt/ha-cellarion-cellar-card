@@ -728,6 +728,7 @@
     .derr { color: var(--s-over); }
     .dask { font-size: 1.1em; font-weight: 600; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
+    @media (min-width: 700px) { .dsheet.statsheet { height: 86%; } } /* fixed height: pills and cards do not jump between pages of different length */
     /* Flag hdr2 (wide only): filters left in two rows; tools (sort, stats, reload, settings) above the search on the right */
     @media (min-width: 601px) {
       :host([data-hdr2]) .head { display: grid; grid-template-columns: minmax(0, 1fr) max-content; column-gap: 12px; row-gap: 6px; align-items: start; }

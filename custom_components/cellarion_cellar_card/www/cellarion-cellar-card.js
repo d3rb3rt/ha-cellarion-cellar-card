@@ -552,8 +552,8 @@
     .sbars, .slist { display: flex; flex-direction: column; }
     .sbar, .srow { display: grid; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; border: 0; background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
     .sbar { grid-template-columns: 16px 64px 1fr 40px; }
-    .sbar2 { grid-template-columns: 16px 64px 1fr 6.8em; }
-    .sbc2 { display: grid; grid-template-columns: 1fr 1em 1fr; text-align: center; } /* the separator dot sits on one line in all rows */
+    .sbar2 { grid-template-columns: 16px 64px 1fr 7em; }
+    .sbc2 { display: grid; grid-template-columns: 1fr .4em 1fr; column-gap: .4em; text-align: center; } /* the separator dot sits on one line in all rows */
     .sbc2 > :first-child { text-align: right; }
     .sbc2 > :last-child { text-align: left; } /* same width for the count column, so all bars are equally long */
     .sbar2 .sbc { white-space: nowrap; }

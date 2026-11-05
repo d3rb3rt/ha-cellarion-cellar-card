@@ -618,6 +618,7 @@
     .dbot.on { border-color: var(--cb-on); box-shadow: inset 0 0 0 1px var(--cb-on); }
     .dbot .rd { width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--cb-ring); flex: none; }
     .dbot.on .rd { border-color: var(--cb-on); background: radial-gradient(var(--cb-on) 0 45%, transparent 50%); }
+    .srow .srn { color: var(--cb-sub); font-size: .9em; line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
     .srow.flat .sbt { visibility: hidden; } /* equal counts: no bar */
     .dlink { color: var(--cb-on); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
     .dnote { white-space: pre-wrap; line-height: 1.4; position: relative; }
@@ -2305,9 +2306,10 @@
         case 'd:wines': return { title: t('stat.wines'), sections: [wrows(Array.from(H.wines.values()).sort(byN))] };
         case 'd:gonew': return { title: t('stat.goneWines'), sections: [wrows(goneW.slice().sort(byN))] };
         case 'd:gifted': {
-          const m = new Map();
-          H.items.filter((h) => h.reason === 'gifted').forEach((h) => { const id = h.wine || h.name; const w = m.get(id) || { name: h.name, producer: h.producer, n: 0 }; w.n++; m.set(id, w); });
-          return { title: t('stat.gifted'), sections: [wrows(Array.from(m.values()).sort(byN))] };
+          // One row per gifted bottle: the consumption note (to whom, why) instead of a bar, the date instead of the count
+          const list = H.items.filter((h) => h.reason === 'gifted').slice().sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+          const rows = top(list).map((h) => ({ label: h.name, sub: h.producer, n: 1, note: h.note, text: h.at ? this._fmtDate(h.at) : '', filter: ['q', h.name] }));
+          return { title: t('stat.gifted'), sections: [{ rows, total: list.length, limit: lim }] };
         }
         case 'd:gonep': {
           const stockProd = new Set(S.producers.map((x) => x[0])), m = new Map();
@@ -2476,7 +2478,8 @@
             `<div class="slist">${sec.rows.map((r) => {
               const attr = r.go ? `data-act="statgo" data-to="${esc(r.go)}"` : `data-act="${fAct}" data-g="${esc(r.filter[0])}" data-v="${esc(r.filter[1])}"`;
               return `<button class="srow${flat ? ' flat' : ''}" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
-                `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(r.n / mx * 100))}%"></span></span><span class="sbc">${esc(r.text || num(r.n))}</span></button>`;
+                (r.note ? `<span class="srn">${esc(r.note)}</span>` : `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(r.n / mx * 100))}%"></span></span>`) +
+                `<span class="sbc">${esc(r.text || num(r.n))}</span></button>`;
             }).join('')}</div>` +
             (more || (st.all && sec.total > sec.limit) ? `<button class="btn" data-act="statall">${esc(st.all ? t('stat.less') : t('stat.all', { n: sec.total }))}</button>` : '');
         }).join('') + `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;

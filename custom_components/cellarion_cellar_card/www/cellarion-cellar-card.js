@@ -657,6 +657,7 @@
     .setv2 .sgrp { display: flex; align-items: center; gap: 14px; margin-top: 28px; font-size: 1.1em; font-weight: 600; letter-spacing: .02em; color: var(--cb-on); }
     .setv2 .sgrp::before, .setv2 .sgrp::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--cb-on) 40%, transparent); }
     .setv2 .sethead { position: sticky; top: -16px; z-index: 5; background: var(--cb-card); margin: -16px -16px 0; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+    .setv2.setfix { height: 92%; } /* flag setviews: fixed height, so the pills do not jump when the content of a group is shorter or longer */
     .setv2 .setnav { margin: 0; padding-bottom: 0; scrollbar-width: none; }
     .setv2 .sethead + .sgrp, .setv2 .sethead + .derr + .sgrp, .setv2 .sethead + .derr + .wsub + .sgrp { margin-top: 10px; }
     .setv2 .srow { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 16px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--cb-line); }
@@ -2564,7 +2565,7 @@
           row(t('set.rackSide'), '', '', radios('rk-' + n + '-side', 'rack', [['none', t('set.sideNone')], ['thirds', t('set.sideThirds')], ['slot', t('set.sideSlot')]], rs.side, ` data-n="${esc(n)}" data-k="side"`)) + `</div>`; }).join('');
       const langs = [['', t('set.languageAuto')]].concat(Object.entries(this._langs || {}));
       const shownF = fdefs.filter((d) => !this._fh.has(d.id)).length;
-      let html = `<div class="dsheet setv2" role="dialog" aria-modal="true">` +
+      let html = `<div class="dsheet setv2${this._flag('setviews') ? ' setfix' : ''}" role="dialog" aria-modal="true">` +
         `<div class="sethead"><div class="dh"><span class="wmain"><span class="wname">${esc(t('head.settings'))}</span></span>` +
         `<button class="dx" data-act="setclose" aria-label="${esc(t('head.close'))}">✕</button></div><!--pills--></div>` +
         (this._setErr ? `<div class="derr">${esc(this._setErr)}</div>` : '') + (this._setNote ? `<div class="wsub">${esc(this._setNote)}</div>` : '') +

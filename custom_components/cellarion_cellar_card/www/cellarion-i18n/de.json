@@ -215,7 +215,7 @@
  "set.sideThirds": "links/Mitte/rechts",
  "set.sideSlot": "Platznummer",
  "set.priceBands": "Preisstufen",
- "set.priceBandsSub": "Obergrenzen des Preisfilters, aufsteigend, mit Komma getrennt (z. B. 15, 20, 30). Leer = Standard. Gilt für alle Geräte.",
+ "set.priceBandsSub": "Obergrenzen des Preisfilters, aufsteigend, mit Komma getrennt (z. B. 15, 20, 30). Leer = Filter aus. Gilt für alle Geräte.",
  "set.keepState": "Beim Neuladen der Seite",
  "set.keepStateSub": "Nur dieses Gerät",
  "set.keepOn": "Filter und Sortierung behalten",

@@ -70,7 +70,7 @@
   const PRICE_DEFAULT = [10, 20, 30, 50, 75, 100]; // default upper limits; the setting "Price bands" (shared by all devices) replaces them
   let PRICE_BANDS = [];
   const bandsOk = (a) => Array.isArray(a) && a.length > 0 && a.length <= 12 && a.every((x, i) => typeof x === 'number' && x > 0 && (i === 0 || x > a[i - 1]));
-  const setBands = (a) => { const l = bandsOk(a) ? a : PRICE_DEFAULT; PRICE_BANDS = l.map((x) => [x, 'p' + x]).concat([[Infinity, 'pmax']]); };
+  const setBands = (a) => { const off = Array.isArray(a) && !a.length, l = bandsOk(a) ? a : PRICE_DEFAULT; PRICE_BANDS = off ? [] : l.map((x) => [x, 'p' + x]).concat([[Infinity, 'pmax']]); }; // [] = price filter off
   setBands();
   const PRICE = [];
   let CUR = ''; // currency of the prices: the one most bottles use (set in _ingest)
@@ -79,7 +79,7 @@
   const setPrice = () => { PRICE.length = 0; PRICE_BANDS.forEach(([, k], i) => PRICE.push([k, priceLbl(i)])); };
   const priceKey = (b) => {
     if (typeof b.price !== 'number' || !(b.price > 0) || (b.currency && b.currency !== CUR)) return '';
-    return PRICE_BANDS.find(([max]) => b.price <= max)[1];
+    return (PRICE_BANDS.find(([max]) => b.price <= max) || [, ''])[1];
   };
   const STATUS_LABEL = {};
   let NO_LOC = 'Ohne Platz';
@@ -1368,7 +1368,7 @@
         { id: 'status', label: t('filter.status'), defs: STATUS, dot: '--s-', get: (b) => (b._status === 'window' ? 'peak' : b._status) },
         { id: 'cls', label: t('filter.cls'), get: (b) => b._cls || [] },
         { id: 'vintage', label: t('filter.vintage'), get: (b) => String(b.vintage || 'NV'), sort: (a, b) => this._vint(b[0]) - this._vint(a[0]) },
-        { id: 'price', label: t('filter.price'), defs: PRICE, get: (b) => b._price },
+        ...(PRICE_BANDS.length ? [{ id: 'price', label: t('filter.price'), defs: PRICE, get: (b) => b._price }] : []), // empty setting Price bands = no price filter
         { id: 'racks', label: t('filter.racks'), get: (b) => b._rack, sort: (a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]) },
         { id: 'shop', label: t('filter.shop'), get: (b) => b.shop || null },
       ];
@@ -2511,8 +2511,8 @@
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())).join(',') : '-');
       try {
         await this._call('settings',
-          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), an: S.archN === undefined ? 'keep' : String(S.archN), pb: bandsOk(S.priceBands) ? S.priceBands.join(',') : '-', io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
-          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.archN === undefined ? {} : { arch_n: S.archN }), price_bands: bandsOk(S.priceBands) ? S.priceBands : [], ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), an: S.archN === undefined ? 'keep' : String(S.archN), pb: !Array.isArray(S.priceBands) ? 'keep' : S.priceBands.length ? S.priceBands.join(',') : '-', io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.archN === undefined ? {} : { arch_n: S.archN }), ...(Array.isArray(S.priceBands) ? { price_bands: S.priceBands } : {}), ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
         this._setErr = '';
       } catch (e) {
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
@@ -3283,8 +3283,7 @@
     _onChange(e) {
       if (e.target && e.target.dataset && e.target.dataset.pb !== undefined) { // setting Price bands (shared): upper limits, ascending; empty or the default = default
         const a = String(e.target.value).split(/[^0-9.]+/).filter(Boolean).map(Number);
-        if (!a.length || String(a) === String(PRICE_DEFAULT)) delete this._shared.priceBands;
-        else if (bandsOk(a)) this._shared.priceBands = a;
+        if (!a.length || bandsOk(a)) this._shared.priceBands = a; // empty = filter off
         else { this._renderSet(); return; }
         this._applyEff(); this._saveSettings();
         if (this._raw) this._ingest(this._raw);

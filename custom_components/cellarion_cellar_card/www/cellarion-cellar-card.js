@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
+  const FLAGS = BACKEND === 'dev' ? [{ id: 'setviews' }] : []; // setviews: settings as views (one group per pill); experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
   const typeLbl = (k) => { if (!k) return ''; const v = t('type.' + k); return v === 'type.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a wine type (Cellarion's value; no text: the name itself)
@@ -2486,7 +2486,7 @@
     // Settings page: plain list, groups, a description column (left) and a control column (right) of fixed proportions.
     _setNavMark() { // settings: mark the pill of the group that is currently at the top
       const sh = this._dlg && this._dlg.querySelector('.dsheet'), hd = sh && sh.querySelector('.sethead');
-      if (!sh || !hd) return;
+      if (!sh || !hd || !sh.querySelector('.sgrp')) return; // view mode (flag setviews) has no group headings to follow
       const line = hd.getBoundingClientRect().bottom + 12; let cur = null;
       sh.querySelectorAll('.sgrp[data-sg]').forEach((g) => { if (g.getBoundingClientRect().top <= line) cur = g.dataset.sg; });
       if (this._setPick) cur = this._setPick; // the pill that was tapped stays marked until the user scrolls by hand (the last groups cannot reach the top)
@@ -2526,7 +2526,8 @@
       const chkOpt = (act, extra, on, label) => `<label class="opt"><input type="checkbox" data-act="${act}"${extra || ''}${on ? ' checked' : ''}><span>${esc(label)}</span></label>`;
       const grps = [];
       const grp = (name, id) => { grps.push([id, name]); return `<div class="sgrp" data-sg="${id}">${esc(name)}</div>`; };
-      const sec = (id, title, sum, body, scope) => { const o = open.has(id);
+      const sv = this._flag('setviews'), forceOpen = sv ? new Set(['infod', 'racks']) : new Set(); // views: a group with a single entry shows it expanded
+      const sec = (id, title, sum, body, scope) => { const o = open.has(id) || forceOpen.has(id);
         return `<div class="ssec${scope ? ' hs' : ''}"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const lbl = (d) => d.personal || d.infoOnly ? '[' + d.label + ']' : d.clsg !== undefined ? t('filter.cls') + ': ' + d.label : d.label; // split classification filters: "Classification: Vineyard rank"
       const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
@@ -2587,7 +2588,14 @@
         grp(t('set2.grpArch'), 'arch') + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) +
         (FLAGS.length ? grp(t('set2.grpDev'), 'dev') + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
-      html = html.replace('<!--pills-->', `<div class="stabs setnav">${grps.map(([id, n]) => `<button class="stab" data-act="setgo" data-g="${id}">${esc(n)}</button>`).join('')}</div>`);
+      if (sv) { // flag setviews: the pills are views, only the chosen group is shown (without its heading)
+        const cur = grps.some((g) => g[0] === this._setViewId) ? this._setViewId : grps[0][0];
+        const closeTag = '</div>'; let body = html.endsWith(closeTag) ? html.slice(0, -closeTag.length) : html;
+        const parts = body.split(/(?=<div class="sgrp" data-sg=")/), head = parts.shift();
+        const mine = parts.find((x) => x.indexOf('data-sg="' + cur + '"') === 18) || '';
+        html = head + mine.replace(/^<div class="sgrp"[^>]*>[^<]*<\/div>/, '') + closeTag;
+        html = html.replace('<!--pills-->', `<div class="stabs setnav">${grps.map(([id, n]) => `<button class="stab${id === cur ? ' on' : ''}" data-act="setview" data-g="${id}">${esc(n)}</button>`).join('')}</div>`);
+      } else html = html.replace('<!--pills-->', `<div class="stabs setnav">${grps.map(([id, n]) => `<button class="stab" data-act="setgo" data-g="${id}">${esc(n)}</button>`).join('')}</div>`);
       el.innerHTML = html;
       el.hidden = false;
       const _sh = el.querySelector('.dsheet');
@@ -2597,7 +2605,7 @@
         _sh.addEventListener('wheel', free, { passive: true }); _sh.addEventListener('touchmove', free, { passive: true });
       }
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
-      this._setNavMark();
+      if (!sv) this._setNavMark();
     }
     // The filter choice applies to all devices: save it in Home Assistant, report errors only quietly
     async _saveSettings() {
@@ -3471,6 +3479,7 @@
     },
     setopen() { this._det = null; this._set = true; this._renderDlg(); },
     sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; if (o.has(id)) o.delete(id); else { o.clear(); o.add(id); } this._renderSet(); }, // one section open at a time
+    setview(t) { this._setViewId = t.dataset.g; this._sx = new Set(); const sh = this._dlg && this._dlg.querySelector('.dsheet'); this._renderSet(); if (sh) { const n = this._dlg.querySelector('.dsheet'); if (n) n.scrollTop = 0; } }, // flag setviews
     setgo(t) { // settings: pill = scroll to the group below the fixed header
       const sh = this._dlg && this._dlg.querySelector('.dsheet'), g = sh && sh.querySelector('.sgrp[data-sg="' + t.dataset.g + '"]'), hd = sh && sh.querySelector('.sethead');
       this._setPick = t.dataset.g; this._setNavMark();

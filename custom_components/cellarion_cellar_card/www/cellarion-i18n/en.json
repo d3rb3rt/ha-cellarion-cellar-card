@@ -257,6 +257,8 @@
  "sort.priceAsc": "Price, low to high",
  "sort.priceDesc": "Price, high to low",
  "sort.countDesc": "Bottles, most first",
+ "flag.setviews": "Settings as views (test)",
+ "flag.setviewsSub": "The pills at the top switch between the groups instead of scrolling.",
  "det.editIn": "Edit in Cellarion",
  "det.openIn": "Edit in",
  "flag.hdr": "Header (test)",

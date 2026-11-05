@@ -102,6 +102,12 @@
 
   const esc = (s) =>
     String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Generic link recognition on ALREADY ESCAPED html: only http(s) URLs outside of tags become links (no javascript:/data:), shown as host, full address in the tooltip.
+  const linkify = (html) => String(html == null ? '' : html).split(/(<[^>]*>)/).map((part, i) => i % 2 ? part : part.replace(/https?:\/\/(?:(?!&(?:lt|gt|quot|#39);)[^\s<>"'])+/g, (m) => {
+    const tail = (m.match(/[.,;:!?)\]]+$/) || [''])[0], url = tail ? m.slice(0, -tail.length) : m;
+    let host = url; try { host = new URL(url.replace(/&amp;/g, '&')).hostname.replace(/^www\./, ''); } catch (e) { /* keep the address */ }
+    return `<a class="dlink" href="${url}" target="_blank" rel="noopener noreferrer" title="${url}">${host}</a>${tail}`;
+  })).join('');
   const norm = (s) =>
     String(s == null ? '' : s)
       .toLowerCase()
@@ -612,6 +618,7 @@
     .dbot.on { border-color: var(--cb-on); box-shadow: inset 0 0 0 1px var(--cb-on); }
     .dbot .rd { width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--cb-ring); flex: none; }
     .dbot.on .rd { border-color: var(--cb-on); background: radial-gradient(var(--cb-on) 0 45%, transparent 50%); }
+    .dlink { color: var(--cb-on); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
     .dnote { white-space: pre-wrap; line-height: 1.4; position: relative; }
     .dpur { color: var(--cb-sub); font-size: .9em; }
     .dact {
@@ -2893,7 +2900,7 @@
           }
         });
         const dOpen = !!(d && d.dmore), nMore = drow.filter((r) => r.more).length;
-        const dl = (rs) => `<dl class="dfacts" style="margin:0">${rs.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl>`;
+        const dl = (rs) => `<dl class="dfacts" style="margin:0">${rs.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${linkify(r.v)}</dd>`).join('')}</dl>`;
         dataBlock = `<div class="d2mine d2data">` + (drow.length ? dl(drow.filter((r) => !r.more || dOpen)) : '') +
           (nMore ? `<button type="button" class="d2moreb${dOpen ? ' open' : ''}" data-act="drmore" aria-expanded="${dOpen}" aria-label="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}" title="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}"><span aria-hidden="true">${dOpen ? '▴' : '▾'}</span> ${esc(dOpen ? t('det.dmoreLess') : t('det.dmoreN', { n: nMore }))}</button>` : '') +
           (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
@@ -2905,7 +2912,7 @@
         return parts.join('\n\n');
       };
       const notes = Array.from(new Set(infos.map((i) => (i.notes ? stripShop(i.notes, i.purchaseLocation) : '')).filter(Boolean)));
-      const noteHtml = notes.length ? `<div class="dsec">${esc(t('det.myNote'))}${notes.length > 1 ? ne : ''}</div><div class="dnote">${esc(notes[0])}</div>` : '';
+      const noteHtml = notes.length ? `<div class="dsec">${esc(t('det.myNote'))}${notes.length > 1 ? ne : ''}</div><div class="dnote">${linkify(esc(notes[0]))}</div>` : '';
       // Bottles: selectable grouped by place (take-out "from this place"), each group expandable down to the single bottle
       const nm = (l) => (l === NO_LOC ? t('loc.noneShort') : l);
       const groups = new Map();

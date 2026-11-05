@@ -2303,6 +2303,7 @@
       const byN = (a, b) => b.n - a.n || de.compare(a.name, b.name);
       const wrows = (list) => ({ rows: top(list).map((w) => ({ label: w.name, sub: w.producer, n: w.n, filter: ['q', w.name] })), total: list.length, limit: lim });
       const goneW = Array.from(H.wines.entries()).filter(([k]) => !S.wines.has(k)).map(([, w]) => w);
+      const num = (n) => new Intl.NumberFormat(I18N.lang || 'de').format(n);
       const rLbl = (r) => (I18N.dict['hist.reason.' + r] !== undefined ? t('hist.reason.' + r) : String(r)); // consumption types come from the data
       const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
       if (key.startsWith('d:r:')) {

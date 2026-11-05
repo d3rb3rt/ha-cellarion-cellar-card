@@ -104,7 +104,8 @@
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
-  const INFO_TIER = ['vineyard_rank', 'ripeness', 'ageing']; // classification kind by the group index of _clsPos
+  const KIND_REST = 'other'; // kind of a classification tier Cellarion does not list (and Cellarion's own catch-all kind)
+  const clsLbl = (k) => { const v = t('cls.' + k); return v === 'cls.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a classification kind
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
   const infoNorm = (s) => String(s == null ? '' : s).trim().toLowerCase().replace(/[\s-]+/g, '_');
   const isInfoKey = (k) => /^(info:|src:)/i.test(String(k));
@@ -999,8 +1000,8 @@
       this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
       // Info behind the wine name in the list: order + what is shown (central for all devices, overridable per device)
       const I = L.info || { order: S.infoOrder, show: S.infoShow };
-      // The old single item "cls" (classification) became one item per kind (cls0..cls3)
-      const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : [x])));
+      // The single item "cls" (classification) stands for one item per kind of tier (cls:<kind>, kinds come from Cellarion)
+      const KS = this._kinds().map((k) => 'cls:' + k), expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? KS : [x])));
       const ord = Array.isArray(I.order) ? I.order.map(String) : []; // "d:<id>" entries = order in the details (flag infosplit)
       this._io = expand(ord.filter((x) => !x.startsWith('d:')));
       this._ido = expand(ord.filter((x) => x.startsWith('d:')).map((x) => x.slice(2)));
@@ -1011,7 +1012,7 @@
       this._iOff = new Set(expand(sh.filter((x) => x.startsWith('off:')).map((x) => x.slice(4))));
     }
     _infoDefs(det) { // det: the order of the details (only with flag infosplit), without the price
-      const std = [0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g })) // clsg: shown as "Classification: <kind>", like in the filter settings
+      const std = this._kinds().map((k) => ({ id: 'cls:' + k, label: clsLbl(k), clsg: k })) // clsg: kind, shown as "Classification: <kind>" like in the filter settings
         .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       // Flag detrows: the details also list the vineyard name and the bottle data (price, purchase date ...) as data fields
@@ -1029,17 +1030,16 @@
     _infoShowArr() { return Array.from(this._is).concat(Array.from(this._iOff).map((x) => 'off:' + x), Array.from(this._iMore).map((x) => 'more:' + x)); }
     // Id of the data field (see _infoDefs) behind an info attribute key
     _infoDefId(k) {
-      const ti = INFO_TIER.indexOf(k);
       if (this._infoDefs().some((x) => x.id === k && !x.personal)) return k; // Cellarion data fields (country, region, appellation, grape) have their attribute as id
       if (this._infoOnly().indexOf(k) >= 0) return 'i:' + k;
-      if (ti >= 0) return 'cls' + ti;
+      if (this._kinds().indexOf(k) >= 0) return 'cls:' + k;
       const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
       return d ? d.id : '';
     }
     // Info attributes without an own value: the field info:<attribute> exists, but there is neither a Cellarion field nor a personal field of that name.
     // Their row shows the name of the reference entry (see _infoVal); the settings mark them with [brackets] like personal fields.
     _infoOnly() {
-      const own = WINE_ATTR.concat(INFO_TIER), r = [];
+      const own = WINE_ATTR.concat(this._kinds()), r = [];
       ((this._data && this._data.fields) || []).forEach((l) => { const m = /^info:\s*(.+)$/i.exec(String(l)), k = m ? infoNorm(m[1]) : ''; if (k && own.indexOf(k) < 0 && !this._isPers(k) && r.indexOf(k) < 0) r.push(k); });
       return r;
     }
@@ -1348,10 +1348,10 @@
         { id: 'racks', label: t('filter.racks'), get: (b) => b._rack, sort: (a, b) => (a[0] === NO_LOC) - (b[0] === NO_LOC) || de.compare(a[0], b[0]) },
         { id: 'shop', label: t('filter.shop'), get: (b) => b.shop || null },
       ];
-      // Classification: one filter per kind of tier (rank, ripeness, ageing, other) instead of a single one (the info line still uses 'cls')
+      // Classification: one filter per kind of tier (from Cellarion) instead of a single one (the info line still uses 'cls')
       {
         const i = std.findIndex((x) => x.id === 'cls');
-        if (i >= 0) std.splice(i, 1, ...[0, 1, 2, 3].map((g) => ({ id: 'cls' + g, label: t('cls.g' + g), clsg: g, get: (b) => (b._cls || []).filter((v) => this._clsPos(v)[0] === g) })));
+        if (i >= 0) std.splice(i, 1, ...this._kinds().map((k) => ({ id: 'cls:' + k, label: clsLbl(k), clsg: k, get: (b) => (b._cls || []).filter((v) => this._clsKind(v) === k) })));
       }
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true, get: (b) => (b.p && b.p[l]) || null }));
       const all = std.concat(pers);
@@ -1649,19 +1649,18 @@
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
-    // Group of a classification tier from its kind in Cellarion (data.classKinds: tier name or synonym, lower case, to kind):
-    // [0 vineyard rank, 1 ripeness / predicate, 2 ageing, 3 other, index inside the group]; unknown tiers count as "other"
-    _clsPos(v) {
-      const k = ((this._data && this._data.classKinds) || {})[String(v).toLowerCase()], g = INFO_TIER.indexOf(k);
-      return [g >= 0 ? g : INFO_TIER.length, 0];
+    // Kind of a classification tier (data.classKinds: tier name or synonym, lower case, to kind; Cellarion's list_classifications)
+    _clsKind(v) { return ((this._data && this._data.classKinds) || {})[String(v).toLowerCase()] || KIND_REST; }
+    // Kinds in the order Cellarion lists them; the catch-all kind is always there, at the end
+    _kinds() {
+      const m = (this._data && this._data.classKinds) || (this._raw && this._raw.classKinds) || {}, r = [];
+      Object.keys(m).forEach((n) => { if (m[n] !== KIND_REST && r.indexOf(m[n]) < 0) r.push(m[n]); });
+      return r.concat([KIND_REST]);
     }
-    // Pick list of one classification kind: by group, then alphabetical, not by count
+    // Pick list of one classification kind: alphabetical, not by count
     _optsCls(map, selected) {
-      const pos = (v) => this._clsPos(v);
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
-      const all = Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0])).map((x) => ({ x, p: pos(x[0]) }))
-        .sort((a, b) => a.p[0] - b.p[0] || a.p[1] - b.p[1] || de.compare(a.x[0], b.x[0]));
-      return all.map((e) => opt(e.x));
+      return Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0])).sort((a, b) => de.compare(a[0], b[0])).map(opt);
     }
     // Own pick menu instead of the native Android list (it was sometimes black, sometimes transparent, shifted when zooming and pulled in the navigation bar)
     _renderDd() {
@@ -2043,7 +2042,7 @@
       pr = pr || '';
       const txt = (d) => {
         if (d.id === 'price') return this._priceOnly(pr);
-        if (/^cls[0-3]$/.test(d.id)) { const c = (b._cls || []).filter((v) => this._clsPos(v)[0] === Number(d.id.slice(3))); return c.length ? this._hl(c.join(', ')) : ''; }
+        if (d.clsg !== undefined) { const c = (b._cls || []).filter((v) => this._clsKind(v) === d.clsg); return c.length ? this._hl(c.join(', ')) : ''; }
         if (d.id === 'country') return b.country ? this._hl(b.country) : '';
         if (d.id === 'region') return b.region ? this._hl(b.region) : '';
         if (d.id === 'appellation') return b.appellation ? this._hl(b.appellation) : '';
@@ -2765,9 +2764,8 @@
         const drow = [];
         this._infoDefs(true).filter((d) => !this._dOff(d.id)).forEach((d) => {
           const add = (k, v, ik) => { if (v) drow.push({ k, v, ik: ik && im[ik] ? ik : '', more: this._iMore.has(d.id) }); };
-          if (/^cls[0-3]$/.test(d.id)) {
-            const g = Number(d.id.slice(3)), c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g).join(', ');
-            add(t('cls.g' + g), esc(c), INFO_TIER[g] && im[INFO_TIER[g]] ? INFO_TIER[g] : '');
+          if (d.clsg !== undefined) {
+            add(d.label, esc((sel._cls || []).filter((v) => this._clsKind(v) === d.clsg).join(', ')), im[d.clsg] ? d.clsg : '');
           } else if (d.infoOnly) add(d.label, esc(this._infoVal(sel, d.attr)), d.attr);
           else if (d.id === 'country') add(t('filter.country'), esc(sel.country), 'country');
           else if (d.id === 'region') add(t('filter.region'), esc(sel.region), 'region');
@@ -2936,8 +2934,7 @@
       if (k === 'region') return sel.region || '';
       if (k === 'appellation') return sel.appellation || '';
       if (k === 'grape') return (sel.grapes || []).join(', ');
-      const ti = INFO_TIER.indexOf(k);
-      if (ti >= 0) return (sel._cls || []).filter((c) => this._clsPos(c)[0] === ti).join(', ');
+      if (this._kinds().indexOf(k) >= 0) return (sel._cls || []).filter((c) => this._clsKind(c) === k).join(', ');
       const p = sel.p || {};
       const pk = Object.keys(p).find((n) => !isInfoKey(n) && infoNorm(n) === k);
       if (pk) return [].concat(p[pk]).join(', ');
@@ -3029,9 +3026,9 @@
       // One row instead of two: "Lage: Name | Stufe" (tier = official vineyard rank; the personal field "Cru / Lage" is only a fallback and its row goes away)
       const cru = rows.find((r) => r.dt.isConnected && /^cru\s*\/\s*lage$/i.test(r.k));
       if (cru && cru.dd && cru.dt.isConnected) { cru.dt.remove(); cru.dd.remove(); }
-      // Classification in the header line: one item per kind (rank, ripeness, ageing); the item is clickable when that kind has an info text
-      INFO_TIER.forEach((k, g) => {
-        const c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g);
+      // Classification in the header line: one item per kind; the item is clickable when that kind has an info text
+      this._kinds().forEach((k) => {
+        const c = (sel._cls || []).filter((v) => this._clsKind(v) === k);
         const key = im[k] ? k : '';
         if (!c.length || !key) return;
         const n = Array.from(el.querySelectorAll('.dh .wreg')).find((w) => w.textContent.trim() === c.join(', '));

@@ -108,7 +108,7 @@
       .normalize('NFD')
       .replace(/[̀-ͯ]/g, '');
 
-  // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
+  // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) ----
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
   // Defaults as long as nothing is saved (settings that exist are never touched): filters on, info in the list, details behind the arrow / off
@@ -118,7 +118,7 @@
   const clsLbl = (k) => { const v = t('cls.' + k); return v === 'cls.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a classification kind
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
   const infoNorm = (s) => String(s == null ? '' : s).trim().toLowerCase().replace(/[\s-]+/g, '_');
-  const isInfoKey = (k) => /^(info:|src:)/i.test(String(k));
+  const isInfoKey = (k) => /^info:/i.test(String(k));
   const infoLbl = (k) => { const v = t('info.lbl.' + k); return v === 'info.lbl.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; };
   // {attribute: text} from the personal fields of a bottle
   const infoMap = (pf) => {
@@ -126,20 +126,6 @@
     Object.keys(pf || {}).forEach((k) => { const x = /^info:\s*(.+)$/i.exec(k); if (x && pf[k]) m[infoNorm(x[1])] = pf[k]; });
     return m;
   };
-  // {attribute: {url, label}}; the label is optional (default = host name)
-  const srcMap = (pf) => {
-    const m = {};
-    Object.keys(pf || {}).forEach((k) => {
-      const x = /^src:\s*(.+)$/i.exec(k), v = x && String(pf[k] || '').trim();
-      if (!v) return;
-      const i = v.indexOf('|'), url = (i < 0 ? v : v.slice(0, i)).trim(), lbl = i < 0 ? '' : v.slice(i + 1).trim();
-      if (!/^https?:\/\//i.test(url)) return;
-      let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return; }
-      m[infoNorm(x[1])] = { url, label: lbl || host };
-    });
-    return m;
-  };
-  const srcLink = (o) => (o ? `<div class="dpur" style="margin-top:12px"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.label)} ↗</a></div>` : '');
 
   // Search: a term matches at the start of a word (prefix), not in the middle ("lanc" does not find "Blancs"); n = normalized text
   const wordAt = (n, t, from) => { let at = n.indexOf(t, from || 0); while (at > 0 && /[\p{L}\p{N}]/u.test(n[at - 1])) at = n.indexOf(t, at + 1); return at; };
@@ -1071,7 +1057,7 @@
       ((this._data && this._data.fields) || []).forEach((l) => { const m = /^info:\s*(.+)$/i.exec(String(l)), k = m ? infoNorm(m[1]) : ''; if (k && own.indexOf(k) < 0 && !this._isPers(k) && r.indexOf(k) < 0) r.push(k); });
       return r;
     }
-    _isPers(k) { return ((this._data && this._data.fields) || []).some((l) => !isInfoKey(l) && infoNorm(l) === k); } // a personal field (not an info:/src: field) of this name exists
+    _isPers(k) { return ((this._data && this._data.fields) || []).some((l) => !isInfoKey(l) && infoNorm(l) === k); } // a personal field (not an info: field) of this name exists
     _infoOff(k) { const id = this._infoDefId(k); return !!id && this._dOff(id); }
     _setInfo(order, show, dorder) {
       order = order.concat((dorder || this._ido || []).map((x) => 'd:' + x));
@@ -3089,12 +3075,12 @@
     _infoTab(x, sel) {
       { const r = this._refTab(x, sel); if (r) return r; }
       const val = this._infoVal(sel, x.tab);
-      return { title: val || infoLbl(x.tab), sub: val ? infoLbl(x.tab) : '', body: `<div class="dpur" style="white-space:pre-line">${esc(x.items[x.tab])}</div>` + srcLink(x.src[x.tab]) };
+      return { title: val || infoLbl(x.tab), sub: val ? infoLbl(x.tab) : '', body: `<div class="dpur" style="white-space:pre-line">${esc(x.items[x.tab])}</div>` };
     }
     _infoOpen(key, from) {
       const sel = this._infoSel();
       if (!sel) return;
-      this._xv = { tab: key, items: infoMap(sel.p), src: srcMap(sel.p), anim: true, top: 0 };
+      this._xv = { tab: key, items: infoMap(sel.p), anim: true, top: 0 };
       try { if (from && this._dlg) { const r = from.getBoundingClientRect(), dr = this._dlg.getBoundingClientRect(); this._xv.top = Math.max(0, Math.round(r.bottom - dr.top + 6)); } } catch (e) { /* default: top */ }
       this._renderDlg();
     }

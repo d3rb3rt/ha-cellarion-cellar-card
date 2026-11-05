@@ -657,6 +657,7 @@
     .setv2 .sgrp { display: flex; align-items: center; gap: 14px; margin-top: 28px; font-size: 1.1em; font-weight: 600; letter-spacing: .02em; color: var(--cb-on); }
     .setv2 .sgrp::before, .setv2 .sgrp::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--cb-on) 40%, transparent); }
     .setv2 .sethead { position: sticky; top: -16px; z-index: 5; background: var(--cb-card); margin: -16px -16px 0; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+    .setv2 .shead.fixed { position: static; display: flex; align-items: flex-start; gap: 10px; padding: 12px 0 4px; border-bottom: 0; background: transparent; }
     .setv2.setfix { height: 92%; } /* flag setviews: fixed height, so the pills do not jump when the content of a group is shorter or longer */
     .setv2 .setnav { margin: 0; padding-bottom: 0; scrollbar-width: none; }
     .setv2 .sethead + .sgrp, .setv2 .sethead + .derr + .sgrp, .setv2 .sethead + .derr + .wsub + .sgrp { margin-top: 10px; }
@@ -2529,7 +2530,7 @@
       const grp = (name, id) => { grps.push([id, name]); return `<div class="sgrp" data-sg="${id}">${esc(name)}</div>`; };
       const sv = this._flag('setviews'), forceOpen = sv ? new Set(['infod', 'racks']) : new Set(); // views: a group with a single entry shows it expanded
       const sec = (id, title, sum, body, scope) => { const o = open.has(id) || forceOpen.has(id);
-        return `<div class="ssec${scope ? ' hs' : ''}"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
+        return `<div class="ssec${scope ? ' hs' : ''}">${forceOpen.has(id) ? '<div class="shead fixed">' : `<button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}">`}<span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span>${forceOpen.has(id) ? '' : `<span class="chev">${o ? '⌄' : '›'}</span>`}${forceOpen.has(id) ? '</div>' : '</button>'}` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const lbl = (d) => d.personal || d.infoOnly ? '[' + d.label + ']' : d.clsg !== undefined ? t('filter.cls') + ': ' + d.label : d.label; // split classification filters: "Classification: Vineyard rank"
       const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
       const grip = `<span class="grip" role="button" aria-label="${esc(t('set2.drag'))}" title="${esc(t('set2.drag'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14M5 12h14M5 16h14"/></svg></span>`;

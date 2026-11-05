@@ -187,6 +187,7 @@
  "det.places": "{n} locations",
  "det.purchaseDate": "Purchased",
  "det.shop": "Merchant",
+ "det.purchaseUrl": "Purchase URL",
  "det.registry": "From the registry",
  "det.registryVerified": "Verified by the registry",
  "det.descr": "Description",

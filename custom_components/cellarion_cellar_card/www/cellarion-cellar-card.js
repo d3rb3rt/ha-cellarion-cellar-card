@@ -115,11 +115,11 @@
       .replace(/[̀-ͯ]/g, '');
 
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) ----
-  const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
+  const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['burl', 'det.purchaseUrl'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
   // Defaults as long as nothing is saved (settings that exist are never touched): filters on, info in the list, details behind the arrow / off
   const DEF_FILTERS = ['types', 'status', 'vintage', 'country', 'region', 'grape', 'producer', 'price', 'racks'];
-  const DEF_SHOW = ['region', 'grape', 'price', 'more:country', 'more:bprice', 'more:bdate', 'more:bshop', 'more:bsize', 'off:bocc', 'off:bord'];
+  const DEF_SHOW = ['region', 'grape', 'price', 'more:country', 'more:bprice', 'more:bdate', 'more:bshop', 'more:burl', 'more:bsize', 'off:bocc', 'off:bord'];
   const KIND_REST = 'other'; // kind of a classification tier Cellarion does not list (and Cellarion's own catch-all kind)
   const clsLbl = (k) => { const v = t('cls.' + k); return v === 'cls.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a classification kind
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
@@ -2871,10 +2871,11 @@
       const priceTxt = info && !info.loading && !info.error ? lot('price', money, true) : '';
       const dateTxt = lot('purchaseDate', (v) => this._fmtDate(v), true);
       const shopTxt = lot('purchaseLocation', (v) => v, false);
+      const urlTxt = lot('purchaseUrl', (v) => v, false);
       const ratingTxt = lot('rating', (v) => String(v) + ((infos.find((i) => i.ratingScale) || {}).ratingScale ? ' / ' + infos.find((i) => i.ratingScale).ratingScale : ''), true);
       const nOrder = bottles.filter((b) => this._info[b.id] && this._info[b.id].onOrder).length;
       const rows = [
-        [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
+        [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.purchaseUrl'), urlTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
         [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
       ];

@@ -7,7 +7,7 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 > setup. It does what it says there, but if that is not your thing, please don't install it. Issues and ideas are welcome.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=2.4.1" alt="Inventory grouped by wine" width="820"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=2.5.0" alt="Inventory grouped by wine" width="820"><br>
   <em>The inventory, grouped by wine, with search, filters and an A–Z index.</em>
 </p>
 
@@ -17,15 +17,15 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/detail.png?v=2.4.1" alt="Bottle details with label image" width="380">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/detail.png?v=2.5.0" alt="Bottle details with label image" width="380">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/phone.png?v=2.4.0" alt="Phone layout" width="300"><br>
-  <em>Bottle details with label image, drink window, profile and storage places · the same card on a phone.</em>
+  <em>Bottle details with label image, drunk bottles, drink window, profile and storage places · the same card on a phone.</em>
 </p>
 
 ## What you get
 
 - **Inventory grouped by wine** with vintages, bottle counts, price and the places each vintage is stored. Search, A–Z index,
-  sorting (wine or producer) and a flat view.
+  sorting (wine, producer or bottles) and a flat view.
 - **Several cellars**: with more than one cellar the cellar name in the header becomes a pulldown (one cellar, or *All
   cellars* together with a cellar tag on each place). The choice is remembered per device. Settings and filters are shared by all cellars.
 - **Filters** with live counts: type, grape, region, appellation, producer, maturity, vintage, price, storage rack and
@@ -34,7 +34,9 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
   values in every filter and combine them the way you need.
 - **Bottle details**: your data (price, purchase, merchant, note, personal fields), the register profile (body, acidity,
   flavours, food pairings, description), a drink-window bar with today's position, the label image and the storage places
-  with a count per place.
+  with a count per place. Which data fields appear in the list and in the details is set separately, field by field;
+  with *info texts* a field can open a text of your own.
+- **Archive**: the wines you have drunk, gifted or sold, with the same facts as the stock, in violet (see *Archive* below).
 - **Rack view**: a small picture of the rack shows where the bottles lie; tap it for the full rack with every shelf and
   slot, and take a bottle out right from there (see below).
 - **Take out** from a fixed bar in the details: say why (drunk, gifted, sold, other), confirm, and Cellarion marks the
@@ -57,6 +59,8 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 - A Cellarion account on cellarion.app, or a self-hosted server on **v1.275 or newer**. The inventory is read with a single
   request to `GET /api/inventory`; an unchanged inventory answers `304`, so keeping the card up to date costs almost
   nothing. Older servers do not have that endpoint.
+- For the **Archive** the card reads `GET /api/inventory?include=consumed`, which needs Cellarion **1.294 or newer**. On an
+  older server everything else works; the card then shows the stock only.
 
 ## Install
 
@@ -99,7 +103,9 @@ Update automations and scripts that call the old services or the old sensor by h
 ## Using the card
 
 - **Search** looks in name, producer, vintage, region, country, appellation, classification, grapes, storage place, type
-  and your personal fields. Several words must all match.
+  and your personal fields. Several words must all match; a word matches at the start of a word, and the whole phrase is
+  tried first. Enter opens the only remaining hit. If the stock has few hits, matching archive wines are added (see
+  *Archive* in the settings).
 - **Filters**: tap a filter chip to pick a value. The counts in the dropdown show wines, vintages and bottles. A filter
   with nothing to choose right now stays in place, greyed out. The *Selected* line at the top of a pick list has an x to
   clear that filter. Filters you moved behind the **...** button are listed there. The classification is split into
@@ -148,28 +154,72 @@ On phones the list shows just the rack name as the storage place; the exact plac
   <em>The rack view: this bottle solid, other bottles of the vintage tinted.</em>
 </p>
 
+## Archive
+
+The **Archive** switch in the filter bar replaces the stock with the wines that have no bottle left. They are shown in
+violet with the same information as the stock rows (region, appellation, classification, price, vintage) and the number
+of drunk bottles. All filters, the search and the sorting work as usual.
+
+- **Details**: the bar above the facts lists the other vintages of the wine, violet when a vintage is completely drunk.
+  The **drunk** mark opens a small overlay with the date and the notes of the finished bottles. Identical entries are
+  merged into one line with a count; the newest three are shown, the rest sits behind a button.
+- **Search**: a text search also shows archive wines when the stock has fewer hits than the number set under
+  *Archive* in the settings (0 = only when nothing is found in stock).
+- **One request**: stock and archive come from one call, `GET /api/inventory?include=consumed`. Drunk, gifted and sold
+  bottles arrive in the same format as the stock, with wine facts and your personal fields, so reloading stays cheap.
+  This needs Cellarion 1.294 or newer; older servers answer with an error and the card shows the stock only.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/archive.png?v=2.5.0" alt="The archive: wines without a bottle left" width="420">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/archive-detail.png?v=2.5.0" alt="Details of a wine with the list of its drunk bottles" width="380"><br>
+  <em>The archive in the list · the drunk bottles of a wine, with date and note.</em>
+</p>
+
+## Data fields and info texts
+
+Every fact the card shows is a **data field**: the Cellarion fields (country, region, appellation, grapes, classification
+kinds, price, purchase, merchant, …) and every personal field you keep in Cellarion.
+
+- **List and details are set separately.** Under *List* and *Details* in the settings each field can be shown, put
+  behind the "..." button (details) or switched off, with its own order for each view.
+- **Every row of the details can be switched off**: the details show one block of rows that you can sort and hide, and
+  the header and the info tabs follow the same order.
+- **Info texts**: a personal field named `info:<attribute>` (for example `info:producer`, `info:region`, or the display
+  name of a field of your own) makes the value of that data field tappable. It opens its text in an overlay; the order of
+  the tabs follows the order of the data fields in the settings.
+- New installations start with sensible defaults for filters, list and details.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/info.png?v=2.5.0" alt="Info text of a producer" width="380">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-details.png?v=2.5.0" alt="Data fields of the details in the settings" width="380"><br>
+  <em>The info text behind the producer · the data fields of the details, each with On, "..." or Off and its own order.</em>
+</p>
+
 ## Statistics
 
-The chart icon in the card header opens an overview of the cellar: bottles, wines, countries, producers, oldest vintage,
-cellar value, bottles per type and the top country, producer, region and grape.
+The chart icon in the card header opens an overview of the cellar, with the tabs **Total**, **Stock** and **Drunk**:
+bottles, wines, countries, producers, oldest vintage, value (purchase prices), bottles per type and the top country,
+producer, region and grape. *Drunk* adds the wines and producers with nothing left in stock and a list of your most
+drunk wines that are gone, as re-buy candidates.
 
 - **Everything in the overview is linked.** Tap a **type bar** (or a similar row) to close the overview and filter the list
   by it, for example only the sparkling wines.
-- Tap a **tile** (wines, countries, producers, oldest vintage, cellar value, top country, …) to see that breakdown in more
-  detail, for example the producers with their bottle counts. Tap an entry there to filter the list by it.
+- Tap a **tile** (wines, producers, value, vintages, …) to see that breakdown in more detail, for example the producers
+  with their bottle counts. Tap an entry there to filter the list by it.
 - The overview counts what the list shows: when *Other* items (not wine) are hidden from the list (see *Show Other in the
   list* under Settings), the overview leaves them out too, so the numbers match the list.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics.png?v=1.0.0" alt="Statistics overview" width="340">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics-detail.png?v=1.0.0" alt="Statistics detail: producers with bottle counts" width="340"><br>
-  <em>The overview · the detail view behind the "Producers" tile.</em>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics.png?v=2.5.0" alt="Statistics overview, total" width="340">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/statistics-drunk.png?v=2.5.0" alt="Statistics of the drunk bottles" width="340"><br>
+  <em>The overview of stock and archive together · the Drunk tab.</em>
 </p>
 
 ## Settings
 
-Tap the gear in the card. Where a setting has the globe/phone switch, it can apply to **all devices** (stored in Home
-Assistant) or to **this device only** (stored in the browser).
+Tap the gear in the card. The groups are reached with the pills at the top; the header stays in place while you scroll.
+Where a setting has the globe/phone switch, it can apply to **all devices** (stored in Home Assistant) or to **this device
+only** (stored in the browser).
 
 **Appearance**
 - *Language*: automatic (the language of the Home Assistant user), English or German.
@@ -182,12 +232,18 @@ Assistant) or to **this device only** (stored in the browser).
 - *Filters*: every filter has a switch with three states: **On** (in the filter row), **...** (behind the "..." button)
   or **Off** (not offered at all). Drag to reorder; your own Cellarion data fields appear here too. The filter mode
   pulldown is in the list as well; it always sits at the end of the row, before "...".
+- *Price bands*: the upper limits of the price filter, ascending, separated by commas (for example `15, 20, 30`). Empty =
+  no price filter. Prices use the currency of your bottles.
 
 **List**
-- *Info in the list*: which facts appear under each wine name, and in which order.
+- *Data fields in the list*: which facts appear under each wine name, and in which order.
 - *Show Other in the list*: drinks that are not wine (beer, cider, …) live in Cellarion's
   [Other category](https://cellarion.app/blog/other-category). They are always found by search; this switch also lists
   them normally.
+
+**Details**
+- *Data fields in the details*: which rows appear in "My data", behind the expand arrow or not at all, in which order. See
+  *Data fields and info texts*.
 
 **Storage**
 - *Storage locations*, per rack: count shelves from the top or the bottom, and show the position as left/middle/right, as
@@ -197,13 +253,19 @@ Assistant) or to **this device only** (stored in the browser).
 - *Edit producers*: choose the word a producer is sorted by (for example "Haag" for "Fritz Haag", or "Clüsserath" for
   "Ansgar Clüsserath"). It drives the producer sorting and the A–Z index. Tap a word to set it, tap again to undo.
 
+**Archive**
+- *Archive hits in the search*: a text search also shows archive wines when the stock has fewer hits than this number
+  (0 = only when nothing is found in stock).
+
+The list can also be sorted by **bottles (most first)**.
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings.png?v=1.0.0" alt="Settings" width="360">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings.png?v=2.5.0" alt="Settings" width="360">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/producers.png?v=1.0.0" alt="Edit producers" width="360">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-filters.png?v=2.4.1" alt="Filter settings with the On, ... and Off switch" width="420"><br>
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-filters.png?v=2.5.0" alt="Filter settings with the On, ... and Off switch" width="420"><br>
   <em>Filter settings: every filter is On, behind "..." or Off; the filter mode is the last row. Names in [square brackets] are your own data fields from Cellarion.</em>
 </p>
 

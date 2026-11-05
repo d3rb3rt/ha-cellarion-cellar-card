@@ -552,7 +552,10 @@
     .sbars, .slist { display: flex; flex-direction: column; }
     .sbar, .srow { display: grid; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; border: 0; background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
     .sbar { grid-template-columns: 16px 64px 1fr 40px; }
-    .sbar2 { grid-template-columns: 16px 64px 1fr 6em; } /* same width for the count column, so all bars are equally long */
+    .sbar2 { grid-template-columns: 16px 64px 1fr 6.8em; }
+    .sbc2 { display: grid; grid-template-columns: 1fr 1em 1fr; text-align: center; } /* the separator dot sits on one line in all rows */
+    .sbc2 > :first-child { text-align: right; }
+    .sbc2 > :last-child { text-align: left; } /* same width for the count column, so all bars are equally long */
     .sbar2 .sbc { white-space: nowrap; }
     .sbar.st { cursor: default; }
     .sbar.st:active { background: transparent; }
@@ -2418,8 +2421,8 @@
         `<div class="sgrid">${tile(num(S.total), t('stat.sc.stock'), 'stock')}${tile(num(H.total), t('stat.sc.arch'), 'arch')}</div>` +
         (S.value + H.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(money(S.value + H.value))}</span><span class="slbl">${esc(t('stat.totalValue'))}</span><span class="slbl">${esc(t('stat.totalValueHint', { a: money(S.value), b: money(H.value) }))}</span></button>` : '') +
         head(t('stat.byType'), t('stat.stockVsArch')) +
-        `<div class="sbars"><button class="sbar sbar2" data-act="statgo" data-to="type:"><svg class="tsp" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#2196f3"/><path fill="#fff" d="M7 4h10l-.5 6.5a4.5 4.5 0 0 1-3.5 4V18h3v2H8v-2h3v-3.5a4.5 4.5 0 0 1-3.5-4z"/></svg><span class="sbn"><b>${esc(t('stat.sc.all'))}</b></span><span class="sbt two"><span class="sbf" style="width:${(S.total / Math.max(1, S.total + H.total) * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(H.total / Math.max(1, S.total + H.total) * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(S.total)} · ${num(H.total)}</span></button>${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar sbar2" data-act="statgo" data-to="type:${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
-          `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(a)} · ${num(b)}</span></button>`; }).join('')}</div>` +
+        `<div class="sbars"><button class="sbar sbar2" data-act="statgo" data-to="type:"><svg class="tsp" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#2196f3"/><path fill="#fff" d="M7 4h10l-.5 6.5a4.5 4.5 0 0 1-3.5 4V18h3v2H8v-2h3v-3.5a4.5 4.5 0 0 1-3.5-4z"/></svg><span class="sbn"><b>${esc(t('stat.sc.all'))}</b></span><span class="sbt two"><span class="sbf" style="width:${(S.total / Math.max(1, S.total + H.total) * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(H.total / Math.max(1, S.total + H.total) * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc sbc2"><span>${num(S.total)}</span><span>·</span><span>${num(H.total)}</span></span></button>${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar sbar2" data-act="statgo" data-to="type:${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
+          `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc sbc2"><span>${num(a)}</span><span>·</span><span>${num(b)}</span></span></button>`; }).join('')}</div>` +
         `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
     }
     _money(cur) {

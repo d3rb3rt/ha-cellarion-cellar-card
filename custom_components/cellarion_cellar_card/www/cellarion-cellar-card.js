@@ -67,7 +67,11 @@
   const typeLbl = (k) => { if (!k) return ''; const v = t('type.' + k); return v === 'type.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a wine type (Cellarion's value; no text: the name itself)
   const STATUS = [];
   // Price bands per bottle in the currency of the data (CUR): upper limit (inclusive) and key; the last one is open-ended
-  const PRICE_BANDS = [[10, 'p10'], [20, 'p20'], [30, 'p30'], [50, 'p50'], [75, 'p75'], [100, 'p100'], [Infinity, 'pmax']];
+  const PRICE_DEFAULT = [10, 20, 30, 50, 75, 100]; // default upper limits; the setting "Price bands" (shared by all devices) replaces them
+  let PRICE_BANDS = [];
+  const bandsOk = (a) => Array.isArray(a) && a.length > 0 && a.length <= 12 && a.every((x, i) => typeof x === 'number' && x > 0 && (i === 0 || x > a[i - 1]));
+  const setBands = (a) => { const l = bandsOk(a) ? a : PRICE_DEFAULT; PRICE_BANDS = l.map((x) => [x, 'p' + x]).concat([[Infinity, 'pmax']]); };
+  setBands();
   const PRICE = [];
   let CUR = ''; // currency of the prices: the one most bottles use (set in _ingest)
   const moneyTxt = (v) => { try { return new Intl.NumberFormat(I18N.lang || 'en', { style: 'currency', currency: CUR, maximumFractionDigits: 0 }).format(v); } catch (e) { return v + ' ' + CUR; } };
@@ -657,6 +661,8 @@
     .setv2 .ssel { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; text-align: left; cursor: pointer; }
     .setv2 .snum { width: 4.5em; text-align: center; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; }
     .setv2 .snum:focus { outline: none; border-color: var(--cb-on); }
+    .setv2 .stxt { width: 100%; max-width: 16em; min-height: 38px; box-sizing: border-box; border-radius: 6px; border: 1px solid var(--cb-line); background: var(--cb-card); color: var(--cb-text); padding: 0 10px; font: inherit; }
+    .setv2 .stxt:focus { outline: none; border-color: var(--cb-on); }
     .setv2 .ssel.open { border-color: var(--cb-on); }
     .setv2 .ssarr { flex: none; color: var(--cb-sub); font-size: .8em; }
     .setv2 .ssopts { display: flex; flex-direction: column; margin-top: 4px; border: 1px solid var(--cb-line); border-radius: 6px; background: var(--cb-card); max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -998,6 +1004,7 @@
     _applyEff() {
       const L = this._local || {}, S = this._shared || {};
       this._langSel = L.language !== undefined ? L.language : (typeof S.language === 'string' ? S.language : '');
+      setBands(S.priceBands); setPrice(); // price bands: central setting (all devices)
       const F = L.filters || S;
       this._fo = Array.isArray(F.filterOrder) ? F.filterOrder.slice() : [];
       this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
@@ -2482,6 +2489,7 @@
         grp(t('set2.grpFilters')) +
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
+        row(t('set.priceBands'), t('set.priceBandsSub'), sw(null, 'all'), `<input class="stxt" type="text" inputmode="numeric" data-pb value="${esc(PRICE_BANDS.filter((b) => b[0] !== Infinity).map((b) => b[0]).join(', '))}" aria-label="${esc(t('set.priceBands'))}">`) +
         grp(t('set2.grpList')) +
         sec('info', t('set.infoList'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id)).length, all: idefs.length }), infoBody, sw('info')) +
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
@@ -2503,8 +2511,8 @@
       const enc = (a) => (a.length ? a.map((x) => encodeURIComponent(x).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())).join(',') : '-');
       try {
         await this._call('settings',
-          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), an: S.archN === undefined ? 'keep' : String(S.archN), io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
-          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.archN === undefined ? {} : { arch_n: S.archN }), ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
+          { o: enc(S.filterOrder || []), h: enc(S.filterHidden || []), l: S.language || '-', r: enc(Object.entries(S.rackSettings || {}).map(([n, v]) => [n, v.order, v.side].join('|'))), k: S.keepState === undefined ? 'keep' : (S.keepState ? '1' : '0'), x: S.hideOther === undefined ? 'keep' : (S.hideOther ? '1' : '0'), an: S.archN === undefined ? 'keep' : String(S.archN), pb: bandsOk(S.priceBands) ? S.priceBands.join(',') : '-', io: S.infoOrder === undefined ? 'keep' : enc(S.infoOrder), iv: S.infoShow === undefined ? 'keep' : enc(S.infoShow) },
+          { filter_order: S.filterOrder || [], filter_hidden: S.filterHidden || [], language: S.language || '', rack_settings: S.rackSettings || {}, ...(S.keepState === undefined ? {} : { keep_state: !!S.keepState }), ...(S.hideOther === undefined ? {} : { hide_other: !!S.hideOther }), ...(S.archN === undefined ? {} : { arch_n: S.archN }), price_bands: bandsOk(S.priceBands) ? S.priceBands : [], ...(S.infoOrder === undefined ? {} : { info_order: S.infoOrder }), ...(S.infoShow === undefined ? {} : { info_show: S.infoShow }) });
         this._setErr = '';
       } catch (e) {
         this._setErr = t('set.saveFailed', { err: (e && e.message) || String(e) });
@@ -3273,6 +3281,16 @@
       else if (act === 'wzdel') this._wzTap(t.dataset.h, -1);
     }
     _onChange(e) {
+      if (e.target && e.target.dataset && e.target.dataset.pb !== undefined) { // setting Price bands (shared): upper limits, ascending; empty or the default = default
+        const a = String(e.target.value).split(/[^0-9.]+/).filter(Boolean).map(Number);
+        if (!a.length || String(a) === String(PRICE_DEFAULT)) delete this._shared.priceBands;
+        else if (bandsOk(a)) this._shared.priceBands = a;
+        else { this._renderSet(); return; }
+        this._applyEff(); this._saveSettings();
+        if (this._raw) this._ingest(this._raw);
+        this._renderAll(); this._renderSet();
+        return;
+      }
       const s = e.target && e.target.dataset && e.target.dataset.sel;
       if (!s) return;
       if (s === 'sort') { this._sort = e.target.value; this._saveState(); }

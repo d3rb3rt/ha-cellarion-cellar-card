@@ -214,6 +214,8 @@
  "set.sideNone": "none",
  "set.sideThirds": "left/middle/right",
  "set.sideSlot": "slot number",
+ "set.priceBands": "Price bands",
+ "set.priceBandsSub": "Upper limits of the price filter, ascending, separated by commas (e.g. 15, 20, 30). Empty = default. Applies to all devices.",
  "set.keepState": "When the page reloads",
  "set.keepStateSub": "This device only",
  "set.keepOn": "Keep filters and sorting",

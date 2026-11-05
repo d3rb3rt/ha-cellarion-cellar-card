@@ -552,7 +552,7 @@
     .sbars, .slist { display: flex; flex-direction: column; }
     .sbar, .srow { display: grid; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; border: 0; background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
     .sbar { grid-template-columns: 16px 64px 1fr 40px; }
-    .sbar2 { grid-template-columns: 16px 64px 1fr auto; }
+    .sbar2 { grid-template-columns: 16px 64px 1fr 6em; } /* same width for the count column, so all bars are equally long */
     .sbar2 .sbc { white-space: nowrap; }
     .sbar.st { cursor: default; }
     .sbar.st:active { background: transparent; }

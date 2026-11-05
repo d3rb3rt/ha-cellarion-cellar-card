@@ -1602,7 +1602,7 @@
       this.shadowRoot.addEventListener('input', (e) => this._onInput(e));
       this.shadowRoot.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && this._dd) { this._dd = null; this._renderDlg(); return; }
-        if (e.key === 'Escape' && this._wz) { if (this._wz.busy) return; this._wz = null; this._renderDlg(); return; }
+        if (e.key === 'Escape' && this._wz && !this._wzIn) { if (this._wz.busy) return; this._wz = null; this._renderDlg(); return; }
         if (e.key === 'Escape' && this._set) { this._set = null; this._renderDlg(); return; }
         if (e.key === 'Escape' && this._det && !this._det.busy) { this._det = null; this._renderDlg(); return; }
         if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('input[type=search]')) {
@@ -2529,7 +2529,7 @@
       const chkOpt = (act, extra, on, label) => `<label class="opt"><input type="checkbox" data-act="${act}"${extra || ''}${on ? ' checked' : ''}><span>${esc(label)}</span></label>`;
       const grps = [];
       const grp = (name, id) => { grps.push([id, name]); return `<div class="sgrp" data-sg="${id}">${esc(name)}</div>`; };
-      const sv = this._flag('setviews'), forceOpen = sv ? new Set(['infod', 'racks']) : new Set(); // views: a group with a single entry shows it expanded
+      const sv = this._flag('setviews'), wzIn = sv && this._setViewId === 'data', forceOpen = sv ? new Set(['infod', 'racks']) : new Set(); // views: a group with a single entry shows it expanded
       const sec = (id, title, sum, body, scope) => { const o = open.has(id) || forceOpen.has(id);
         return `<div class="ssec${scope ? ' hs' : ''}">${forceOpen.has(id) ? '<div class="shead fixed">' : `<button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}">`}<span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span>${forceOpen.has(id) ? '' : `<span class="chev">${o ? '⌄' : '›'}</span>`}${forceOpen.has(id) ? '</div>' : '</button>'}` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
       const lbl = (d) => d.personal || d.infoOnly ? '[' + d.label + ']' : d.clsg !== undefined ? t('filter.cls') + ': ' + d.label : d.label; // split classification filters: "Classification: Vineyard rank"
@@ -2587,7 +2587,7 @@
         sec('infod', t('set.infoDet'), t('set2.sumFilters', { n: ddefs.filter((d) => !this._iOff.has(d.id)).length, all: ddefs.length }), infoDBody, sw('info')) +
         (racks.length ? grp(t('set2.grpPlaces'), 'places') + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData'), 'data') +
-        `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
+        (wzIn ? this._wzInlineHtml(sw(null, 'all')) : `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>`) +
         grp(t('set2.grpArch'), 'arch') + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) +
         (FLAGS.length ? grp(t('set2.grpDev'), 'dev') + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
@@ -2601,6 +2601,7 @@
       } else html = html.replace('<!--pills-->', `<div class="stabs setnav">${grps.map(([id, n]) => `<button class="stab" data-act="setgo" data-g="${id}">${esc(n)}</button>`).join('')}</div>`);
       el.innerHTML = html;
       el.hidden = false;
+      if (wzIn) this._renderWzList(); else if (this._wzIn) { this._wz = null; this._wzIn = false; }
       const _sh = el.querySelector('.dsheet');
       if (_sh) {
         _sh.addEventListener('scroll', () => this._setNavMark(), { passive: true });
@@ -2625,7 +2626,19 @@
       }
       if (this._set) this._renderSet();
     }
+    // Producer sort words: search field, switch and list (used by the own dialog and, with flag setviews, inline in the settings)
+    _wzBody(z) {
+      return `<div class="row-chips"><input class="wzq" type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}">` +
+        `<label class="opt"><input type="checkbox" data-act="wzall"${z.all ? '' : ' checked'}><span>${esc(t('wz.multi'))}</span></label></div>` +
+        `<div class="derr" data-wzerr ${z.err ? '' : 'hidden'}>${esc(z.err)}</div><div class="wzlist"></div>`;
+    }
+    _wzInlineHtml(scopeHtml) {
+      if (!this._wz) this._wz = { q: '', all: false, err: '', busy: false, draft: Object.assign({}, this._sortMap) };
+      this._wzIn = true;
+      return `<div class="ssec hs wzinl"><div class="shead fixed"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('wz.hint'))}</span></span></div><div class="sscopeb">${scopeHtml}</div>${this._wzBody(this._wz)}</div>`;
+    }
     _renderWz() {
+      if (this._wzIn) { this._renderSet(); return; }
       const el = this._dlg, z = this._wz;
       if (!el) return;
       if (!z) { el.hidden = true; el.innerHTML = ''; return; }
@@ -2633,10 +2646,7 @@
         `<div class="dh"><span class="wmain"><span class="wname">${esc(t('wz.title'))}</span>` +
         `<span class="wsub">${esc(t('wz.hint'))}</span></span>` +
         `<button class="dx" data-act="wzclose" aria-label="${esc(t('wz.close'))}" ${z.busy ? 'disabled' : ''}>✕</button></div>` +
-        `<div class="row-chips"><input class="wzq" type="text" data-wzq autocomplete="off" placeholder="${esc(t('wz.search'))}" value="${esc(z.q)}">` +
-          `<label class="opt"><input type="checkbox" data-act="wzall"${z.all ? '' : ' checked'}><span>${esc(t('wz.multi'))}</span></label></div>` +
-        `<div class="derr" data-wzerr ${z.err ? '' : 'hidden'}>${esc(z.err)}</div>` +
-        `<div class="wzlist"></div>` +
+        this._wzBody(z) +
         `</div>`;
       el.hidden = false;
       this._renderWzList();
@@ -3171,7 +3181,7 @@
     }
     // Android back (Companion app): every open dialog level gets its own history entry, so "back" closes only the top level.
     _hdepth() {
-      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + (this._wz ? 1 : 0) + (this._dd ? 1 : 0) + (this._cfm ? 1 : 0) + (this._xv ? 1 : 0);
+      return (this._det ? 1 : 0) + (this._set ? 1 : 0) + (this._stat ? 1 + (this._stat.path || []).length : 0) + ((this._wz && !this._wzIn) ? 1 : 0) + (this._dd ? 1 : 0) + (this._cfm ? 1 : 0) + (this._xv ? 1 : 0);
     }
     _hsync() {
       if (this._hskip) return;
@@ -3189,7 +3199,7 @@
       // one level back
       if (this._cfm) this._cfm = null;
       else if (this._dd) this._dd = null;
-      else if (this._wz) { if (!this._wz.busy) this._wz = null; }
+      else if (this._wz && !this._wzIn) { if (!this._wz.busy) this._wz = null; }
       else if (this._set) this._set = null;
       else if (this._stat) { if (this._stat.path.length) { this._stat.path.pop(); this._stat.all = false; } else this._stat = null; }
       else if (this._det) { if (!this._det.busy) this._det = null; }
@@ -3214,7 +3224,7 @@
         return;
       }
       if (this._dd) { this._renderDd(); return; }
-      if (this._wz) { this._renderWz(); return; }
+      if (this._wz && !this._wzIn) { this._renderWz(); return; }
       if (this._set) { this._renderSet(); return; }
       if (this._stat) { this._renderStat(); return; }
       const d = this._det;
@@ -3320,7 +3330,7 @@
       if (this._dd) this._dd = null;
       else if (this._cfm) { this._cfm = false; under = null; }
       else if (this._stat) this._stat = null;
-      else if (this._wz) { if (this._wz.busy) { closed = false; } else this._wz = null; }
+      else if (this._wz && !this._wzIn) { if (this._wz.busy) { closed = false; } else this._wz = null; }
       else if (this._set) { this._set = null; this._selOpen = null; }
       else if (this._det && !this._det.busy) this._det = null;
       else closed = false;
@@ -3488,7 +3498,7 @@
       this._setPick = t.dataset.g; this._setNavMark();
       if (g && hd) sh.scrollTo({ top: sh.scrollTop + g.getBoundingClientRect().top - hd.getBoundingClientRect().bottom - 4, behavior: 'smooth' });
     },
-    setclose() { this._set = null; this._setPick = null; this._selOpen = null; this._renderDlg(); },
+    setclose() { this._set = null; this._setPick = null; if (this._wzIn) { this._wz = null; this._wzIn = false; } this._selOpen = null; this._renderDlg(); },
     selopen(t) { this._selOpen = this._selOpen === t.dataset.key ? null : t.dataset.key; this._renderSet(); },
     selpick(t) {
       const k = t.dataset.key, v = t.dataset.v;

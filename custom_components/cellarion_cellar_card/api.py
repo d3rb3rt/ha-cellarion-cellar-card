@@ -165,7 +165,7 @@ def fallback_from_get_bottle(g: JsonDict) -> JsonDict:
 
 
 BOTTLE_DETAIL_KEYS = (
-    "notes", "price", "currency", "purchaseDate", "purchaseLocation", "bottleSize",
+    "notes", "price", "currency", "purchaseDate", "purchaseLocation", "purchaseUrl", "bottleSize",
     "rating", "ratingScale", "openedAt",
 )
 

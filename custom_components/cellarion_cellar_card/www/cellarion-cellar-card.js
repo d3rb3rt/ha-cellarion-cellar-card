@@ -2271,23 +2271,21 @@
         return Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(a[0], b[0]));
       };
       const ago = Date.now() - 365 * 864e5;
-      let value = 0, gifted = 0, late = 0, recent = 0;
+      let value = 0, gifted = 0, recent = 0;
       const years = new Map(), wines = new Map();
       hs.forEach((h) => {
         const priced = typeof h.price === 'number' && h.currency === cur;
         if (priced) value += h.price;
         if (h.reason === 'gifted') gifted++;
-        const isLate = /^Nachgetragen/.test(String(h.note || '')); // entries without a known date (taken over from the old cellar book)
-        if (isLate) late++;
         const m = /^(\d{4})/.exec(String(h.at || ''));
         if (m) { const o = years.get(m[1]) || { n: 0, v: 0 }; o.n++; if (priced) o.v += h.price; years.set(m[1], o); }
-        if (!isLate && h.at && Date.parse(h.at) >= ago) recent++;
+        if (h.at && Date.parse(h.at) >= ago) recent++;
         const k = h.wine || h.name;
         let w = wines.get(k);
         if (!w) { w = { name: h.name, producer: h.producer, n: 0 }; wines.set(k, w); }
         w.n++;
       });
-      const v = { total: hs.length, wines, years, value, gifted, late, recent, currency: cur,
+      const v = { total: hs.length, wines, years, value, gifted, recent, currency: cur,
         types: cnt((h) => h._type), producers: cnt((h) => h.producer) };
       this._statH = { d, v, no: noOther };
       return v;
@@ -2315,7 +2313,6 @@
           `<div class="sgrid">${tile(num(H.wines.size), t('stat.wines'))}${tile(num(H.gifted), t('stat.gifted'))}</div>` +
           (H.value > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(money(H.value))}</span><span class="slbl">${esc(t('stat.drunkValue'))}</span></div>` : '') +
           head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
-          (H.late ? `<div class="wsub shint">${esc(t('stat.lateHint', { n: H.late }))}</div>` : '') +
           head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +
           head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" ${arch('types', k)}>${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
             `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / tmx * 100))}%"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +

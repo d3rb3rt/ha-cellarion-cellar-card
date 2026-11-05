@@ -351,7 +351,6 @@
  "stat.gifted": "Gifted",
  "stat.drunkValue": "Value drunk",
  "stat.perYear": "Drunk per year",
- "stat.lateHint": "{n} bottles added later without an exact date are included.",
  "stat.mostDrunk": "Most drunk wines",
  "stat.byType": "By type",
  "stat.allBought": "Bottles in total (stock + archive)",

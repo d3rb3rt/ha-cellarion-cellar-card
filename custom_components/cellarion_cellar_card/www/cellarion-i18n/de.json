@@ -351,7 +351,6 @@
  "stat.gifted": "Verschenkt",
  "stat.drunkValue": "Wert getrunken",
  "stat.perYear": "Getrunken pro Jahr",
- "stat.lateHint": "{n} nachgetragene Flaschen ohne genaues Datum sind mitgezählt.",
  "stat.mostDrunk": "Meistgetrunkene Weine",
  "stat.byType": "Nach Typ",
  "stat.allBought": "Flaschen insgesamt (Bestand + Archiv)",

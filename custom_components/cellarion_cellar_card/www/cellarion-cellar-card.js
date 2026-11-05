@@ -102,8 +102,6 @@
       .replace(/[̀-ͯ]/g, '');
 
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
-  const INFO_ORDER = ['producer', 'vineyard_name', 'village', 'country', 'region', 'appellation', 'grape', 'vineyard_rank', 'ripeness', 'ageing']; // built-in attributes (tab order)
-  const INFO_PERS = ['vineyard_name', 'village']; // personal fields that get a built-in row label
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const INFO_TIER = ['vineyard_rank', 'ripeness', 'ageing']; // classification kind by the group index of _clsPos
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
@@ -1031,12 +1029,13 @@
     // Id of the data field (see _infoDefs) behind an info attribute key
     _infoDefId(k) {
       const ti = INFO_TIER.indexOf(k);
-      if (k === 'country' || k === 'region' || k === 'appellation' || k === 'grape') return k;
+      if (this._infoDefs().some((x) => x.id === k && !x.personal)) return k; // Cellarion data fields (country, region, appellation, grape) have their attribute as id
       if (k === 'vineyard_name') return 'vname';
       if (ti >= 0) return 'cls' + ti;
       const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
       return d ? d.id : '';
     }
+    _isPers(k) { return ((this._data && this._data.fields) || []).some((l) => !isInfoKey(l) && infoNorm(l) === k); } // a personal field (not an info:/src: field) of this name exists
     _infoOff(k) { const id = this._infoDefId(k); return !!id && this._dOff(id); }
     _setInfo(order, show, dorder) {
       order = order.concat((dorder || this._ido || []).map((x) => 'd:' + x));
@@ -2980,7 +2979,6 @@
     _infoRender() {
       const el = this._dlg, x = this._xv, sel = this._infoSel();
       if (!el || !x || !sel) return;
-      const rk = (k) => { const i = INFO_ORDER.indexOf(k); return i < 0 ? 99 : i; };
       // Tab order = order of the info settings (the same order as the rows of "My data"); producer first
       const defs = this._infoDefs(true);
       const rank = (k) => {
@@ -2989,7 +2987,7 @@
         const i = id ? defs.findIndex((d2) => d2.id === id) : -1;
         return i < 0 ? 999 : i;
       };
-      const keys = Object.keys(x.items).filter((k) => !this._infoOff(k)).sort((a, b) => rank(a) - rank(b) || rk(a) - rk(b) || (a < b ? -1 : 1));
+      const keys = Object.keys(x.items).filter((k) => !this._infoOff(k)).sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : 1));
       if (keys.indexOf(x.tab) < 0 && keys.length) x.tab = keys[0];
       const chip = (k, label, on) => `<button class="chip${on ? ' on' : ''}" data-act="dxtab" data-k="${esc(k)}" data-v="${esc(k)}">${esc(label)}</button>`;
       const chips = keys.length > 1 ? `<div class="row-chips" style="margin-top:8px">${keys.map((k) => chip(k, infoLbl(k), k === x.tab)).join('')}</div>` : '';
@@ -3017,10 +3015,12 @@
       const rows = Array.from(el.querySelectorAll('dl.dfacts dt')).map((dt) => ({ dt, dd: dt.nextElementSibling, k: dt.textContent.trim() }));
       rows.forEach((r) => {
         if (isInfoKey(r.k)) { r.dt.remove(); if (r.dd) r.dd.remove(); return; }
-        if (INFO_PERS.indexOf(infoNorm(r.k)) >= 0) r.dt.textContent = infoLbl(infoNorm(r.k));
-        const names = [infoNorm(r.k)].concat(r.k.split('/').map(infoNorm));
-        const key = keys.find((k) => !done.has(k) && (INFO_ORDER.indexOf(k) < 0 || INFO_PERS.indexOf(k) >= 0) && names.indexOf(k) >= 0);
-        if (key && r.dd) { mark(r.dd, key, INFO_PERS.indexOf(key) >= 0 ? infoLbl(key) : r.k); done.add(key); }
+        // A personal field with a translated attribute name shows that name (e.g. "Village" -> "Ort")
+        const nk = infoNorm(r.k), tr = (k) => t('info.lbl.' + k) !== 'info.lbl.' + k;
+        if (this._isPers(nk) && tr(nk)) r.dt.textContent = infoLbl(nk);
+        const names = [nk].concat(r.k.split('/').map(infoNorm));
+        const key = keys.find((k) => !done.has(k) && this._isPers(k) && names.indexOf(k) >= 0);
+        if (key && r.dd) { mark(r.dd, key, tr(key) ? infoLbl(key) : r.k); done.add(key); }
       });
       // Flag detrows: the built-in rows of the data block carry their attribute (data-dik)
       el.querySelectorAll('.d2data dd[data-dik]').forEach((dd) => { const k = dd.dataset.dik; if (im[k] && !done.has(k)) { mark(dd, k, infoLbl(k)); done.add(k); } });

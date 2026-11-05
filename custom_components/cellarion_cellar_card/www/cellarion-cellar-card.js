@@ -549,8 +549,10 @@
     .sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stile, .smini { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border: 1px solid var(--cb-line); border-radius: 12px; background: var(--cb-chip); color: var(--cb-text); font: inherit; cursor: pointer; min-width: 0; }
     .stile.wide { width: 100%; }
-    button.stile { position: relative; }
-    button.stile::after { content: '›'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 22px; line-height: 1; color: var(--cb-sub); }
+    .stile.nav { border-bottom: 3px solid var(--cb-on, #03a9f4); } /* main navigation tiles (Total page: stock / drunk) */
+    .stile.nav .slbl { color: var(--cb-on, #03a9f4); }
+    .stile.nav.arch { border-bottom-color: var(--s-drunk); }
+    .stile.nav.arch .slbl { color: var(--s-drunk); }
     .stile.st, .srow.st { cursor: default; }
     .stile.st:active, .srow.st:active { background: var(--cb-chip); }
     .srow.st:active { background: transparent; }
@@ -2382,7 +2384,7 @@
       const dec = (n) => new Intl.NumberFormat(I18N.lang || 'de', { maximumFractionDigits: 1 }).format(n);
       const hero = (n, label) => `<div class="shero"><span class="sbig huge">${esc(num(n))}</span><span class="slbl">${esc(label)}</span></div>`;
       const tile = (big, label, go) => (go
-        ? `<button class="stile" data-act="statscope" data-t="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`
+        ? `<button class="stile nav ${go}" data-act="statscope" data-t="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`
         : `<div class="stile st"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></div>`);
       const tileGo = (big, label, to) => `<button class="stile" data-act="statgo" data-to="${to}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`;
       const head = (label, hint) => `<div class="wsub shead">${esc(label)}</div>` + (hint ? `<div class="wsub">${esc(hint)}</div>` : '');

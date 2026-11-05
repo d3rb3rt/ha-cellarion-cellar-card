@@ -110,7 +110,7 @@ async def test_price_bands_setting(hass, aioclient_mock):
     assert (await call({"price_bands": [15, 20, 30]}))["settings"]["priceBands"] == [15, 20, 30]
     assert (await call({"filter_order": []}))["settings"]["priceBands"] == [15, 20, 30]  # a call without it leaves it alone
     assert (await call({"price_bands": [30, 20]}))["settings"]["priceBands"] == [15, 20, 30]  # not ascending: ignored
-    assert "priceBands" not in (await call({"price_bands": []}))["settings"]  # empty = card default
+    assert (await call({"price_bands": []}))["settings"]["priceBands"] == []  # empty list = price filter off
 
 
 async def test_producer_sort(hass, aioclient_mock):

@@ -130,7 +130,7 @@
         },
         "price_bands": {
           "name": "Price bands",
-          "description": "Upper limits of the price filter bands, ascending (empty list = default)."
+          "description": "Upper limits of the price filter bands, ascending (empty list = price filter off)."
         }
       }
     },

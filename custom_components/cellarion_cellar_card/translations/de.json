@@ -130,7 +130,7 @@
         },
         "price_bands": {
           "name": "Preisstufen",
-          "description": "Obergrenzen der Preisstufen im Filter, aufsteigend (leere Liste = Standard)."
+          "description": "Obergrenzen der Preisstufen im Filter, aufsteigend (leere Liste = Preisfilter aus)."
         }
       }
     },

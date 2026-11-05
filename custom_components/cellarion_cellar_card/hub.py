@@ -198,10 +198,10 @@ class Hub:
             s["hideOther"] = bool(hide_other)  # hide Other items (not wine) from the list unless searched or filtered
         if arch_n is not None:
             s["archN"] = max(0, min(99, int(arch_n)))  # archive rows in the search below this many stock hits (0 = only without hits)
-        if price_bands is not None:  # upper limits of the price bands, ascending; empty = the card default
+        if price_bands is not None:  # upper limits of the price bands, ascending; an empty list switches the price filter off
             nums = [int(x) for x in price_bands][:12]
             if not nums:
-                s.pop("priceBands", None)
+                s["priceBands"] = []
             elif nums[0] > 0 and all(a < b for a, b in zip(nums, nums[1:])):
                 s["priceBands"] = nums
         if info_order is not None:

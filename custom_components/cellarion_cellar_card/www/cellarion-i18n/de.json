@@ -352,7 +352,7 @@
  "stat.perYear": "Getrunken pro Jahr",
  "stat.mostDrunk": "Meistgetrunkene Weine",
  "stat.byType": "Nach Typ",
- "stat.allBought": "Flaschen insgesamt (Bestand + Getrunken)",
+ "stat.allBought": "Flaschen insgesamt",
  "stat.totalValue": "Gesamtwert (Einkaufspreise)",
  "stat.totalValueHint": "Bestand {a} · Getrunken {b}",
  "stat.goneHead": "Komplett weg",

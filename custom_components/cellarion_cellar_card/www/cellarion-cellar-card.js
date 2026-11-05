@@ -549,6 +549,8 @@
     .sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stile, .smini { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; border: 1px solid var(--cb-line); border-radius: 12px; background: var(--cb-chip); color: var(--cb-text); font: inherit; cursor: pointer; min-width: 0; }
     .stile.wide { width: 100%; }
+    button.stile { position: relative; }
+    button.stile::after { content: '›'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 22px; line-height: 1; color: var(--cb-sub); }
     .stile.st, .srow.st { cursor: default; }
     .stile.st:active, .srow.st:active { background: var(--cb-chip); }
     .srow.st:active { background: transparent; }

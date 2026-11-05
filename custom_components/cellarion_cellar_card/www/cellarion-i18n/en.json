@@ -352,7 +352,7 @@
  "stat.perYear": "Drunk per year",
  "stat.mostDrunk": "Most drunk wines",
  "stat.byType": "By type",
- "stat.allBought": "Bottles in total (stock + drunk)",
+ "stat.allBought": "Bottles in total",
  "stat.totalValue": "Total value (purchase prices)",
  "stat.totalValueHint": "Stock {a} · Drunk {b}",
  "stat.goneHead": "Completely gone",

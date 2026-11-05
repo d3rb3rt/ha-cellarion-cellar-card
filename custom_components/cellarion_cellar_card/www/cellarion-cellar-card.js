@@ -2333,9 +2333,16 @@
         const ymx = Math.max(1, ...yrs.map(([, o]) => o.n));
         const top = Array.from(H.wines.values()).sort((a, b) => b.n - a.n || de.compare(a.name, b.name)).slice(0, 8);
         const tmx = Math.max(1, ...H.types.map((x) => x[1]));
+        // wines and producers that are completely gone: nothing left in stock (any vintage)
+        const goneW = Array.from(H.wines.entries()).filter(([k]) => !S.wines.has(k)).map(([, w]) => w);
+        const stockProd = new Set(S.producers.map((x) => x[0]));
+        const goneP = new Set(goneW.map((w) => w.producer).filter((pr) => pr && !stockProd.has(pr)));
+        const goneTop = goneW.slice().sort((a, b) => b.n - a.n || de.compare(a.name, b.name)).slice(0, 8);
         return hero(H.total, t('stat.drunkHero')) +
           `<div class="sgrid">${tile(num(H.wines.size), t('stat.wines'))}${tile(num(H.gifted), t('stat.gifted'))}</div>` +
           (H.value > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(money(H.value))}</span><span class="slbl">${esc(t('stat.drunkValue'))}</span></div>` : '') +
+          (goneW.length ? head(t('stat.goneHead')) + `<div class="sgrid">${tile(num(goneW.length), t('stat.goneWines'))}${tile(num(goneP.size), t('stat.goneProducers'))}</div>` +
+            head(t('stat.goneTop'), t('stat.goneTopHint')) + `<div class="slist">${goneTop.map((w) => row(w.name, w.producer, w.n, goneTop[0].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
           head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
           head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +
           head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" ${arch('types', k)}>${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +

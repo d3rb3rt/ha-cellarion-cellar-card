@@ -659,7 +659,8 @@
     .setv2 .sethead { position: sticky; top: -16px; z-index: 5; background: var(--cb-card); margin: -16px -16px 0; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
     .setv2 .shead.fixed { position: static; display: flex; align-items: flex-start; gap: 10px; padding: 12px 0 4px; border-bottom: 0; background: transparent; }
     .setv2.setfix { height: 92%; } /* flag setviews: fixed height, so the pills do not jump when the content of a group is shorter or longer */
-    .setv2 .setnav { margin: 0; padding-bottom: 0; scrollbar-width: none; }
+    .setv2 .setnav { margin: 0; padding-bottom: 0; flex-wrap: wrap; overflow: visible; gap: 6px; } /* all pills visible, wrap instead of a cut-off row */
+    .setv2 .setnav .stab { min-height: 32px; padding: 0 12px; }
     .setv2 .sethead + .sgrp, .setv2 .sethead + .derr + .sgrp, .setv2 .sethead + .derr + .wsub + .sgrp { margin-top: 10px; }
     .setv2 .srow { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: 16px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--cb-line); }
     .setv2 .sdesc { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }

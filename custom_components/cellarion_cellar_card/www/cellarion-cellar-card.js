@@ -103,6 +103,7 @@
 
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
+  const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
   const INFO_TIER = ['vineyard_rank', 'ripeness', 'ageing']; // classification kind by the group index of _clsPos
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
   const infoNorm = (s) => String(s == null ? '' : s).trim().toLowerCase().replace(/[\s-]+/g, '_');
@@ -999,7 +1000,7 @@
       // Info behind the wine name in the list: order + what is shown (central for all devices, overridable per device)
       const I = L.info || { order: S.infoOrder, show: S.infoShow };
       // The old single item "cls" (classification) became one item per kind (cls0..cls3)
-      const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : [x])));
+      const CLS4 = ['cls0', 'cls1', 'cls2', 'cls3'], expand = (a) => [].concat(...a.map((x) => (x === 'cls' ? CLS4 : x === 'vname' ? ['i:vineyard_name'] : [x]))); // old ids from earlier versions (cls, vname) -> current ids
       const ord = Array.isArray(I.order) ? I.order.map(String) : []; // "d:<id>" entries = order in the details (flag infosplit)
       this._io = expand(ord.filter((x) => !x.startsWith('d:')));
       this._ido = expand(ord.filter((x) => x.startsWith('d:')).map((x) => x.slice(2)));
@@ -1014,7 +1015,7 @@
         .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       // Flag detrows: the details also list the vineyard name and the bottle data (price, purchase date ...) as data fields
-      const more = det ? [{ id: 'vname', label: infoLbl('vineyard_name'), infoOnly: true }].concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
+      const more = det ? this._infoOnly().map((k) => ({ id: 'i:' + k, label: infoLbl(k), infoOnly: true, attr: k })).concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
       const all = std.concat(more, pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
       // The price is special (bottle data, not wine data): always last, not sortable
@@ -1030,10 +1031,17 @@
     _infoDefId(k) {
       const ti = INFO_TIER.indexOf(k);
       if (this._infoDefs().some((x) => x.id === k && !x.personal)) return k; // Cellarion data fields (country, region, appellation, grape) have their attribute as id
-      if (k === 'vineyard_name') return 'vname';
+      if (this._infoOnly().indexOf(k) >= 0) return 'i:' + k;
       if (ti >= 0) return 'cls' + ti;
       const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
       return d ? d.id : '';
+    }
+    // Info attributes without an own value: the field info:<attribute> exists, but there is neither a Cellarion field nor a personal field of that name.
+    // Their row shows the name of the reference entry (see _infoVal); the settings mark them with [brackets] like personal fields.
+    _infoOnly() {
+      const own = WINE_ATTR.concat(INFO_TIER), r = [];
+      ((this._data && this._data.fields) || []).forEach((l) => { const m = /^info:\s*(.+)$/i.exec(String(l)), k = m ? infoNorm(m[1]) : ''; if (k && own.indexOf(k) < 0 && !this._isPers(k) && r.indexOf(k) < 0) r.push(k); });
+      return r;
     }
     _isPers(k) { return ((this._data && this._data.fields) || []).some((l) => !isInfoKey(l) && infoNorm(l) === k); } // a personal field (not an info:/src: field) of this name exists
     _infoOff(k) { const id = this._infoDefId(k); return !!id && this._dOff(id); }
@@ -2753,19 +2761,17 @@
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
       ];
       const loadingInfo = !info || info.loading;
-      // Flag detrows: ONE block, every data field (Cellarion, personal, bottle data) is a row in the order of the data-field settings;
-      // empty and switched-off ones are left out. Vineyard name (extension) and vineyard rank are two rows.
+      // ONE block: every data field (Cellarion, personal, bottle data, info-only attributes) is a row in the order of the data-field settings; empty and switched-off ones are left out.
       let dataBlock = '';
       {
-        const im = infoMap(sel.p), ex = this._infoExtra(im, sel) || [];
-        const vn = ex.find((x) => x.key === 'vineyard_name'), vnText = vn ? vn.text : this._infoVal(sel, 'vineyard_name');
+        const im = infoMap(sel.p);
         const drow = [];
         this._infoDefs(true).filter((d) => !this._dOff(d.id)).forEach((d) => {
           const add = (k, v, ik) => { if (v) drow.push({ k, v, ik: ik && im[ik] ? ik : '', more: this._iMore.has(d.id) }); };
           if (/^cls[0-3]$/.test(d.id)) {
             const g = Number(d.id.slice(3)), c = (sel._cls || []).filter((v) => this._clsPos(v)[0] === g).join(', ');
             add(t('cls.g' + g), esc(c), INFO_TIER[g] && im[INFO_TIER[g]] ? INFO_TIER[g] : '');
-          } else if (d.id === 'vname') add(infoLbl('vineyard_name'), esc(vnText), 'vineyard_name');
+          } else if (d.infoOnly) add(d.label, esc(this._infoVal(sel, d.attr)), d.attr);
           else if (d.id === 'country') add(t('filter.country'), esc(sel.country), 'country');
           else if (d.id === 'region') add(t('filter.region'), esc(sel.region), 'region');
           else if (d.id === 'appellation') add(t('filter.appellation'), esc(sel.appellation), 'appellation');
@@ -2776,7 +2782,6 @@
             add(l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : '', '');
           }
         });
-        ex.filter((x) => x.key !== 'vineyard_name').forEach((x) => drow.push({ k: x.label || infoLbl(x.key), v: esc(x.text), ik: x.key }));
         const dOpen = !!(d && d.dmore), nMore = drow.filter((r) => r.more).length;
         const dl = (rs) => `<dl class="dfacts" style="margin:0">${rs.map((r) => `<dt>${esc(r.k)}</dt><dd${r.ik ? ` data-dik="${esc(r.ik)}"` : ''}>${r.v}</dd>`).join('')}</dl>`;
         dataBlock = `<div class="d2mine d2data">` + (drow.length ? dl(drow.filter((r) => !r.more || dOpen)) : '') +
@@ -2919,15 +2924,13 @@
       el.style.top = top ? top + 'px' : '';
     }
     // ---- Info overlay: all info texts of the selected bottle as tabs, opened below the clicked value ----
-    // An extension may override _infoSel/_infoVal/_infoTab/_infoExtra (e.g. a data source behind the texts).
+    // An extension may override _infoSel/_infoVal/_infoTab/_ref (e.g. a data source behind the texts).
     _infoSel() {
       const d = this._det;
       if (!d || !this._data) return null;
       const bottles = this._detBottles();
       return bottles.find((b) => b.id === d.sel) || bottles[0] || null;
     }
-    // Rows an extension may add to "My data": [{key, text, label?}]
-    _infoExtra() { return []; }
     // Current value of an attribute of the bottle (title of the overlay)
     _infoVal(sel, k) {
       if (!sel) return '';

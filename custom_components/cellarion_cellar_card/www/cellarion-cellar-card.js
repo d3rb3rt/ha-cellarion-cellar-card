@@ -566,6 +566,10 @@
     .sbars, .slist { display: flex; flex-direction: column; }
     .sbar, .srow { display: grid; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; border: 0; background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
     .sbar { grid-template-columns: 16px 64px 1fr 40px; }
+    .sbar2 { grid-template-columns: 16px 64px 1fr auto; }
+    .sbar2 .sbc { white-space: nowrap; }
+    .sbar.st { cursor: default; }
+    .sbar.st:active { background: transparent; }
     .srow { grid-template-columns: minmax(0, 1.4fr) minmax(40px, 1fr) auto; min-height: 40px; }
     .srl { display: flex; align-items: center; gap: 8px; min-width: 0; }
     .srt { display: flex; flex-direction: column; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -2421,7 +2425,7 @@
         `<div class="sgrid">${tile(num(S.total), t('stat.sc.stock'), 'stock')}${tile(num(H.total), t('stat.sc.arch'), 'arch')}</div>` +
         (S.value + H.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(money(S.value + H.value))}</span><span class="slbl">${esc(t('stat.totalValue'))}</span><span class="slbl">${esc(t('stat.totalValueHint', { a: money(S.value), b: money(H.value) }))}</span></button>` : '') +
         head(t('stat.byType'), t('stat.stockVsArch')) +
-        `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statgo" data-to="type:${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
+        `<div class="sbars"><div class="sbar sbar2 st"><span></span><span class="sbn"><b>${esc(t('stat.sc.all'))}</b></span><span class="sbt two"><span class="sbf" style="width:${(S.total / Math.max(1, S.total + H.total) * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(H.total / Math.max(1, S.total + H.total) * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(S.total)} · ${num(H.total)}</span></div>${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar sbar2" data-act="statgo" data-to="type:${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
           `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(a)} · ${num(b)}</span></button>`; }).join('')}</div>` +
         `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
     }

@@ -532,6 +532,7 @@
     .vrow, .frow { cursor: pointer; }
     .vrow:active, .frow:active { background: var(--cb-chip); }
     .statsheet { gap: 10px; }
+    .statsheet .stathead { position: sticky; top: -16px; z-index: 5; background: var(--cb-card); margin: -16px -16px 0; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
     .statsheet .dh { align-items: center; }
     .shero { display: flex; flex-direction: column; align-items: center; padding: 4px 0 2px; }
     .sbig { font-size: 1.5em; font-weight: 700; color: var(--cb-text); line-height: 1.1; }
@@ -2472,16 +2473,17 @@
       const key = st.path[st.path.length - 1];
       const nav = (title) => `<div class="dh">${key ? `<button class="dx" data-act="statback" aria-label="${esc(t('stat.back'))}">←</button>` : ''}<span class="wmain"><span class="wname">${esc(title)}</span></span>` +
         `<button class="dx" data-act="statclose" aria-label="${esc(t('head.close'))}">✕</button></div>`;
+      const hd = (inner) => `<div class="stathead">${inner}</div>`; // header (title, close, scope tabs / pills) stays fixed while the page scrolls
       let html;
       const hh = this._statHist(), sc3 = !!(hh && hh.total > 0), scope = sc3 ? (st.scope || 'all') : 'stock'; // three areas (total | stock | drunk), only stock statistics while there is no history (old server, nothing drunk)
       const tabs3 = sc3 && !key ? `<div class="stabs">${[['all', t('stat.sc.all')], ['stock', t('stat.sc.stock')], ['arch', t('stat.sc.arch')]].map(([k, l]) => `<button class="stab${k === scope ? ' on' : ''}" data-act="statscope" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '';
       if (!key && scope !== 'stock') {
-        html = nav(this._data.cellar || t('stat.title')) + tabs3 + this._statScopeHtml(scope, S, num);
+        html = hd(nav(this._data.cellar || t('stat.title')) + tabs3) + this._statScopeHtml(scope, S, num);
       } else if (!key) {
         const tile = (go, big, label) => `<button class="stile" data-act="statgo" data-to="${go}"><span class="sbig">${esc(big)}</span><span class="slbl">${esc(label)}</span></button>`;
         const mini = (go, label, val) => `<button class="smini" data-act="statgo" data-to="${go}"><span class="slbl">${esc(label)}</span><span class="sval">${esc(val || '–')}</span></button>`;
         const maxT = Math.max(1, ...S.types.map((x) => x[1]));
-        html = nav(this._data.cellar || t('stat.title')) + tabs3 +
+        html = hd(nav(this._data.cellar || t('stat.title')) + tabs3) +
           `<div class="shero"><span class="sbig huge">${esc(num(S.total))}</span><span class="slbl">${esc(t('stat.bottles'))}</span></div>` +
           `<div class="sgrid">${tile('wines', num(S.wines.size), t('stat.wines'))}${tile('countries', num(S.countries.length), t('stat.countries'))}` +
           `${tile('producers', num(S.producers.length), t('stat.producers'))}${tile('vintages', S.oldest || '–', t('stat.oldest'))}</div>` +
@@ -2493,7 +2495,7 @@
       } else {
         const pg = key.startsWith('d:') ? this._statDrunkPage(key, S) : key.startsWith('type:') && scope !== 'stock' ? this._statTypePage(key.slice(5), scope, S) : this._statPage(key, key === 'value' && scope !== 'stock' ? this._statValue(scope, S) : S, st.all);
         const fAct = scope === 'arch' ? 'statarch' : 'statfilter'; // Drunk: a tap shows the archive with this filter
-        html = nav(pg.title) + (pg.tabs ? `<div class="stabs">${pg.tabs.map(([k, l]) => `<button class="stab${k === pg.tab ? ' on' : ''}" data-act="stattab" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '') + pg.sections.map((sec) => {
+        html = hd(nav(pg.title) + (pg.tabs ? `<div class="stabs">${pg.tabs.map(([k, l]) => `<button class="stab${k === pg.tab ? ' on' : ''}" data-act="stattab" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '')) + pg.sections.map((sec) => {
           const mx = Math.max(1, ...sec.rows.map((r) => r.n));
           const more = sec.total > sec.limit && sec.limit !== 99;
           const flat = sec.rows.every((r) => r.n === sec.rows[0].n); // all counts equal: the bars say nothing, so they are hidden

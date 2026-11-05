@@ -256,6 +256,7 @@
  "stat.nBottles": "{n} btl.",
  "sort.priceAsc": "Price, low to high",
  "sort.priceDesc": "Price, high to low",
+ "sort.countDesc": "Bottles, most first",
  "det.editIn": "Edit in Cellarion",
  "det.openIn": "Edit in",
  "flag.hdr": "Header (test)",

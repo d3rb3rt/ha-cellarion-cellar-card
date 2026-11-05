@@ -256,6 +256,7 @@
  "stat.nBottles": "{n} Fl.",
  "sort.priceAsc": "Preis aufsteigend",
  "sort.priceDesc": "Preis absteigend",
+ "sort.countDesc": "Flaschen absteigend",
  "det.editIn": "In Cellarion bearbeiten",
  "det.openIn": "Bearbeiten in",
  "flag.hdr": "Kopfbereich (Test)",

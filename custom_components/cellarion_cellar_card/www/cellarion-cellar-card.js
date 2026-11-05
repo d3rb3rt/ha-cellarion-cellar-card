@@ -1464,6 +1464,7 @@
           if ((x < 0) !== (y < 0)) return x < 0 ? 1 : -1;
           return (this._sort === 'priceAsc' ? x - y : y - x) || de.compare(a.b.name || '', b.b.name || '');
         }
+        case 'countDesc': return (b.bottles || []).length - (a.bottles || []).length || de.compare(a.b.name || '', b.b.name || '');
         case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(a.b.name || '', b.b.name || '');
         case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
         default: return de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || '') || this._vint(b.vintage) - this._vint(a.vintage);
@@ -1498,6 +1499,7 @@
         vintage: (a, b) => b.maxVint - a.maxVint || de.compare(a.b.name || '', b.b.name || ''),
         region: (a, b) => (rt.get(b.b.region || '') || 0) - (rt.get(a.b.region || '') || 0) || (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(a.b.name || '', b.b.name || ''),
         vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
+        countDesc: (a, b) => b.count - a.count || de.compare(a.b.name || '', b.b.name || ''),
         priceAsc: (a, b) => gp(a, 'min') - gp(b, 'min') || de.compare(a.b.name || '', b.b.name || ''),
         priceDesc: (a, b) => gp(b, 'max') - gp(a, 'max') || de.compare(a.b.name || '', b.b.name || ''),
       }[this._sort] || ((a, b) => de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || ''));
@@ -1771,7 +1773,7 @@
           return m;
         };
         const sortBtn = (() => {
-            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc'].map((v) => ({ v, t: t('sort.' + v) }));
+            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc', 'countDesc'].map((v) => ({ v, t: t('sort.' + v) }));
             const cur = (so.find((o) => o.v === this._sort) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;

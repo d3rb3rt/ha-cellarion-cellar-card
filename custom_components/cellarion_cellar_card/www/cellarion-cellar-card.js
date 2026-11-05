@@ -2443,7 +2443,7 @@
       const nav = (title) => `<div class="dh">${key ? `<button class="dx" data-act="statback" aria-label="${esc(t('stat.back'))}">←</button>` : ''}<span class="wmain"><span class="wname">${esc(title)}</span></span>` +
         `<button class="dx" data-act="statclose" aria-label="${esc(t('head.close'))}">✕</button></div>`;
       let html;
-      const sc3 = true, scope = st.scope || 'all'; // three areas (total | stock | drunk)
+      const hh = this._statHist(), sc3 = !!(hh && hh.total > 0), scope = sc3 ? (st.scope || 'all') : 'stock'; // three areas (total | stock | drunk), only stock statistics while there is no history (old server, nothing drunk)
       const tabs3 = sc3 && !key ? `<div class="stabs">${[['all', t('stat.sc.all')], ['stock', t('stat.sc.stock')], ['arch', t('stat.sc.arch')]].map(([k, l]) => `<button class="stab${k === scope ? ' on' : ''}" data-act="statscope" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '';
       if (!key && scope !== 'stock') {
         html = nav(this._data.cellar || t('stat.title')) + tabs3 + this._statScopeHtml(scope, S, num);

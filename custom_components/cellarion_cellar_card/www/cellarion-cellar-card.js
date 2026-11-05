@@ -66,11 +66,15 @@
   const TYPES = [];
   const typeLbl = (k) => { if (!k) return ''; const v = t('type.' + k); return v === 'type.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a wine type (Cellarion's value; no text: the name itself)
   const STATUS = [];
-  // Price bands per bottle in EUR: upper limit (inclusive) and key; the last one is open-ended
+  // Price bands per bottle in the currency of the data (CUR): upper limit (inclusive) and key; the last one is open-ended
   const PRICE_BANDS = [[10, 'p10'], [20, 'p20'], [30, 'p30'], [50, 'p50'], [75, 'p75'], [100, 'p100'], [Infinity, 'pmax']];
   const PRICE = [];
+  let CUR = ''; // currency of the prices: the one most bottles use (set in _ingest)
+  const moneyTxt = (v) => { try { return new Intl.NumberFormat(I18N.lang || 'en', { style: 'currency', currency: CUR, maximumFractionDigits: 0 }).format(v); } catch (e) { return v + ' ' + CUR; } };
+  const priceLbl = (i) => { const max = PRICE_BANDS[i][0]; return i === 0 ? t('price.upTo', { n: moneyTxt(max) }) : max === Infinity ? t('price.over', { n: moneyTxt(PRICE_BANDS[i - 1][0]) }) : t('price.range', { a: PRICE_BANDS[i - 1][0], b: moneyTxt(max) }); };
+  const setPrice = () => { PRICE.length = 0; PRICE_BANDS.forEach(([, k], i) => PRICE.push([k, priceLbl(i)])); };
   const priceKey = (b) => {
-    if (typeof b.price !== 'number' || !(b.price > 0) || (b.currency && b.currency !== 'EUR')) return '';
+    if (typeof b.price !== 'number' || !(b.price > 0) || (b.currency && b.currency !== CUR)) return '';
     return PRICE_BANDS.find(([max]) => b.price <= max)[1];
   };
   const STATUS_LABEL = {};
@@ -81,10 +85,10 @@
     I18N.dict = dict;
     I18N.pr = new Intl.PluralRules(lang);
     de = new Intl.Collator(lang, { sensitivity: 'base', numeric: true });
-    STATUS.length = 0; PRICE.length = 0;
+    STATUS.length = 0;
     TYPES.forEach((x) => { x[1] = typeLbl(x[0]); }); // the types themselves come from the data (see _ingest)
     STATUS_KEYS.forEach((k) => { STATUS.push([k, t('status.' + k)]); STATUS_LABEL[k] = t('status.' + k); });
-    PRICE_BANDS.forEach(([, k]) => PRICE.push([k, t('price.' + k)]));
+    setPrice();
     STATUS_LABEL.window = t('status.window');
     STATUS_LABEL.unknown = t('status.unknown');
     STATUS_LABEL.drunk = t('status.drunk');
@@ -1214,6 +1218,13 @@
       const names = new Map(cl.map((c) => [c.id, c.name || '']));
       const per = new Map();
       (data.bottles || []).forEach((b) => { if (!this._gone.has(b.id)) { const k = b.cellar || cl[0].id; per.set(k, (per.get(k) || 0) + 1); } });
+      // Currency of the prices: the one most bottles use; the price bands and the price text use it
+      {
+        const cc = new Map();
+        (data.bottles || []).forEach((b) => { if (typeof b.price === 'number' && b.price > 0 && b.currency) cc.set(b.currency, (cc.get(b.currency) || 0) + 1); });
+        CUR = (Array.from(cc.entries()).sort((a, b) => b[1] - a[1])[0] || [''])[0];
+        setPrice();
+      }
       // Classification list of a wine; tiers of kind ripeness (Kabinett, Spätlese ...) before the others (kind comes from Cellarion, see classKinds)
       const kinds = data.classKinds || {};
       const clsOf = (c) => {
@@ -2022,13 +2033,14 @@
       return this._glass(b._type || 'white', typeLbl(b._type));
     }
     _sub(b) { return b.region || ''; }
-    // Price of the bottles (EUR): one value or from-to; empty if none is known
+    // Price of the bottles (in the currency of the data): one value or from-to; empty if none is known
     _priceTxt(bottles) {
-      const v = (bottles || []).filter((b) => typeof b.price === 'number' && b.price > 0 && (!b.currency || b.currency === 'EUR')).map((b) => b.price);
-      if (!v.length) return '';
+      const v = (bottles || []).filter((b) => typeof b.price === 'number' && b.price > 0 && (!b.currency || b.currency === CUR)).map((b) => b.price);
+      if (!v.length || !CUR) return '';
       const f = (x) => new Intl.NumberFormat(I18N.lang || 'de', { maximumFractionDigits: Number.isInteger(x) ? 0 : 2, minimumFractionDigits: Number.isInteger(x) ? 0 : 2 }).format(x);
       const lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
-      return (lo === hi ? f(lo) : f(lo) + '–' + f(hi)) + '\u00a0€';
+      const sym = (x) => { try { return new Intl.NumberFormat(I18N.lang || 'en', { style: 'currency', currency: CUR, currencyDisplay: 'narrowSymbol', maximumFractionDigits: Number.isInteger(x) ? 0 : 2, minimumFractionDigits: Number.isInteger(x) ? 0 : 2 }).format(x).replace(/\s/g, '\u00a0'); } catch (e) { return f(x) + '\u00a0' + CUR; } };
+      return lo === hi ? sym(lo) : f(lo) + '–' + sym(hi);
     }
     _priceSpans(bottles) {
       const p = this._priceTxt(bottles);
@@ -2341,8 +2353,8 @@
     }
     _money(cur) {
       let f;
-      try { f = new Intl.NumberFormat(I18N.lang || 'de', { style: 'currency', currency: cur || 'EUR', maximumFractionDigits: 0 }); } catch (e) { f = null; }
-      return (v) => (f ? f.format(v) : Math.round(v) + ' ' + (cur || ''));
+      try { f = new Intl.NumberFormat(I18N.lang || 'de', { style: 'currency', currency: cur, maximumFractionDigits: 0 }); } catch (e) { f = null; }
+      return (v) => (f ? f.format(v) : Math.round(v) + (cur ? ' ' + cur : ''));
     }
     _renderStat() {
       const el = this._dlg, S = this._statData();

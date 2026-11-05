@@ -62,10 +62,9 @@
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
   const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
-  const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
-  const TYPE_LABEL = {};
+  const typeLbl = (k) => { if (!k) return ''; const v = t('type.' + k); return v === 'type.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a wine type (Cellarion's value; no text: the name itself)
   const STATUS = [];
   // Price bands per bottle in EUR: upper limit (inclusive) and key; the last one is open-ended
   const PRICE_BANDS = [[10, 'p10'], [20, 'p20'], [30, 'p30'], [50, 'p50'], [75, 'p75'], [100, 'p100'], [Infinity, 'pmax']];
@@ -82,8 +81,8 @@
     I18N.dict = dict;
     I18N.pr = new Intl.PluralRules(lang);
     de = new Intl.Collator(lang, { sensitivity: 'base', numeric: true });
-    TYPES.length = 0; STATUS.length = 0; PRICE.length = 0;
-    TYPE_KEYS.forEach((k) => { TYPES.push([k, t('type.' + k)]); TYPE_LABEL[k] = t('type.' + k); });
+    STATUS.length = 0; PRICE.length = 0;
+    TYPES.forEach((x) => { x[1] = typeLbl(x[0]); }); // the types themselves come from the data (see _ingest)
     STATUS_KEYS.forEach((k) => { STATUS.push([k, t('status.' + k)]); STATUS_LABEL[k] = t('status.' + k); });
     PRICE_BANDS.forEach(([, k]) => PRICE.push([k, t('price.' + k)]));
     STATUS_LABEL.window = t('status.window');
@@ -1182,7 +1181,7 @@
       if (!w || w.fach == null || !w.fachen) return '';
       const rs = this._rs(w.rack);
       const parts = [w.rack, t('loc.shelf', { n: rs.order === 'bottom' ? w.fach : w.fachen - w.fach + 1 })];
-      if (rs.side === 'thirds' && w.platz) parts.push(t(['loc.left', 'loc.mid', 'loc.right'][Math.min(2, Math.floor((w.platz - 1) / ((w.cols || 6) / 3)))]));
+      if (rs.side === 'thirds' && w.platz && w.cols) parts.push(t(['loc.left', 'loc.mid', 'loc.right'][Math.min(2, Math.floor((w.platz - 1) / (w.cols / 3)))])); // without the number of columns from Cellarion there is no side
       else if (rs.side === 'slot' && w.platz) parts.push(t('loc.slot', { n: w.platz }));
       return parts.join(' · ');
     }
@@ -1231,7 +1230,7 @@
         o._type = o.type || '';
         o._cls = clsOf(o.classification);
         o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
-          (o.grapes || []).join(' '), o._loc, TYPE_LABEL[o.type],
+          (o.grapes || []).join(' '), o._loc, typeLbl(o.type),
           Object.keys(o.p || {}).filter((k) => !isInfoKey(k)).map((k) => (Array.isArray(o.p[k]) ? o.p[k].join(' ') : o.p[k])).join(' ')].join('\u0001')); // the long info texts and source links are not searched // fields are separated, so a phrase cannot run across two fields
         return o;
       });
@@ -1255,7 +1254,7 @@
         o._rack = NO_LOC;
         o._type = o.type || '';
         o._cls = clsOf(o.classification);
-        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification, (o.grapes || []).join(' '), TYPE_LABEL[o.type]].join('\u0001'));
+        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification, (o.grapes || []).join(' '), typeLbl(o.type)].join('\u0001'));
         return o;
       });
       const count = (get) => {
@@ -1265,6 +1264,13 @@
       };
       const grapes = new Map();
       bottles.forEach((b) => (b.grapes || []).forEach((g) => grapes.set(g, (grapes.get(g) || 0) + 1)));
+      // Wine types come from the data (stock and archive), most frequent first
+      {
+        const tc = new Map();
+        bottles.concat(hist || []).forEach((b) => { if (b._type) tc.set(b._type, (tc.get(b._type) || 0) + 1); });
+        TYPES.length = 0;
+        Array.from(tc.entries()).sort((a, b) => b[1] - a[1] || de.compare(a[0], b[0])).forEach(([k]) => TYPES.push([k, typeLbl(k)]));
+      }
       const cur = all ? null : (cl.find((c) => c.id === sel) || cl[0]);
       this._data = {
         generated: data.generated,
@@ -2013,7 +2019,7 @@
       return out + (open ? '</mark>' : '');
     }
     _typeDot(b) {
-      return this._glass(b._type || 'white', TYPE_LABEL[b._type] || '');
+      return this._glass(b._type || 'white', typeLbl(b._type));
     }
     _sub(b) { return b.region || ''; }
     // Price of the bottles (EUR): one value or from-to; empty if none is known
@@ -2234,7 +2240,7 @@
           } else if (tab === 'price') {
             sec = { rows: PRICE.filter(([k]) => S.priceBands.has(k)).map(([k, l]) => ({ label: l, sub: t('stat.nBottles', { n: S.priceBands.get(k).n }), n: S.priceBands.get(k).v, text: fmt(S.priceBands.get(k).v), filter: ['price', k] })), total: 0, limit: 99 };
           } else if (tab === 'types') {
-            sec = { rows: S.byTypeVal.map(([k, v]) => ({ label: TYPE_LABEL[k] || k, n: v, text: fmt(v), dot: k, filter: ['types', k] })), total: 0, limit: 99 };
+            sec = { rows: S.byTypeVal.map(([k, v]) => ({ label: typeLbl(k), n: v, text: fmt(v), dot: k, filter: ['types', k] })), total: 0, limit: 99 };
           } else {
             const g = { producer: 'producer', country: null, region: 'region', vintage: 'vintage' }[tab];
             let list = S.valBy[tab];
@@ -2311,7 +2317,7 @@
           head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
           (H.late ? `<div class="wsub shint">${esc(t('stat.lateHint', { n: H.late }))}</div>` : '') +
           head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +
-          head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" ${arch('types', k)}>${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+          head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" ${arch('types', k)}>${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
             `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / tmx * 100))}%"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +
           `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
       }
@@ -2330,7 +2336,7 @@
         `<div class="sgrid">${tile(num(S.total), t('stat.sc.stock'), 'stock')}${tile(num(H.total), t('stat.sc.arch'), 'arch')}</div>` +
         (reach > 0 ? `<div class="stile st wide"><span class="sbig val">${esc(t('stat.reachYears', { n: dec(reach) }))}</span><span class="slbl">${esc(t('stat.reach'))}</span><span class="slbl">${esc(t('stat.reachHint', { n: H.recent }))}</span></div>` : '') +
         head(t('stat.byType'), t('stat.stockVsArch')) +
-        `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+        `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
           `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(a)} · ${num(b)}</span></button>`; }).join('')}</div>` +
         (prods.length ? head(t('stat.producersAll'), t('stat.stockVsArch')) + `<div class="slist">${prods.map(([k, [a, b]]) => row(k, '', a + b, prods[0][1][0] + prods[0][1][1], num(a) + ' · ' + num(b), `data-act="statfilter" data-g="producer" data-v="${esc(k)}"`)).join('')}</div>` : '') +
         (rebuy.length ? head(t('stat.rebuy'), t('stat.rebuyHint')) + `<div class="slist">${rebuy.map(([, w]) => row(w.name, w.producer, w.n, rebuy[0][1].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
@@ -2363,7 +2369,7 @@
           `<div class="sgrid">${tile('wines', num(S.wines.size), t('stat.wines'))}${tile('countries', num(S.countries.length), t('stat.countries'))}` +
           `${tile('producers', num(S.producers.length), t('stat.producers'))}${tile('vintages', S.oldest || '–', t('stat.oldest'))}</div>` +
           (S.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(this._money(S.currency)(S.value))}</span><span class="slbl">${esc(t('stat.cellarValue'))}</span></button>` : '') +
-          `<div class="sbars">${S.types.map(([k, n]) => `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(TYPE_LABEL[k] || k)}</span>` +
+          `<div class="sbars">${S.types.map(([k, n]) => `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
             `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / maxT * 100))}%;background:var(--w-${esc(k)}, var(--cb-ring))"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +
           `<div class="sgrid">${mini('countries', t('stat.topCountry'), (S.countries[0] || [])[0])}${mini('producers', t('stat.topProducer'), (S.producers[0] || [])[0])}` +
           `${mini('regions', t('stat.topRegion'), (S.regions[0] || [])[0])}${mini('grapes', t('stat.topGrape'), (S.grapes[0] || [])[0])}</div>`;
@@ -2667,7 +2673,8 @@
       if (!racks.length) return '';
       const mine = new Set(bottles.map((b) => b.id));
       return racks.map((rk) => {
-        const g = geo[rk], cols = g.cols || 6, n = g.rows.length, rs = this._rs(rk);
+        const g = geo[rk], n = g.rows.length, rs = this._rs(rk);
+        const cols = g.cols || Math.max(1, ...this._data.bottles.filter((b) => b.where && b.where.rack === rk).map((b) => b.where.platz || 0)); // columns from Cellarion, else the highest used place
         const occ = new Map();
         this._data.bottles.forEach((b) => {
           const w = b.where;

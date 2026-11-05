@@ -127,6 +127,10 @@
         "arch_n": {
           "name": "Archivtreffer in der Suche",
           "description": "Archivtreffer in der Textsuche zeigen, wenn der Bestand weniger Treffer hat (0 = nur ohne Bestandstreffer)."
+        },
+        "price_bands": {
+          "name": "Preisstufen",
+          "description": "Obergrenzen der Preisstufen im Filter, aufsteigend (leere Liste = Standard)."
         }
       }
     },

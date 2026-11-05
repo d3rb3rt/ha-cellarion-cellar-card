@@ -104,6 +104,15 @@ async def test_settings_roundtrip_and_validation(hass, aioclient_mock):
     assert res["settings"]["keepState"] is True
 
 
+async def test_price_bands_setting(hass, aioclient_mock):
+    await setup(hass, aioclient_mock)
+    call = lambda d: hass.services.async_call(DOMAIN, "settings", d, blocking=True, return_response=True)
+    assert (await call({"price_bands": [15, 20, 30]}))["settings"]["priceBands"] == [15, 20, 30]
+    assert (await call({"filter_order": []}))["settings"]["priceBands"] == [15, 20, 30]  # a call without it leaves it alone
+    assert (await call({"price_bands": [30, 20]}))["settings"]["priceBands"] == [15, 20, 30]  # not ascending: ignored
+    assert "priceBands" not in (await call({"price_bands": []}))["settings"]  # empty = card default
+
+
 async def test_producer_sort(hass, aioclient_mock):
     await setup(hass, aioclient_mock)
     res = await hass.services.async_call(DOMAIN, "producer_sort", {"name": "Anna Müller", "index": 1}, blocking=True, return_response=True)

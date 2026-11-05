@@ -172,7 +172,8 @@ class Hub:
     async def set_settings(self, filter_order: list[str] | None, filter_hidden: list[str] | None, language: str | None,
                            rack_settings: JsonDict | None, keep_state: bool | None = None,
                            hide_other: bool | None = None, info_order: list[str] | None = None,
-                           info_show: list[str] | None = None, arch_n: int | None = None) -> JsonDict:
+                           info_show: list[str] | None = None, arch_n: int | None = None,
+                           price_bands: list[int] | None = None) -> JsonDict:
         """Settings shared by all devices: filter order/visibility, language, per-rack place display."""
         s = self._settings
         if filter_order is not None:  # None = leave unchanged, so a call without it never clears the filter choice
@@ -197,6 +198,12 @@ class Hub:
             s["hideOther"] = bool(hide_other)  # hide Other items (not wine) from the list unless searched or filtered
         if arch_n is not None:
             s["archN"] = max(0, min(99, int(arch_n)))  # archive rows in the search below this many stock hits (0 = only without hits)
+        if price_bands is not None:  # upper limits of the price bands, ascending; empty = the card default
+            nums = [int(x) for x in price_bands][:12]
+            if not nums:
+                s.pop("priceBands", None)
+            elif nums[0] > 0 and all(a < b for a, b in zip(nums, nums[1:])):
+                s["priceBands"] = nums
         if info_order is not None:
             s["infoOrder"] = [str(x) for x in info_order][:60]  # info behind the wine name: order
         if info_show is not None:

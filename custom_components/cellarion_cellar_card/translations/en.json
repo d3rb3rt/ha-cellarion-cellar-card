@@ -127,6 +127,10 @@
         "arch_n": {
           "name": "Archive hits in search",
           "description": "Show archive hits in the text search when stock has fewer hits than this (0 = only without stock hits)."
+        },
+        "price_bands": {
+          "name": "Price bands",
+          "description": "Upper limits of the price filter bands, ascending (empty list = default)."
         }
       }
     },

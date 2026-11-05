@@ -49,6 +49,9 @@ settings:
         number:
           min: 0
           max: 99
+    price_bands:
+      selector:
+        object:
 producer_sort:
   fields:
     name:

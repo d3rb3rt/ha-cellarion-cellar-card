@@ -62,7 +62,6 @@
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAA8CAYAAAB8SnrYAAALGElEQVR42qVYSYxc13U95773f1X1UOxmDxzEQbYmaEhkSzTtSHFoeeEsLNhwYgIOEi8iQDbiRbz0khCQZZCNkUEOAmgRAwGYIAEUKwgSRaItRUMcy7YsihYVUhQlUaTY3eyu6pr+e/dk8as4yG1Jth5QqML/9d8d3znnfmLrRQD60vYb9yw28bmiGDocMDNYCAQyGPqxz+rl77yy9tTk/1ttFLe6eBiwo0DeVgw/Pt+e+TsUBSCAJCDAkTEzM423O5v/CKw9Nfn/VnvZVhdvG3uza6ZshQaSU0OnVxm5yswViH5/GDKqxhAAbzuytfeTVGyZngduWZjdyYUX0CxvGKZRBjlxRhLAUEI5r2z2Bvc+fOrUySOAPQT4B4lAALg37Biikc5JvoULhCQWIZRLS9siABzf2tmtU3QYsIeOHx/1h/2/cCWA1NVFpJDLYOwMeo/+2XMvvHwYCL9SDSZr5WJ3UKVcF/eKhyQF5RF6/UE18eiXrfc0sK05rWgFIOGqCAQBhRyN8YULFw7x1zJgiALDuxuiDscB8/r38vKyfi0DDhC67Lre3QkfZL2ngcFgQM8JBoICTPU3IYAC+f524vu6QAdo49RrnCMJ/sFiiO+dojz28ZoulQSCgPjeGXjfFCVmd/ikupeLLAI5ELIPmaIWIEIQ/NqyEgIM7s4PFcGGgoEEhRob6jBEFwmiKBrhQxmYW5jbFUOE3EWBFDQGDQqGVmtq/2GgdfToUcevgkWTNe3ll0sLE+cndSBIS/JM+YHFPR+5A4AOAeEDGTgClEeB/OCOxa+A/rkq5UyYUQRFUYSBdHcFstVq2hEAeLIGO3tPA18DioeA0QP7dnx+aWn7w1bQMpx1N7LGudoMAhgylBrN8vPfuH7HX3Ls3ZF37cmrIDocBfJXdy/ev7x9/u9ny0a70+85AQtmlCCSlx9wAkIE5Dkwx8EoP/L8K6f/9L+BzthxB+q88RAQHwPyN/fterC9beaRUJZTo+HQEcwMhJG4enMAEA2sO9dIpKmyvHu+3b47r+LRcxgMJs6Hw0B4DMhfv37Xg1Oz09+xsjT37DAGgDKQRnKMeRwTWt1IIMdcYdk1ahbhlu3N/LG7rPjX+7/1rdGxY8fqBx7ct/uedrv1H6EsG54y5G7jB2GqP794pLZoQKXUjF6c747+5uH/e/NPDgMhfO1uFFNY+Ha72bojj1IyIXICMhwj87uyU9/5xbZ3E1NgCq6P3xbw9Hc3h6esODd/IACf7QyGDiFStW+TQ8XLOYdUAxz1SwAikxyYYaoxW7aaC18HYBZY3DdVlNNWhgToaoV2DYPVDABoQqBb6h0DsiyDCEX85O/Nze2NU7MzH5NRcCfNQIGqFwVoUsV3qRaOEfCae4VnRCVz68oidm9rNq+PlbBMkpZxWVlBY9KqsU11n4JjxqnPBMAgUpB8zKtOADRI0SOtzOrviBXABmo6BApABqACOBIZCMaxMRPcASYYHQLgpCgHFAGploQeADOBxEzRDBEpKwJIMgKNcTUrWAEmBzrddTSaJbJnwTNHeUPNZqBxFkWIgBGoYh2ugCBHxURYQAQYQYkgwAxxCHFYP5OI7qiDW++8Thv9t/Cbd96OxaUZmAE/fP5FvHmmC2RoZeUS29NLgBvIK00MF3LIiIEBgqHykdyIWERc2thALInf/6N7deddN+nxJx63sg0sXNdSszGFmZNtfOHgAbWmm3jm2I91/CdrDGwiUCATCMjM0CgKGkHIBUG0MmJzOML2ndt04x2LWtgT8U7njLUXZ3HhYkehMYt3VjfRGzkac8L0nOO2u27m1HwECgExSkbZWDKMcqZNhKfRlHKCWwf3f/kgDv3ub+DJJ55BUUxr154d2ugInQ3w3LlVzC0s+vaFZa6tik899UP9wQP34fpbmuoMLo53r7s3CYxjmgVBDHqbOPCZG7CwO2LYH/GeTxzQ97/3v1hbyzz5yps4+aMzcM+cnWkj9Atl9njw4G2Ymsm667du5qunziIPMgMKZBecA5k0QS2jEjHbbiOWJVpT89q4OOLz3z/B10+sYybM07sNxFEbw1XxsX96mm+dXtUNH7ke3Y0eb7hpP268aT9ScpANSgbkGsudJKrRCLt37sbbb17Cvz16DD9/6Sz/83svoFUsqdEsIUqNVgMhmmIssLx0HV79+TmeOXUJ9AaOPfkDDHoD1XLSQRMcPs6YGapRD4vLDXzp8KfwiXtu5/88+wK63R6KRoFUZcAB1XKR7oJEzLYW+Oi//BdfOv4S9uzdoU8f+hRiNEJ+GcxtIqNoFYrmJjYH57WwMI2Fhe0EIuRGC3YtYNMBDiG5VynjrgO3Yve+GcSyokGg6lobNIYfEg4htgq0mvNEKtDZ6MmrEoayRmtS10Jbgii6pLVLa0op0VVJUN2YJMzqLgLksKKJ195Yx7PPvQw4sb5ClnFGEEEDNZmTa2ugIoASuSr45OMvoj3XRHfdSIQJscJCiSjV6Os5Y26+rT17d9IQ8OpPV5Uu9RBDwGgSwZWJnvAokQxGHPzk3di1bx5r5yv886tPQ3KGaMheeWQdE1wJ0zOB+/YvQZVQNjMG1SU0GktEuoY2WZdtPPZbwuxsgdZ0xmZTADNySrAYQJPF7PX0GaIhpaF63Q6QSVcFo+Q+0niomZDPlUhISkS308fMZtCwnxAtoCiiKKGqKkWNZUjOghA5t20RRGAZWiKikVFABjkecy7LuwwywKuA5575CaaOR6R+E6MqMZjonsAQFI0ml1DEhjZW+njhRycAh19aG9CKtpKXkEaAqHGRJY1VgBNmwKH77sXejy7z/Bt9/MOJf58AA5CBGIwGF5SdeeTorfeVHaCVSF4hmIkKvCr9V6VJoCWEIgmhy0ZTCmVAGmbRhBACok9Ochpi375l/M59BzgcZZw9/YTeOnsBjWKOoNdMbbzMy2AGGJCTcPbMBSII588OmKqM0hqUOTIyorxmcAuG/rCDTndFOZODqsNQZFkQBJscApI1mcgJIRIwP/Paaa52zmq40UCIET50WWAdASZvUwjEENBqTjFlodVsIaUV9PsdpCpd1hvujuwJRTRkJzbzOj/9mS9i/007ee61Pr770hNXZF8GIlBLBLOAbm+ICxfW1Ov1cfGdFTKQCzumMDNDbJ9fwNy2bWq2pjk91VLOFeXmnWGXszPTyhUBhbpGNp51JYt0UXI0W028euosLh59A9ftWeBvf/YO7Nu/S9sX2gxmkJfodcW11b5WL25yc3WoXrfP4Wikx0/9jFmuPAJDTnCLsmzgwBUNYKCh3x9g78178NU//gqLMqPKHVxceQMv/vSEXj99Aa+deRvrK0Mb9AHkAmUuOdHxhQWknFhEQ1mW9csxF+AZUaRnOZrNKVy6uIG//fYjsmCsqgE21tfR7znlJUIoUMYZzcaAUIa6W7MDBIoYkXOGCFQORZFEhVhC0TCe3iyi6mVsrnUJURJZFHOcazVFI9zHp1MCc4J73bUQkKtaFjsMsEDz4FCSBEYj1wPhVTY12GCraeP6eK06PRGeEUDEK7J1TDo+nmoJCTAaJEIeYCwpm9owBR4rJCvAxISsLPdcZc+VyyuHRg4lh5K7u+ByOGSSA+5i9ozsbtkdWSGnqjTEqqrOVCn9OOwfVSeJ6tb5Rnk7acYAU4DBYDSzyGDGYMZowYxmtBiMZsEYoyEW5maGEIwyNsCg4XC92137xl+/ff5ZAsAfbkf7uvbyN62Y+uLQ0MqhJhgTGGmMDJRPJgzVYGdSBSAbJWUFUUzZg+NnGgz/6s9fP/c0APt/KQHZiAGoYQkAAAAASUVORK5CYII=';
   const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
-  const STANDARD = ['infosplit', 'history', 'archgone', 'detrows']; // former flags, now always on: infosplit = data fields for list and details are set separately (own selection and order); history = archive of the drunk wines
   const TYPE_KEYS = ['red', 'white', 'rosé', 'sparkling', 'dessert', 'fortified', 'other'];
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
@@ -1017,23 +1016,23 @@
         .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       // Flag detrows: the details also list the vineyard name and the bottle data (price, purchase date ...) as data fields
-      const more = det && this._flag('detrows') ? [{ id: 'vname', label: infoLbl('vineyard_name'), infoOnly: true }].concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
+      const more = det ? [{ id: 'vname', label: infoLbl('vineyard_name'), infoOnly: true }].concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
       const all = std.concat(more, pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
       // The price is special (bottle data, not wine data): always last, not sortable
       const byList = all.slice().sort((a, b) => pos(a) - pos(b));
-      if (det && this._flag('infosplit')) { const pd = (d) => { const k = (this._ido || []).indexOf(d.id); return k < 0 ? 1000 + byList.indexOf(d) : k; }; return byList.slice().sort((a, b) => pd(a) - pd(b)); }
+      if (det) { const pd = (d) => { const k = (this._ido || []).indexOf(d.id); return k < 0 ? 1000 + byList.indexOf(d) : k; }; return byList.slice().sort((a, b) => pd(a) - pd(b)); }
       return byList.concat([{ id: 'price', label: t('filter.price'), fixed: true }]);
     }
     _priceOnly(pr) { const m = String(pr || '').match(/wprice wpd">(.*?)<\/span>/); return m ? m[1] : ''; }
     _infoOrderArr() { return (this._io || []).concat((this._ido || []).map((x) => 'd:' + x)); }
-    _dOff(id) { return this._flag('infosplit') && this._iOff.has(id); } // off in the details (only with flag infosplit)
+    _dOff(id) { return this._iOff.has(id); } // off in the details
     _infoShowArr() { return Array.from(this._is).concat(Array.from(this._iOff).map((x) => 'off:' + x), Array.from(this._iMore).map((x) => 'more:' + x)); }
     // Id of the data field (see _infoDefs) behind an info attribute key
     _infoDefId(k) {
       const ti = INFO_TIER.indexOf(k);
       if (k === 'country' || k === 'region' || k === 'appellation' || k === 'grape') return k;
-      if (k === 'vineyard_name') return this._flag('detrows') ? 'vname' : '';
+      if (k === 'vineyard_name') return 'vname';
       if (ti >= 0) return 'cls' + ti;
       const d = this._infoDefs().find((x) => x.personal && infoNorm(x.label) === k);
       return d ? d.id : '';
@@ -1233,7 +1232,7 @@
       const wineOf = new Map();
       const sampleOf = new Map();
       bottles.forEach((b) => { if (b.wine) { wineOf.set(wkey(b.name, b.producer), b.wine); if (!sampleOf.has(wkey(b.name, b.producer))) sampleOf.set(wkey(b.name, b.producer), b); } });
-      const hist = !this._flag('history') ? [] : (data.history || []).filter((h) => !multi || all || (h.cellar || cl[0].id) === sel).map((h) => {
+      const hist = (data.history || []).filter((h) => !multi || all || (h.cellar || cl[0].id) === sel).map((h) => {
         const o = Object.assign({}, h);
         const k = wkey(o.name, o.producer);
         o.vintage = o.vintage || 'NV';
@@ -1361,15 +1360,15 @@
       return r;
     }
     // Flag history: the filter "History" is on, the list shows the drunk bottles instead of the cellar
-    _histMode() { return !!(this._flag('history') && this._f.hist && this._f.hist.size); }
+    _histMode() { return !!(this._f.hist && this._f.hist.size); }
     // src: 'hist' = always the consumption log (used for the extra rows of a search), otherwise the cellar (or the log while the filter History is on)
     _filtered(skip, grp, src) {
       const f = this._f;
       const hp = src === 'hist' || (!src && this._histMode());
       // History = only used up: a drunk vintage with a bottle of the same wine and vintage still in the cellar is not listed
-      const gone = this._flag('archgone'); // flag archgone: a wine with any bottle left (any vintage) is not archived
-      const left = hp ? new Set(this._data.bottles.map((b) => (b.wine || b.name) + (gone ? '' : '|' + (b.vintage || 'NV')))) : null;
-      const pool = hp ? (this._data.history || []).filter((h) => src === 'hist' || !left.has(h.wine + (gone ? '' : '|' + (h.vintage || 'NV')))) : this._data.bottles;
+      // A wine with any bottle left (any vintage) is not archived
+      const left = hp ? new Set(this._data.bottles.map((b) => b.wine || b.name)) : null;
+      const pool = hp ? (this._data.history || []).filter((h) => src === 'hist' || !left.has(h.wine)) : this._data.bottles;
       const toks = this._qToks();
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
       const gid = grp || skip, skipDef = gid && this._allDefs().find((d) => d.id === gid);
@@ -1571,9 +1570,9 @@
       if (this._keep()) this._saveState();
       this._applyMode();
       this.toggleAttribute('data-fullw', this._fullw());
-      if (this._flag('history') && this._fs('hist').size) this.setAttribute('data-arch', ''); else this.removeAttribute('data-arch'); // archive on: the filter pills are highlighted in the archive colour (CSS)
+      if (this._fs('hist').size) this.setAttribute('data-arch', ''); else this.removeAttribute('data-arch'); // archive on: the filter pills are highlighted in the archive colour (CSS)
       if (this._multi()) this.setAttribute('data-fm', this._fm()); else this.removeAttribute('data-fm'); // filter mode colour (CSS: green OR, red NOT)
-      this.toggleAttribute('data-hdr2', this._flag('hdr')); if (this._flag('hdr')) this.setAttribute('data-hdrv', this._flagV('hdr')); else this.removeAttribute('data-hdrv'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
+      this.toggleAttribute('data-hdr2', true); this.setAttribute('data-hdrv', 'c'); // wide layout rules sit in a min-width media block; on the phone only the outlined filter chips apply
       this._renderHead();
       this._renderList();
     }
@@ -1583,9 +1582,9 @@
     _fixedHdr() {
       if (this._nShown !== undefined && this._nShown <= 10) return true; // short list: nothing to hide
       if ((this._nChips || 0) > 4 && window.matchMedia && window.matchMedia('(max-width: 600px)').matches) return false;
-      return !SCROLL_FOLD || (this._hdr2() && this._flagV('hdr') !== 'c');
+      return !SCROLL_FOLD;
     }
-    _hdr2() { return this._flag('hdr') && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
+    _hdr2() { return !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches); }
 
     _nAct() {
       const f = this._f;
@@ -1706,7 +1705,7 @@
         this._ddItems.cellarsel = { label: t('cellar.title'), items, cur: cur.t, curV: cur.v };
       }
       const ttl = c.title || (!multi && c.header_cellar === false && this._data && this._data.cellar) || ''; // otherwise the cellar name is shown in the page header
-      const cname = this._flagV('hdr') === 'c' && this._data && this._data.cellar ? this._data.cellar : '';
+      const cname = this._data && this._data.cellar ? this._data.cellar : '';
       const cnameHtml = !cname ? '' : multi
         ? `<span class="cname"><button type="button" class="sel cnsel" data-act="dd" data-id="cellarsel" aria-haspopup="listbox" aria-label="${esc(t('cellar.title'))}">${esc(cname)}</button></span>`
         : `<span class="cname">${esc(cname)}</span>`;
@@ -1737,10 +1736,8 @@
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
         })();
-        const sortInSum = this._flagV('hdr') === 'c';
         html += `<div class="search${f.q ? ' has' : ''}"><input type="search" inputmode="search" enterkeyhint="search" autocomplete="off" ` +
           `placeholder="${(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || this._hdr2() ? esc(t('head.searchShort')) : esc(t('head.search'))}" value="${esc(f.q)}"><button class="x" data-act="clearq" aria-label="${esc(t('head.clearSearch'))}">✕</button></div>` +
-          (sortInSum ? '' : sortBtn) +
           stat + reload + gear + `</div>`;
         const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id) && !this._fh.has('off:' + d.id)); // filters set to "off" are not offered at all
         // Hidden filters (settings) only count when there is something to choose right now (or a value is chosen): no greyed-out ones behind the "..." button, and no button when it would only open greyed-out ones
@@ -1768,7 +1765,7 @@
         const hSet = this._fs('hist');
         const hSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis'; // settings (Filters): visible (default) / behind "..." / off
         if (hSt === 'off' && hSet.size) hSet.clear();
-        const hOn = this._flag('history') && !!(d.history && d.history.length) && hSt !== 'off' && (hSt === 'vis' || this._showHid || !!hSet.size);
+        const hOn = !!(d.history && d.history.length) && hSt !== 'off' && (hSt === 'vis' || this._showHid || !!hSet.size);
         // the pill looks like a switch (track with knob): tap = archive on / off
         const histChip = hOn ? `<button type="button" class="sel fs swp${hSet.size ? ' hasv on' : ''}" role="switch" data-act="histtoggle" aria-checked="${hSet.size ? 'true' : 'false'}" aria-label="${esc(t('filter.history'))}"><span class="swt" aria-hidden="true"><i></i></span>${esc(t('filter.history'))}</button>` : '';
         const nChips = defs.filter((d) => t3[d.id].size || this._fs(d.id).size || hasAny(d)).length + (moreBtn ? 1 : 0) + (fmShow ? 1 : 0) + (hOn ? 1 : 0);
@@ -1796,7 +1793,7 @@
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
         }).join(this._pillSep(d)))).join('');
         html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>✕</button></div>`;
-        html += `<div class="sumline"><span class="grow" data-sum></span>${sortInSum ? sortBtn : ''}</div>`;
+        html += `<div class="sumline"><span class="grow" data-sum></span>${sortBtn}</div>`;
       }
       if (this._ptr && !this._pulling) { this._ptr.style.height = this._busy ? '24px' : '0px'; this._ptr.textContent = this._busy ? t('head.loading') : ''; }
       // Keep focus and cursor in the search field when the header is rebuilt
@@ -1865,7 +1862,7 @@
       const entries0 = this._entries(bottles);
       let entries = entries0, nHist = 0;
       // Flag history: a search with fewer than 5 rows also shows the matching drunk vintages (dimmed vintage rows)
-      if (!hm && this._flag('history') && String(this._f.q || '').trim() && this._data.history && this._data.history.length) {
+      if (!hm && String(this._f.q || '').trim() && this._data.history && this._data.history.length) {
         const rows = this._view === 'flat' ? entries0.length : this._groups(entries0).length;
         if (rows < Math.max(1, this._archN())) { // setting Archive: below N stock hits the search also shows archive rows (0 = only without any stock hit)
           const inStock = new Set(this._data.bottles.map((b) => b.wine || b.name)); // only wines with no bottle left in the cellar
@@ -1916,7 +1913,7 @@
       if (sum) {
         const all = this._hideOther() ? this._data.bottles.filter((b) => b._type !== 'other').length : this._data.bottles.length;
         const sw = nHist ? new Set(entries0.map((e) => e.wine)).size : nWine; // the extra drunk rows of a search are not counted as wines or vintages
-        sum.textContent = `${this._data.cellar && this._flagV('hdr') !== 'c' ? this._data.cellar + ' · ' : ''}${t('count.wines', { n: sw })} · ${t('count.vintages', { n: entries0.length })} · ${hm ? t('hist.drunkN', { n: bottles.length }) : t('count.bottles', { n: bottles.length })}` + (!hm && bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
+        sum.textContent = `${t('count.wines', { n: sw })} · ${t('count.vintages', { n: entries0.length })} · ${hm ? t('hist.drunkN', { n: bottles.length }) : t('count.bottles', { n: bottles.length })}` + (!hm && bottles.length !== all ? ' ' + t('count.of', { all }) : '') +
           (nHist ? ' · ' + t('hist.more', { n: nHist }) : '') + (this._error ? ' · ' + t('count.loadError') : '');
         this._sumTxt = sum.textContent;
       }
@@ -1971,7 +1968,7 @@
       const others = this.shadowRoot.querySelectorAll(hdr2 ? '.head' : '.top, .fwrap, .fpills, .sumline');
       const set = (v) => {
         // header layout c (wide): list and header are 18px wider than the alphabet bar, so the bottle count ('Fl.') ends under the letter Z
-        if (v && this._flagV('hdr') === 'c' && /px$/.test(v) && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches)) v = (parseFloat(v) + 18) + 'px';
+        if (v && /px$/.test(v) && !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches)) v = (parseFloat(v) + 18) + 'px';
         list.style.maxWidth = v;
         bar.style.maxWidth = !(window.matchMedia && window.matchMedia('(max-width: 600px)').matches) ? v : ''; // the alphabet bar is part of the lighter header band, same width
         this.shadowRoot.querySelectorAll('.head, .top, .fwrap, .fpills, .sumline').forEach((e) => { e.style.maxWidth = ''; });
@@ -2051,10 +2048,10 @@
         return v ? this._hl([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
       };
       const swap = this._sort === 'producer' && b.producer;
-      const vj = detail && this._flag('detrows') && b.vintage && String(b.vintage).toUpperCase() !== 'NV' ? `<span class="wvj">${esc(b.vintage)}</span> ` : ''; // detail header (flag detrows): the vintage always in front of the wine name, empty without one
+      const vj = detail && b.vintage && String(b.vintage).toUpperCase() !== 'NV' ? `<span class="wvj">${esc(b.vintage)}</span> ` : ''; // detail header (flag detrows): the vintage always in front of the wine name, empty without one
       const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', vj + this._hl(b.name)]]
         : [['wname', vj + this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);
-      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && !(detail && (this._dOff(d.id) || this._flag('detrows'))) && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
+      const infos = this._infoDefs().filter((d) => this._is.has(d.id) && !detail && (d.id !== 'price' || single === undefined)).map((d) => ['wreg', txt(d)]).filter((x) => x[1]);
       const all = head.concat(infos);
       const html = all.map((x, i) => `<span class="${x[0]} wit${i < all.length - 1 ? ' d' : ''}${i === head.length - 1 ? ' e' : ''}">${x[1]}</span>`);
       return `<span class="wtitle${swap ? ' swap' : ''}"><span class="wl1">${html.slice(0, head.length).join('')}</span><span class="wl2">${html.slice(head.length).join('')}</span></span>`;
@@ -2437,19 +2434,18 @@
       const fmRow = `<div class="frow${fmSt === 'vis' ? '' : ' off'}" data-id="fmode"><span class="fl"><span class="wname">${esc(t('fmode.title'))}</span></span>${fseg('fmode', fmSt)}<span class="gripsp"></span></div>`;
       // Stock / Archive (flag history): fixed row before the filter mode (not movable); visible (default) = marker none, behind "..." = 'src:more', off = 'src:off'
       const srcSt = this._fh.has('src:off') ? 'off' : this._fh.has('src:more') ? 'more' : 'vis';
-      const srcRow = this._flag('history') ? `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.history'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>` : '';
+      const srcRow = `<div class="frow${srcSt === 'vis' ? '' : ' off'}" data-id="src"><span class="fl"><span class="wname">${esc(t('filter.history'))}</span></span>${fseg('src', srcSt)}<span class="gripsp"></span></div>`;
       const fhead = `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="fhs">${esc(t('fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
       const filtersBody = fhead + `<div class="dlist" data-g="f">` + fdefs.map((d) => frowF(d)).join('') + `</div>` + fmRow + srcRow;
       // Data fields: one checkbox per field (list; with flag infosplit a second section sets the details with its own order); the price only has the list
-      const split = this._flag('infosplit');
       const icb = (d, col, on) => `<span class="fcb"><input type="checkbox" data-act="icol" data-col="${col}" data-id="${esc(d.id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label: lbl(d) }))}"></span>`;
       const dseg = (id, st) => `<span class="fseg" role="group" aria-label="${esc(id)}">` + [['vis', t('fstate.vis'), t('dstate.visTip')], ['more', t('fstate.more'), t('dstate.moreTip')], ['off', t('fstate.off'), t('dstate.offTip')]].map(([v, l, tip]) => `<button type="button" class="${st === v ? 'on' : ''}" data-act="dstate" data-id="${esc(id)}" data-v="${v}" aria-pressed="${st === v}" title="${esc(tip)}" aria-label="${esc(tip)}">${esc(l)}</button>`).join('') + `</span>`; // details with flag detrows: shown / behind the arrow / off
-      const frowI = (d, col) => { const on = col === 'l' ? this._is.has(d.id) : !this._iOff.has(d.id); if (col === 'd' && this._flag('detrows')) { const st = this._iOff.has(d.id) ? 'off' : this._iMore.has(d.id) ? 'more' : 'vis'; return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${dseg(d.id, st)}${grip}</div>`; } return `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${icb(d, col, on)}${d.fixed ? '<span class="gripsp"></span>' : grip}</div>`; };
-      const ihead = (col) => `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="${col === 'd' && this._flag('detrows') ? 'fhs' : 'fcb'}">${esc(t(col === 'l' ? 'fhead.list' : col === 'd' && this._flag('detrows') ? 'fhead.vis' : 'fhead.details'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
-      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t(split ? 'set.infoListSub' : 'set.infoSub'))}</div>` + ihead('l') + `<div class="dlist" data-g="i">` + iord.map((d) => frowI(d, 'l')).join('') + `</div>` +
+      const frowI = (d, col) => { const on = col === 'l' ? this._is.has(d.id) : !this._iOff.has(d.id); if (col === 'd') { const st = this._iOff.has(d.id) ? 'off' : this._iMore.has(d.id) ? 'more' : 'vis'; return `<div class="frow${st === 'vis' ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${dseg(d.id, st)}${grip}</div>`; } return `<div class="frow${on ? '' : ' off'}" data-id="${esc(d.id)}"><span class="fl"><span class="wname">${esc(lbl(d))}</span></span>${icb(d, col, on)}${d.fixed ? '<span class="gripsp"></span>' : grip}</div>`; };
+      const ihead = (col) => `<div class="fhead"><span class="fl">${esc(t('fhead.name'))}</span><span class="${col === 'd' ? 'fhs' : 'fcb'}">${esc(t(col === 'l' ? 'fhead.list' : 'fhead.vis'))}</span><span class="fhg">${esc(t('fhead.sort'))}</span></div>`;
+      const infoBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoListSub'))}</div>` + ihead('l') + `<div class="dlist" data-g="i">` + iord.map((d) => frowI(d, 'l')).join('') + `</div>` +
         idefs.filter((d) => d.fixed).map((d) => frowI(d, 'l')).join('');
-      const ddefs = split ? this._infoDefs(true) : [];
-      const infoDBody = split ? `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoDetSub'))}</div>` + ihead('d') + `<div class="dlist" data-g="d">` + ddefs.map((d) => frowI(d, 'd')).join('') + `</div>` : '';
+      const ddefs = this._infoDefs(true);
+      const infoDBody = `<div class="wsub" style="margin:0 0 8px">${esc(t('set.infoDetSub'))}</div>` + ihead('d') + `<div class="dlist" data-g="d">` + ddefs.map((d) => frowI(d, 'd')).join('') + `</div>`;
       const racksBody = racks.map((n) => { const rs = this._rs(n);
         return `<div class="rackblk"><div class="racknm">${esc(n)}</div>` +
           row(t('set.rackOrder'), '', '', radios('rk-' + n + '-order', 'rack', [['top', t('set.rackTop')], ['bottom', t('set.rackBottom')]], rs.order, ` data-n="${esc(n)}" data-k="order"`)) +
@@ -2469,13 +2465,13 @@
         row(t('set.keepState'), t('set.keepStateSub'), sw('keepState'), radios('keepst', 'keepst', [['on', t('set.keepOn')], ['off', t('set.keepOff')]], this._keep() ? 'on' : 'off')) +
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         grp(t('set2.grpList')) +
-        sec('info', t(split ? 'set.infoList' : 'set.info'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id)).length, all: idefs.length }), infoBody, sw('info')) +
-        (split ? sec('infod', t('set.infoDet'), t('set2.sumFilters', { n: ddefs.filter((d) => !this._iOff.has(d.id)).length, all: ddefs.length }), infoDBody, sw('info')) : '') +
+        sec('info', t('set.infoList'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id)).length, all: idefs.length }), infoBody, sw('info')) +
+        sec('infod', t('set.infoDet'), t('set2.sumFilters', { n: ddefs.filter((d) => !this._iOff.has(d.id)).length, all: ddefs.length }), infoDBody, sw('info')) +
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +
-        (this._flag('history') ? grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) : '') +
+        grp(t('set2.grpArch')) + row(t('arch.nTitle'), t('arch.nSub'), sw('archN'), `<input class="snum" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" step="1" data-archn value="${this._archN()}">`) +
         (FLAGS.length ? grp(t('set2.grpDev')) + FLAGS.map((f) => f.opts ? row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', ['off'].concat(f.opts).map((o) => chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${o === this._flagV(f.id) ? 'off' : o}"`, o === this._flagV(f.id), t('flag.' + f.id + '.' + o))).join('')) : row(t('flag.' + f.id), t('flag.' + f.id + 'Sub'), '', chkOpt('flag', ` data-id="${esc(f.id)}" data-v="${this._flag(f.id) ? 'off' : 'on'}"`, this._flag(f.id), t('set.on')))).join('') : '') +
         `</div>`;
       el.hidden = false;
@@ -2607,13 +2603,10 @@
     _flag(id) { const v = this._flagV(id); return v !== 'off' && v !== false && v !== ''; }
     // value of a flag: boolean flags give true/false, flags with options (opts) give the chosen option ('off' = not set)
     _flagV(id) {
-      if (id === 'hdr') return 'c'; // the new header layout (c) is the standard; the earlier test variants a/b are no longer selectable
-      if (STANDARD.includes(id)) return true;
       const L = (this._local && this._local.flags) || {};
       const def = FLAGS.find((x) => x.id === id);
       if (!def) return false; // flags that are not listed in FLAGS (the integration build has none) cannot be switched on, not even by the card config
       let v = L[id] !== undefined ? L[id] : (this._cfg.flags || {})[id];
-      if (v === undefined && id === 'hdr') v = L.hdr2 ? 'a' : undefined; // earlier boolean flag hdr2
       if (def && def.opts) return def.opts.includes(v) ? v : (v === true ? def.opts[1] : 'off');
       return !!v;
     }
@@ -2710,8 +2703,6 @@
         if (!(sel._cls || []).length && wf.classification) sel._cls = String(wf.classification).split(/\s*,\s*/).filter(Boolean);
       }
       // Region and classification are already in the title line: only country and (differing) appellation here
-      const drows = this._flag('detrows'); // flag detrows: every data field is one row in its own block (details order), not in the header line / sub line / "My data"
-      const origin = Array.from(new Set([!drows && !this._dOff('country') ? sel.country : '', !drows && sel.appellation !== sel.region && !this._dOff('appellation') ? sel.appellation : ''].filter(Boolean))).join(' · ');
       const df = sel.drinkFrom, dt = sel.drinkTo, pf = sel.peakFrom, pu = sel.peakUntil;
       let bar = '';
       if (df && dt) {
@@ -2761,15 +2752,12 @@
         [t('det.price'), priceTxt], [t('det.purchaseDate'), dateTxt], [t('det.shop'), shopTxt], [t('det.size'), lot('bottleSize', (v) => v, false)],
         [t('det.rating'), ratingTxt], [t('det.occasion'), lot('occasion', (v) => v, false)],
         [t('det.onOrder'), nOrder ? (nOrder === bottles.length ? '✓' : `${nOrder}/${bottles.length}` + ne) : ''],
-      ].concat(drows ? [] : this._infoDefs(true).filter((d) => d.personal && !this._dOff(d.id)).map((d) => d.label).map((l) => { // personal fields in the order of the data-field settings (not those set to off)
-        const vs = Array.from(new Set(bottles.map((b) => b.p && b.p[l]).filter(Boolean)));
-        return [l, vs.length ? esc(vs.map((v) => this._fmtVal(v)).join(', ')) + (vs.length > 1 ? ne : '') : ''];
-      }));
+      ];
       const loadingInfo = !info || info.loading;
       // Flag detrows: ONE block, every data field (Cellarion, personal, bottle data) is a row in the order of the data-field settings;
       // empty and switched-off ones are left out. Vineyard name (extension) and vineyard rank are two rows.
       let dataBlock = '';
-      if (drows) {
+      {
         const im = infoMap(sel.p), ex = this._infoExtra(im, sel) || [];
         const vn = ex.find((x) => x.key === 'vineyard_name'), vnText = vn ? vn.text : this._infoVal(sel, 'vineyard_name');
         const drow = [];
@@ -2796,11 +2784,6 @@
           (nMore ? `<button type="button" class="d2moreb${dOpen ? ' open' : ''}" data-act="drmore" aria-expanded="${dOpen}" aria-label="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}" title="${esc(t(dOpen ? 'det.dmoreHide' : 'det.dmoreShow'))}"><span aria-hidden="true">${dOpen ? '▴' : '▾'}</span> ${esc(dOpen ? t('det.dmoreLess') : t('det.dmoreN', { n: nMore }))}</button>` : '') +
           (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
       }
-      const mineRows = rows.filter((r) => r[1]);
-      // Values from lot()/fields are already escaped, the brand too; labels are escaped here
-      const mine = drows ? '' : `<div class="d2mine"><div class="d2h">${esc(t('det.mine'))}</div>` +
-        (mineRows.length ? `<dl class="dfacts" style="margin:0">${mineRows.map((r) => `<dt>${esc(r[0])}</dt><dd>${r[1]}</dd>`).join('')}</dl>` : '') +
-        (loadingInfo ? `<div class="dpur">${esc(t('det.noteLoading'))}</div>` : (info.error ? `<div class="dpur">${esc(t('det.noteError', { err: info.error }))}</div>` : '')) + `</div>`;
       // Leave out the first note paragraph with the merchant (e.g. "Bought at ..."): it is already under My data
       const stripShop = (n, shop) => {
         const parts = String(n).split(/\n\s*\n/);
@@ -2841,7 +2824,7 @@
       const _cnt = t('det.bottlesN', { n: _nRack });
       const _dcnt = t('hist.drunkN', { n: bottles.length });
       // flag history: drunk bottles of this wine and vintage in brackets behind the count
-      const _hn = !hist && this._flag('history') ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).length : 0;
+      const _hn = !hist ? (this._data.history || []).filter((h) => (h.wine || h.name) === sel.wine && String(h.vintage || 'NV') === String(sel.vintage || 'NV')).length : 0;
       const _dn = _hn ? t('hist.drunkN', { n: _hn }) : ''; // shown as its own purple mark behind the count
       const _ctag = this._allCellars() && sel._cn ? `<span class="ctag">${esc(sel._cn)}</span>` : ''; // all cellars together: the cellar of the chosen place
       const popup = sectionOpen ? `<div class="d2pop" role="listbox">${gRows(Array.from(groups.entries()))}</div>` : '';
@@ -2887,11 +2870,10 @@
       // The label photo can sit on one bottle only (own photo): then take it from any bottle of the vintage
       const imgSrc = (info && info.image) || ((bottles.map((x) => this._info[x.id]).find((i) => i && i.image)) || {}).image;
       const img = imgSrc ? `<img class="dimg" alt="${esc(t('det.label'))}" src="${esc(imgSrc)}" onerror="this.remove()">` : '';
-      const grapes = drows || this._dOff('grape') ? '' : (sel.grapes || []).join(', ');
-      const mainParts = [origin, grapes, hist ? '' : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? [noteOv ? `<button type="button" class="d2sub dgone dlink" data-act="dnote" aria-expanded="${!!(d && d.dnote)}" title="${esc(t('det.dnote'))}">${esc(_dn)}</button>` : '<span class="d2sub dgone">' + esc(_dn) + '</span>'] : []);
+            const mainParts = [hist ? '' : t('det.bottlesN', { n: bottles.length })].filter(Boolean).map((x) => '<span class="d2sub">' + esc(x) + '</span>').concat(_dn ? [noteOv ? `<button type="button" class="d2sub dgone dlink" data-act="dnote" aria-expanded="${!!(d && d.dnote)}" title="${esc(t('det.dnote'))}">${esc(_dn)}</button>` : '<span class="d2sub dgone">' + esc(_dn) + '</span>'] : []);
       this._vbar = '';
-      let top = `<div class="d2top">${mainParts.length || !drows ? `<div>${drows ? mainParts.join(' · ') : '<b>' + esc(sel.vintage || 'NV') + '</b>' + mainParts.map((x) => ' · ' + x).join('')}</div>` : ''}<!--vb--></div>`;
-      const main = `<div class="d2main">` + dataBlock + mine + `</div>`;
+      let top = `<div class="d2top">${mainParts.length ? `<div>${mainParts.join(' · ')}</div>` : ''}<!--vb--></div>`;
+      const main = `<div class="d2main">` + dataBlock + `</div>`;
       // Vintage bar: the other vintages of this wine (in stock: with count; completely drunk: purple)
       const wk = d.wine, cur = String(sel.vintage || 'NV');
       const vm = new Map();
@@ -3042,24 +3024,10 @@
       });
       // Flag detrows: the built-in rows of the data block carry their attribute (data-dik)
       el.querySelectorAll('.d2data dd[data-dik]').forEach((dd) => { const k = dd.dataset.dik; if (im[k] && !done.has(k)) { mark(dd, k, infoLbl(k)); done.add(k); } });
-      // Rows an extension adds (no personal field needed)
-      (this._flag('detrows') ? [] : this._infoExtra(im, sel)).forEach((x) => {
-        const dl = el.querySelector('.d2mine dl.dfacts');
-        if (done.has(x.key) || !dl) return;
-        const lbl = x.label || infoLbl(x.key);
-        dl.insertAdjacentHTML('beforeend', `<dt>${esc(lbl)}</dt><dd>${esc(x.text)}</dd>`);
-        mark(dl.lastElementChild, x.key, lbl); done.add(x.key);
-      });
       // Producer
       if (im.producer) { mark(el.querySelector('.dh .wprod'), 'producer', infoLbl('producer')); done.add('producer'); }
       // One row instead of two: "Lage: Name | Stufe" (tier = official vineyard rank; the personal field "Cru / Lage" is only a fallback and its row goes away)
-      const nameDd = el.querySelector('dl.dfacts dd[data-ik="vineyard_name"]');
       const cru = rows.find((r) => r.dt.isConnected && /^cru\s*\/\s*lage$/i.test(r.k));
-      if (nameDd && !this._flag('detrows')) { // with flag detrows name and rank are two rows
-        const off = (sel._cls || []).filter((v) => this._clsPos(v)[0] === 0).join(', ');
-        const tier = off || (cru && cru.dd ? cru.dd.textContent.trim() : '');
-        if (tier) nameDd.textContent = nameDd.textContent.trim() + ' | ' + tier;
-      }
       if (cru && cru.dd && cru.dt.isConnected) { cru.dt.remove(); cru.dd.remove(); }
       // Classification in the header line: one item per kind (rank, ripeness, ageing); the item is clickable when that kind has an info text
       INFO_TIER.forEach((k, g) => {

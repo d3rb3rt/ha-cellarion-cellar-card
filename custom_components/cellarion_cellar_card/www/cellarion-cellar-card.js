@@ -2489,7 +2489,8 @@
       if (!sh || !hd) return;
       const line = hd.getBoundingClientRect().bottom + 12; let cur = null;
       sh.querySelectorAll('.sgrp[data-sg]').forEach((g) => { if (g.getBoundingClientRect().top <= line) cur = g.dataset.sg; });
-      if (sh.scrollTop + sh.clientHeight >= sh.scrollHeight - 4) { const all = sh.querySelectorAll('.sgrp[data-sg]'); if (all.length) cur = all[all.length - 1].dataset.sg; }
+      if (this._setPick) cur = this._setPick; // the pill that was tapped stays marked until the user scrolls by hand (the last groups cannot reach the top)
+      else if (sh.scrollTop + sh.clientHeight >= sh.scrollHeight - 4) { const all = sh.querySelectorAll('.sgrp[data-sg]'); if (all.length) cur = all[all.length - 1].dataset.sg; }
       hd.querySelectorAll('.stab').forEach((b) => b.classList.toggle('on', b.dataset.g === (cur || (sh.querySelector('.sgrp') || {dataset: {}}).dataset.sg)));
     }
     // Few options: radios or a checkbox; many options: a plain dropdown; long topics collapsed. Scope: one switch with two icons plus the text.
@@ -2590,7 +2591,11 @@
       el.innerHTML = html;
       el.hidden = false;
       const _sh = el.querySelector('.dsheet');
-      if (_sh) _sh.addEventListener('scroll', () => this._setNavMark(), { passive: true });
+      if (_sh) {
+        _sh.addEventListener('scroll', () => this._setNavMark(), { passive: true });
+        const free = () => { if (this._setPick) { this._setPick = null; this._setNavMark(); } };
+        _sh.addEventListener('wheel', free, { passive: true }); _sh.addEventListener('touchmove', free, { passive: true });
+      }
       if (_top) { const _n = el.querySelector('.dsheet'); if (_n) _n.scrollTop = _top; }
       this._setNavMark();
     }
@@ -3468,9 +3473,10 @@
     sx(t) { const o = this._sx || (this._sx = new Set()); const id = t.dataset.id; if (o.has(id)) o.delete(id); else { o.clear(); o.add(id); } this._renderSet(); }, // one section open at a time
     setgo(t) { // settings: pill = scroll to the group below the fixed header
       const sh = this._dlg && this._dlg.querySelector('.dsheet'), g = sh && sh.querySelector('.sgrp[data-sg="' + t.dataset.g + '"]'), hd = sh && sh.querySelector('.sethead');
+      this._setPick = t.dataset.g; this._setNavMark();
       if (g && hd) sh.scrollTo({ top: sh.scrollTop + g.getBoundingClientRect().top - hd.getBoundingClientRect().bottom - 4, behavior: 'smooth' });
     },
-    setclose() { this._set = null; this._selOpen = null; this._renderDlg(); },
+    setclose() { this._set = null; this._setPick = null; this._selOpen = null; this._renderDlg(); },
     selopen(t) { this._selOpen = this._selOpen === t.dataset.key ? null : t.dataset.key; this._renderSet(); },
     selpick(t) {
       const k = t.dataset.key, v = t.dataset.v;

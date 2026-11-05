@@ -351,6 +351,7 @@
  "stat.sc.all": "Total",
  "stat.drunkHero": "bottles drunk",
  "stat.consumption": "Consumption",
+ "stat.recent": "Most recently taken",
  "stat.drunkValue": "Value drunk",
  "stat.perYear": "Drunk per year",
  "stat.mostDrunk": "Most drunk wines",

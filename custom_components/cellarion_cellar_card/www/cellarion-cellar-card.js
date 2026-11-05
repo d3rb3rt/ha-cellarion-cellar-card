@@ -2319,7 +2319,16 @@
       switch (key) {
         case 'd:wines': return { title: t('stat.wines'), sections: [wrows(Array.from(H.wines.values()).sort(byN))] };
         case 'd:gonew': return { title: t('stat.goneWines'), sections: [wrows(goneW.slice().sort(byN))] };
-        case 'd:reasons': return { title: t('stat.consumption'), sections: [{ rows: H.reasons.map(([r, n]) => ({ label: rLbl(r), n, go: 'd:r:' + r })), total: 0, limit: 99 }] };
+        case 'd:reasons': {
+          const sorted = H.items.slice().sort((x, y) => String(y.at || '').localeCompare(String(x.at || '')));
+          const yrs = new Map();
+          sorted.forEach((h) => { const y = String(h.at || '').slice(0, 4); if (!/^\d{4}$/.test(y)) return; const o = yrs.get(y) || { n: 0, by: new Map() }; o.n++; const r = h.reason || 'drank'; o.by.set(r, (o.by.get(r) || 0) + 1); yrs.set(y, o); });
+          return { title: t('stat.consumption'), sections: [
+            { rows: H.reasons.map(([r, n]) => ({ label: rLbl(r), n, go: 'd:r:' + r })), total: 0, limit: 99 },
+            { head: t('stat.recent'), rows: sorted.slice(0, 8).map((h) => ({ label: h.name, sub: h.producer, n: 1, note: h.note || ((h.reason || 'drank') === 'drank' ? '' : rLbl(h.reason)), text: h.at ? this._fmtDate(h.at) : '', filter: ['q', h.name] })), total: 0, limit: 99 },
+            { head: t('stat.perYear'), rows: Array.from(yrs.entries()).sort((x, y) => y[0].localeCompare(x[0])).map(([y, o]) => ({ label: y, n: o.n, text: num(o.n) + Array.from(o.by.entries()).filter(([r]) => r !== 'drank').map(([r, n]) => ' · ' + num(n) + ' ' + rLbl(r)).join('') })), total: 0, limit: 99 },
+          ] };
+        }
         case 'd:gonep': {
           const stockProd = new Set(S.producers.map((x) => x[0])), m = new Map();
           goneW.forEach((w) => { if (!w.producer || stockProd.has(w.producer)) return; const o = m.get(w.producer) || { name: w.producer, n: 0 }; o.n += w.n; m.set(w.producer, o); });
@@ -2487,10 +2496,10 @@
           const flat = sec.rows.every((r) => r.n === sec.rows[0].n); // all counts equal: the bars say nothing, so they are hidden
           return (sec.head ? `<div class="wsub shead">${esc(sec.head)}</div>` : '') + (sec.hint ? `<div class="wsub">${esc(sec.hint)}</div>` : '') +
             `<div class="slist">${sec.rows.map((r) => {
-              const attr = r.go ? `data-act="statgo" data-to="${esc(r.go)}"` : `data-act="${fAct}" data-g="${esc(r.filter[0])}" data-v="${esc(r.filter[1])}"`;
-              return `<button class="srow${flat ? ' flat' : ''}" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
+              const attr = r.go ? `data-act="statgo" data-to="${esc(r.go)}"` : r.filter ? `data-act="${fAct}" data-g="${esc(r.filter[0])}" data-v="${esc(r.filter[1])}"` : '';
+              return `<${attr ? 'button' : 'div'} class="srow${flat ? ' flat' : ''}${attr ? '' : ' st'}" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
                 (r.note ? `<span class="srn">${esc(r.note)}</span>` : `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(r.n / mx * 100))}%"></span></span>`) +
-                `<span class="sbc">${esc(r.text || num(r.n))}</span></button>`;
+                `<span class="sbc">${esc(r.text || num(r.n))}</span></${attr ? 'button' : 'div'}>`;
             }).join('')}</div>` +
             (more || (st.all && sec.total > sec.limit) ? `<button class="btn" data-act="statall">${esc(st.all ? t('stat.less') : t('stat.all', { n: sec.total }))}</button>` : '');
         }).join('') + `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;

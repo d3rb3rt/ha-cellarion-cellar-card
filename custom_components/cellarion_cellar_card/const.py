@@ -14,6 +14,7 @@ MIN_SCAN_INTERVAL = 300
 
 INVENTORY_PATH = "/api/inventory"  # Cellarion v1.275 or newer
 GEO_MAX_AGE = 24 * 3600  # seconds; the rack layout (shelves, places per row) is re-read at least once a day
+KINDS_MAX_AGE = 7 * 24 * 3600  # seconds; the catalogue of classification tiers (kind of each tier) is re-read at most once a week
 MCP_PATH = "/api/mcp"
 USER_AGENT = "ha-cellarion-cellar-card/2.0"  # Cloudflare in front of cellarion.app rejects default library user agents
 

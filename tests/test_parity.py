@@ -65,6 +65,17 @@ INVENTORY = {
 }
 
 
+CATALOG = [
+    {"name": "VDP Grosse Lage", "kind": "vineyard_rank", "synonyms": ["Grosse Lage", "VDP.Grosse Lage"]},
+    {"name": "Spätlese", "kind": "ripeness", "synonyms": ["Spaetlese"]},
+    {"name": "Reserva", "kind": "ageing", "synonyms": []},
+    {"name": "Old Vines", "kind": "other", "synonyms": ["Alte Reben"]},
+    {"name": "Unknown kind", "kind": "weird", "synonyms": []},  # not a known kind: left out
+]
+KINDS = {"vdp grosse lage": "vineyard_rank", "grosse lage": "vineyard_rank", "vdp.grosse lage": "vineyard_rank", "spätlese": "ripeness",
+         "spaetlese": "ripeness", "reserva": "ageing", "old vines": "other", "alte reben": "other"}
+
+
 def _only_first_cellar_racks(path):
     assert path.startswith("/api/racks?cellar=c1")  # the racks of the shared cellar are not read
     return RACKS
@@ -78,6 +89,7 @@ def _dev_inventory(tmp_path, inv=INVENTORY, racks=_only_first_cellar_racks):
     dev.token = lambda: "t"
     dev.get_cond = lambda path, tok, etag: (200, inv, 'W/"x"')
     dev.get = lambda path, tok: racks(path)
+    dev.load_class_kinds = lambda tok: KINDS  # the tier catalogue comes from the MCP tool list_classifications (class_kinds is tested below)
     dev.refresh()
     return json.loads(pathlib.Path(dev.CACHE_FILE).read_text(encoding="utf-8"))
 
@@ -86,7 +98,7 @@ def _integration_inventory(inv=INVENTORY, racks=_only_first_cellar_racks):
     async def get(path):
         return racks(path)
 
-    return asyncio.run(api.build_inventory(inv, get, None))
+    return asyncio.run(api.build_inventory(inv, get, None, KINDS))
 
 
 def test_inventory_matches_development_setup(tmp_path, capsys):
@@ -98,6 +110,15 @@ def test_inventory_matches_development_setup(tmp_path, capsys):
     assert integ == dev
     assert dev["total"] == 6 and dev["racks"] == ["R", "S"] and dev["fields"] == ["Lage", "Stil"]
     assert [b["type"] for b in dev["bottles"] if b["name"] == "Villa Magra"] == ["other"]  # category "other" is delivered as type "other"
+    assert dev["classKinds"] == KINDS
+
+
+def test_class_kinds_match_development_setup():
+    spec = importlib.util.spec_from_file_location("bestand_dev2", DEV)
+    dev = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dev)
+    assert api.class_kinds(CATALOG) == dev.class_kinds(CATALOG) == KINDS
+    assert api.class_kinds(None) == dev.class_kinds(None) == {}
 
 
 # Two own cellars and one shared: both setups deliver the two own cellars, each bottle knows its cellar, shared stays out

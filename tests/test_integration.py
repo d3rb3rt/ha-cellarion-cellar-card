@@ -167,7 +167,8 @@ async def test_rack_layout_is_read_again_after_a_day(hass, aioclient_mock):
     aioclient_mock.get(RACKS_URL, json=RACKS)
     hub._geo_at -= 25 * 3600
     answers = [(None, 'W/"v1"'), (INVENTORY, 'W/"v2"')]  # first 304, then the full read without If-None-Match
-    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory:
+    with patch.object(hub, "_get_inventory", AsyncMock(side_effect=answers)) as get_inventory, \
+            patch.object(hub, "_class_kinds", AsyncMock(return_value={})):
         await hub.refresh()
     assert [c.args[0] for c in get_inventory.call_args_list] == ['W/"v1"', None]
     assert len(calls(aioclient_mock, RACKS_URL)) == 1
@@ -252,3 +253,18 @@ async def test_flow_declining_the_takeover_goes_to_the_normal_form_and_keeps_the
 async def test_flow_without_an_old_entry_has_no_takeover_step(hass):
     r = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     assert r["step_id"] == "user"
+
+
+async def test_class_kinds_are_read_once_a_week_and_survive_errors(hass):
+    from custom_components.cellarion_cellar_card.hub import Hub
+
+    hub = Hub(hass, "x", "https://cellarion.example", "cel_x")
+    mcp = AsyncMock()
+    mcp.tool = AsyncMock(return_value={"classifications": [{"name": "Spätlese", "kind": "ripeness", "synonyms": []}]})
+    with patch.object(hub, "_mcp_client", AsyncMock(return_value=mcp)):
+        assert await hub._class_kinds() == {"spätlese": "ripeness"}
+        assert await hub._class_kinds() == {"spätlese": "ripeness"}
+        assert mcp.tool.await_count == 1  # second call comes from the cache
+        hub._kinds_at -= 8 * 24 * 3600
+        mcp.tool = AsyncMock(side_effect=RuntimeError("down"))
+        assert await hub._class_kinds() == {"spätlese": "ripeness"}  # the last answer stays

@@ -22,7 +22,7 @@ from homeassistant.helpers.storage import Store
 
 from . import api
 from .const import (
-    GEO_MAX_AGE, IMAGE_DIR_NAME, IMAGE_URL_BASE, IMAGE_URL_TTL_HOURS, INVENTORY_PATH, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
+    GEO_MAX_AGE, IMAGE_DIR_NAME, IMAGE_URL_BASE, IMAGE_URL_TTL_HOURS, INVENTORY_PATH, KINDS_MAX_AGE, STORAGE_KEY, STORAGE_VERSION, STREAM_DEBOUNCE,
     STREAM_RETRY_MAX, STREAM_RETRY_MIN, STREAM_SILENCE, USER_AGENT, signal_updated,
 )
 
@@ -63,6 +63,8 @@ class Hub:
         self._archive_ok = True  # False once the server turned out not to know include=consumed: the last archive is kept
         self._etag: str | None = None  # of the last /api/inventory answer: an unchanged inventory answers 304
         self._geo_at: float = 0.0  # when the rack layout was last read
+        self._kinds: dict[str, str] = {}  # kind of every classification tier (from list_classifications), refreshed at most once a week
+        self._kinds_at: float = 0.0
         self.changed_at: str | None = None  # when the inventory last changed
 
     # ----- transport -----
@@ -138,6 +140,22 @@ class Hub:
                 return None
             self._mcp = client
         return self._mcp
+
+    async def _class_kinds(self) -> dict[str, str]:
+        """Kind of every classification tier for the card; read once a week, the last answer stays when Cellarion cannot be asked."""
+        if self._kinds and time.time() - self._kinds_at < KINDS_MAX_AGE:
+            return self._kinds
+        mcp = await self._mcp_client()
+        if mcp is not None:
+            try:
+                got = await mcp.tool("list_classifications", {})
+                kinds = api.class_kinds((got or {}).get("classifications"))
+            except (aiohttp.ClientError, TimeoutError, RuntimeError, ValueError) as err:
+                _LOGGER.debug("Classification tiers unavailable: %s", err)
+            else:
+                if kinds:
+                    self._kinds, self._kinds_at = kinds, time.time()
+        return self._kinds
 
     # ----- settings -----
 
@@ -272,7 +290,7 @@ class Hub:
             changed = False
             if inv is not None:
                 old = (self.data or {}).get("history")
-                self.data = await api.build_inventory(inv, self._get, self._cellar_id)
+                self.data = await api.build_inventory(inv, self._get, self._cellar_id, await self._class_kinds())
                 if not self._archive_ok and old:  # server without include=consumed: keep the last archive
                     self.data["history"] = old
                 self.data["url"] = self.url  # base address of the Cellarion server, for the "edit in Cellarion" link

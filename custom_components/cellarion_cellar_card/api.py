@@ -282,7 +282,21 @@ def rack_geo(racks: list[JsonDict], geo: dict[str, JsonDict]) -> dict[str, JsonD
             if (g := geo.get(r.get("id")) or geo.get(r.get("name"))) and g.get("rows")}
 
 
-def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None) -> JsonDict:
+def class_kinds(catalog: Any) -> dict[str, str]:
+    """Kind of every classification tier: {name or spelling (lower case): vineyard_rank | ripeness | ageing | other} from list_classifications.
+    The card uses it to sort the tiers of a wine into the groups vineyard rank, ripeness, ageing and other, without a list of its own."""
+    out: dict[str, str] = {}
+    for c in catalog or []:
+        kind = c.get("kind")
+        if kind not in ("vineyard_rank", "ripeness", "ageing", "other"):
+            continue
+        for n in [c.get("name"), *(c.get("synonyms") or [])]:
+            if n and str(n).strip().lower() not in out:
+                out[str(n).strip().lower()] = kind
+    return out
+
+
+def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None, kinds: dict[str, str] | None = None) -> JsonDict:
     """Compact inventory from GET /api/inventory: the cellars (id, name, total, racks, rackGeo), bottles with places and personal fields.
     The card picks one cellar or shows all together; cellar/cellarId/racks/rackGeo at the top are the first cellar's name and id and the
     sum of all racks (for cards without the cellar list). With include=consumed the finished bottles (status other than active) become the archive (history)."""
@@ -326,6 +340,7 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None
         "rackGeo": rack_geo(all_racks, geo),
         "fields": sorted(labels, key=str.casefold),
         "bottles": bottles,
+        "classKinds": kinds or {},
     }
     if hist:  # only with entries, so a cellar without history looks as before
         hist.sort(key=lambda h: h.get("at") or "", reverse=True)  # newest first
@@ -335,13 +350,13 @@ def build(inv: JsonDict, geo: dict[str, JsonDict], cellar_ids: str | None = None
     return data
 
 
-async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None) -> JsonDict:
+async def build_inventory(inv: JsonDict, get: Getter, cellar_ids: str | None = None, kinds: dict[str, str] | None = None) -> JsonDict:
     """Compact inventory from an already fetched /api/inventory. Only the rack layout (shelves, places per row) is read on top, per cellar."""
     geo: dict[str, JsonDict] = {}
     for c in pick_cellars(inv.get("cellars") or [], cellar_ids):
         cid = c.get("id") or c.get("_id")
         geo.update(geometry((await get(f"/api/racks?cellar={cid}&summary=1")).get("racks")))
-    return build(inv, geo, cellar_ids)
+    return build(inv, geo, cellar_ids, kinds)
 
 
 async def bottle_detail(get: Getter, mcp: McpClient | None, bottle_id: str,

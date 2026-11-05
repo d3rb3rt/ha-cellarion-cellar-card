@@ -387,7 +387,5 @@
  "det.vints": "Other vintages",
  "det.dnote": "Show drunk bottles",
  "info.owned": "{n} bottles in the cellar",
- "info.note": "Note",
- "flag.refs": "Reference entries (test)",
- "flag.refsSub": "Info fields hold the ID of an entry from the reference file instead of a text (one way for all attributes)."
+ "info.note": "Note"
 }

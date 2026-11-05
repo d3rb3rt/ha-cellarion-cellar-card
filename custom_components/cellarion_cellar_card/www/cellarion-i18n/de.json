@@ -387,7 +387,5 @@
  "det.vints": "Weitere Jahrgänge",
  "det.dnote": "Getrunkene Flaschen anzeigen",
  "info.owned": "{n} Fl. im Keller",
- "info.note": "Notiz",
- "flag.refs": "Referenzeinträge (Test)",
- "flag.refsSub": "Info-Felder enthalten die ID eines Eintrags aus der Referenzdatei statt eines Textes (ein Weg für alle Attribute)."
+ "info.note": "Notiz"
 }

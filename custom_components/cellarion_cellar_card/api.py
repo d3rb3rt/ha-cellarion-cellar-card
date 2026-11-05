@@ -39,7 +39,7 @@ def geometry(racks: Any) -> dict[str, JsonDict]:
     geo: dict[str, JsonDict] = {}
     for r in racks or []:
         sr = [int(x) for x in ((r.get("typeConfig") or {}).get("shelfRows") or []) if isinstance(x, (int, float)) and x >= 0]
-        g = {"name": r.get("name"), "fachen": len(sr), "cols": r.get("cols") or 6,
+        g = {"name": r.get("name"), "fachen": len(sr), "cols": r.get("cols") or None,
              "rows": sr[::-1]}  # rows = rows per shelf, lowest shelf first
         for key in (r.get("_id"), r.get("id"), r.get("name")):
             if key:
@@ -70,8 +70,10 @@ def place(loc: JsonDict | None, geo: dict[str, JsonDict]) -> tuple[str, JsonDict
     fachen = g.get("fachen")
     if not fachen:  # rack layout unknown: text only
         return text, {"rack": name}
-    return text, {"rack": name, "fach": fachen - shelf + 1, "fachen": fachen, "cols": g.get("cols") or 6,
-                  "lage": row, "platz": col}
+    raw = {"rack": name, "fach": fachen - shelf + 1, "fachen": fachen, "lage": row, "platz": col}
+    if g.get("cols"):  # only when Cellarion states the number of columns (no assumption of our own)
+        raw["cols"] = g["cols"]
+    return text, raw
 
 
 def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | None) -> JsonDict:
@@ -283,12 +285,12 @@ def rack_geo(racks: list[JsonDict], geo: dict[str, JsonDict]) -> dict[str, JsonD
 
 
 def class_kinds(catalog: Any) -> dict[str, str]:
-    """Kind of every classification tier: {name or spelling (lower case): vineyard_rank | ripeness | ageing | other} from list_classifications.
+    """Kind of every classification tier: {name or spelling (lower case): kind} (kinds as Cellarion delivers them, e.g. vineyard_rank, ripeness, ageing, other) from list_classifications.
     The card uses it to sort the tiers of a wine into the groups vineyard rank, ripeness, ageing and other, without a list of its own."""
     out: dict[str, str] = {}
     for c in catalog or []:
         kind = c.get("kind")
-        if kind not in ("vineyard_rank", "ripeness", "ageing", "other"):
+        if not kind or not isinstance(kind, str):
             continue
         for n in [c.get("name"), *(c.get("synonyms") or [])]:
             if n and str(n).strip().lower() not in out:

@@ -25,7 +25,7 @@ def loc(shelf, row, col):
 def test_place_top_shelf():
     text, raw = api.place(loc(1, 1, 1), GEO)
     assert text == "Cabinet · Fach 1"
-    assert raw == {"rack": "Cabinet", "fach": 3, "fachen": 3, "cols": 6, "lage": 1, "platz": 1}
+    assert raw == {"rack": "Cabinet", "fach": 3, "fachen": 3, "lage": 1, "platz": 1}  # the test rack states no columns: none are invented
 
 
 def test_place_second_row_of_middle_shelf():
@@ -125,3 +125,7 @@ def test_rack_geo_lists_the_rows_per_shelf_from_the_bottom():
     inv = {"cellars": [{"id": "c1", "name": "HK4"}], "racks": [{"id": "r1", "cellar": "c1", "name": "Cabinet"}, {"id": "r9", "cellar": "c1", "name": "Unknown"}],
            "wines": {}, "bottles": []}
     assert api.build(inv, geo)["rackGeo"] == {"Cabinet": {"cols": 4, "rows": [10, 6, 8]}}  # a rack without layout has no entry
+
+
+def test_class_kinds_keep_every_kind_cellarion_delivers():
+    assert api.class_kinds([{"name": "Foo", "kind": "brand_new_kind", "synonyms": ["Bar"]}, {"name": "No kind"}]) == {"foo": "brand_new_kind", "bar": "brand_new_kind"}

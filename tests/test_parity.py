@@ -70,10 +70,11 @@ CATALOG = [
     {"name": "Spätlese", "kind": "ripeness", "synonyms": ["Spaetlese"]},
     {"name": "Reserva", "kind": "ageing", "synonyms": []},
     {"name": "Old Vines", "kind": "other", "synonyms": ["Alte Reben"]},
-    {"name": "Unknown kind", "kind": "weird", "synonyms": []},  # not a known kind: left out
+    {"name": "Brand new", "kind": "weird", "synonyms": []},  # a kind we have never seen is taken over as well
+    {"name": "No kind"},  # without a kind: left out
 ]
 KINDS = {"vdp grosse lage": "vineyard_rank", "grosse lage": "vineyard_rank", "vdp.grosse lage": "vineyard_rank", "spätlese": "ripeness",
-         "spaetlese": "ripeness", "reserva": "ageing", "old vines": "other", "alte reben": "other"}
+         "spaetlese": "ripeness", "reserva": "ageing", "old vines": "other", "alte reben": "other", "brand new": "weird"}
 
 
 def _only_first_cellar_racks(path):

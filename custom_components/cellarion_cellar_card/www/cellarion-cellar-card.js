@@ -111,6 +111,9 @@
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) and "src:<attribute>" ("https://... | Label") ----
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
+  // Defaults as long as nothing is saved (settings that exist are never touched): filters on, info in the list, details behind the arrow / off
+  const DEF_FILTERS = ['types', 'status', 'vintage', 'country', 'region', 'grape', 'producer', 'price', 'racks'];
+  const DEF_SHOW = ['region', 'grape', 'price', 'more:country', 'more:bprice', 'more:bdate', 'more:bshop', 'more:bsize', 'off:bocc', 'off:bord'];
   const KIND_REST = 'other'; // kind of a classification tier Cellarion does not list (and Cellarion's own catch-all kind)
   const clsLbl = (k) => { const v = t('cls.' + k); return v === 'cls.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a classification kind
   const INFO_CLICK = 'cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
@@ -1006,8 +1009,10 @@
       this._langSel = L.language !== undefined ? L.language : (typeof S.language === 'string' ? S.language : '');
       setBands(S.priceBands); setPrice(); // price bands: central setting (all devices)
       const F = L.filters || S;
-      this._fo = Array.isArray(F.filterOrder) ? F.filterOrder.slice() : [];
-      this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : []);
+      // Never saved: the common filters in this order, the rest (appellation, shop, classification kinds, personal fields) behind "..."
+      const pf = (((this._data || this._raw || {}).fields) || []).filter((l) => !isInfoKey(l)).map((l) => 'p:' + l);
+      this._fo = Array.isArray(F.filterOrder) ? F.filterOrder.slice() : DEF_FILTERS.slice();
+      this._fh = new Set(Array.isArray(F.filterHidden) ? F.filterHidden : ['appellation', 'shop'].concat(this._kinds().map((k) => 'cls:' + k), pf));
       // Info behind the wine name in the list: order + what is shown (central for all devices, overridable per device)
       const I = L.info || { order: S.infoOrder, show: S.infoShow };
       // The single item "cls" (classification) stands for one item per kind of tier (cls:<kind>, kinds come from Cellarion)
@@ -1016,7 +1021,7 @@
       this._io = expand(ord.filter((x) => !x.startsWith('d:')));
       this._ido = expand(ord.filter((x) => x.startsWith('d:')).map((x) => x.slice(2)));
       // show = ids shown in the list; "off:<id>" = not shown in the details (rows, header, info tab); list and details are set independently
-      const sh = (Array.isArray(I.show) ? I.show : ['cls', 'region', 'price']).map(String);
+      const sh = (Array.isArray(I.show) ? I.show : DEF_SHOW).map(String);
       this._is = new Set(expand(sh.filter((x) => !x.startsWith('off:') && !x.startsWith('more:'))));
       this._iMore = new Set(expand(sh.filter((x) => x.startsWith('more:')).map((x) => x.slice(5)))); // behind the expand arrow in the details (flag detrows)
       this._iOff = new Set(expand(sh.filter((x) => x.startsWith('off:')).map((x) => x.slice(4))));

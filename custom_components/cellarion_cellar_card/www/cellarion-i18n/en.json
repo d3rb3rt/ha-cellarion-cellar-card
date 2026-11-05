@@ -362,8 +362,6 @@
  "stat.goneTop": "Most drunk, none left",
  "stat.goneTopHint": "Re-buy candidates: no bottle of any vintage left",
  "stat.stockVsArch": "Stock · Drunk",
- "flag.stat3": "Statistics: three areas (test)",
- "flag.stat3Sub": "Tabs Total | Stock | Drunk in the statistics.",
  "det.drunkSec": "Drunk ({n})",
  "det.drunkMore": "+{n} more",
  "det.drunkLess": "less",

@@ -362,8 +362,6 @@
  "stat.goneTop": "Meistgetrunken, nichts mehr da",
  "stat.goneTopHint": "Nachkauf-Kandidaten: von keinem Jahrgang ist noch eine Flasche da",
  "stat.stockVsArch": "Bestand · Getrunken",
- "flag.stat3": "Statistik: drei Bereiche (Test)",
- "flag.stat3Sub": "Reiter Gesamt | Bestand | Getrunken in der Statistik.",
  "det.drunkSec": "Getrunken ({n})",
  "det.drunkMore": "+{n} weitere",
  "det.drunkLess": "weniger",

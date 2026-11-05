@@ -61,7 +61,7 @@
   const SCROLL_FOLD = false;
   // Cellarion bottle logo (cropped from the app logo, 24x60 px PNG) for the link to Cellarion in the detail dialog
   const CEL_LOGO = 'data:image/png;base64,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';
-  const FLAGS = BACKEND === 'dev' ? [{ id: 'stat3' }] : []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
+  const FLAGS = []; // experiments in test: {id, ...} (settings, "Test features", only shows while this is not empty); stat3: statistics with three areas (stock | archive | total); archgone: archive = wines with no bottle left (any vintage), drunk vintages of stock wines appear in the detail view
   const STATUS_KEYS = ['over', 'late', 'peak', 'early', 'notready'];
   const TYPES = [];
   const typeLbl = (k) => { if (!k) return ''; const v = t('type.' + k); return v === 'type.' + k ? k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ') : v; }; // label of a wine type (Cellarion's value; no text: the name itself)
@@ -2289,7 +2289,7 @@
           return { title: '', sections: [] };
       }
     }
-    // Flag stat3: drill-downs behind the tiles of the "Drunk" page (drunk wines, gifted, wines / producers without stock)
+    // Statistics: drill-downs behind the tiles of the "Drunk" page (drunk wines, gifted, wines / producers without stock)
     _statDrunkPage(key, S) {
       const H = this._statHist(), all = this._stat && this._stat.all, lim = 15;
       const top = (list) => (all || list.length <= lim ? list : list.slice(0, lim));
@@ -2313,7 +2313,7 @@
       }
       return { title: '', sections: [] };
     }
-    // Flag stat3: type drill-down for "Drunk" and "Total": the most important wines, producers, countries and vintages of one wine type
+    // Statistics: type drill-down for "Drunk" and "Total": the most important wines, producers, countries and vintages of one wine type
     _statTypePage(k, scope, S) {
       const H = this._statHist(), items = (scope === 'arch' ? H.items : S.items.concat(H.items)).filter((b) => !k || (b._type || '') === k);
       const cnt = (fn) => { const m = new Map(); items.forEach((b) => { const x = fn(b); if (x) m.set(x, (m.get(x) || 0) + 1); }); return Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(String(a[0]), String(b[0]))); };
@@ -2327,7 +2327,7 @@
         sec(t('stat.countries'), cnt((b) => b.country), 'country'),
         sec(t('stat.vintages'), cnt((b) => (/^\d{4}$/.test(String(b.vintage)) ? String(b.vintage) : '')).slice(0, 8), 'vintage')] };
     }
-    // Flag stat3: value drill-down for "Drunk" (archive rows) and "Total" (stock + archive): same structure as the stock statistics (wines, producers, countries, regions, vintages, price bands, types)
+    // Statistics: value drill-down for "Drunk" (archive rows) and "Total" (stock + archive): same structure as the stock statistics (wines, producers, countries, regions, vintages, price bands, types)
     _statValue(scope, S) {
       const H = this._statHist();
       const items = scope === 'arch' ? H.items : S.items.concat(H.items), cur = S.currency;
@@ -2347,7 +2347,7 @@
       const arr = (m) => Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(a[0], b[0]));
       return { scoped: true, currency: cur, wines, priceBands: pb, byTypeVal: arr(tv), valBy: { producer: arr(vb.producer), country: arr(vb.country), region: arr(vb.region), vintage: arr(vb.vintage) } };
     }
-    // Flag stat3: statistics of the archive (consumption log), same cellar selection and "Other" setting as the stock statistics
+    // Statistics: statistics of the archive (consumption log), same cellar selection and "Other" setting as the stock statistics
     _statHist() {
       const d = this._data;
       if (!d) return null;
@@ -2380,7 +2380,7 @@
       this._statH = { d, v, no: noOther };
       return v;
     }
-    // Flag stat3: start page of the areas "Archive" and "Total" (S = stock statistics, H = archive statistics)
+    // Statistics: start page of the areas "Archive" and "Total" (S = stock statistics, H = archive statistics)
     _statScopeHtml(scope, S, num) {
       const H = this._statHist();
       if (!H) return '';
@@ -2443,7 +2443,7 @@
       const nav = (title) => `<div class="dh">${key ? `<button class="dx" data-act="statback" aria-label="${esc(t('stat.back'))}">←</button>` : ''}<span class="wmain"><span class="wname">${esc(title)}</span></span>` +
         `<button class="dx" data-act="statclose" aria-label="${esc(t('head.close'))}">✕</button></div>`;
       let html;
-      const sc3 = this._flag('stat3'), scope = sc3 ? (st.scope || 'all') : 'stock'; // flag stat3: three areas (stock | archive | total)
+      const sc3 = true, scope = st.scope || 'all'; // three areas (total | stock | drunk)
       const tabs3 = sc3 && !key ? `<div class="stabs">${[['all', t('stat.sc.all')], ['stock', t('stat.sc.stock')], ['arch', t('stat.sc.arch')]].map(([k, l]) => `<button class="stab${k === scope ? ' on' : ''}" data-act="statscope" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '';
       if (!key && scope !== 'stock') {
         html = nav(this._data.cellar || t('stat.title')) + tabs3 + this._statScopeHtml(scope, S, num);
@@ -3421,8 +3421,8 @@
     statback() { if (this._stat) { this._stat.path.pop(); this._stat.all = false; this._renderDlg(); } },
     stattab(t) { if (this._stat) { this._stat.vtab = t.dataset.t; this._stat.all = false; this._renderDlg(); } },
     statall() { if (this._stat) { this._stat.all = !this._stat.all; this._renderDlg(); } },
-    statscope(t) { if (this._stat) { this._stat.scope = t.dataset.t; this._stat.all = false; this._renderDlg(); } }, // flag stat3: switch between stock, archive and total
-    statarch(t) { // flag stat3: tap in the archive statistics = this filter plus the archive switch
+    statscope(t) { if (this._stat) { this._stat.scope = t.dataset.t; this._stat.all = false; this._renderDlg(); } }, // switch between stock, archive and total
+    statarch(t) { // tap in the archive statistics = this filter plus the archive switch
       const g = t.dataset.g, v = t.dataset.v;
       this._stat = null;
       this._f = { q: '' };

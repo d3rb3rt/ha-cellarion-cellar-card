@@ -241,6 +241,7 @@
  "stat.less": "Show top only",
  "stat.hintCountry": "Tap a country to see its regions",
  "stat.tapHint": "Tap an entry to filter the list by it",
+ "stat.value": "Total value",
  "stat.vt.wine": "Wines",
  "stat.vt.producer": "Producers",
  "stat.vt.country": "Country",

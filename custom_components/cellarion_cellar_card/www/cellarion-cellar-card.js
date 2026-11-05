@@ -619,6 +619,8 @@
     .dbot.on { border-color: var(--cb-on); box-shadow: inset 0 0 0 1px var(--cb-on); }
     .dbot .rd { width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--cb-ring); flex: none; }
     .dbot.on .rd { border-color: var(--cb-on); background: radial-gradient(var(--cb-on) 0 45%, transparent 50%); }
+    .slist.fx .srow { grid-template-columns: minmax(0, 1.4fr) minmax(40px, 1fr) 9.5em; } /* longer count texts: fixed column, so all bars are equally long and the texts start in one line */
+    .slist.fx .srow .sbc { text-align: left; }
     .srow .srn { color: var(--cb-sub); font-size: .9em; line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
     .srow.flat .sbt { visibility: hidden; } /* equal counts: no bar */
     .dlink { color: var(--cb-on); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
@@ -2496,7 +2498,7 @@
           const more = sec.total > sec.limit && sec.limit !== 99;
           const flat = sec.rows.every((r) => r.n === sec.rows[0].n); // all counts equal: the bars say nothing, so they are hidden
           return (sec.head ? `<div class="wsub shead">${esc(sec.head)}</div>` : '') + (sec.hint ? `<div class="wsub">${esc(sec.hint)}</div>` : '') +
-            `<div class="slist">${sec.rows.map((r) => {
+            `<div class="slist${sec.rows.some((r) => r.text && r.text.length > 7 && !r.note) ? ' fx' : ''}">${sec.rows.map((r) => {
               const attr = r.go ? `data-act="statgo" data-to="${esc(r.go)}"` : r.filter ? `data-act="${fAct}" data-g="${esc(r.filter[0])}" data-v="${esc(r.filter[1])}"` : '';
               return `<${attr ? 'button' : 'div'} class="srow${flat ? ' flat' : ''}${attr ? '' : ' st'}" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
                 (r.note ? `<span class="srn">${esc(r.note)}</span>` : `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(r.n / mx * 100))}%"></span></span>`) +

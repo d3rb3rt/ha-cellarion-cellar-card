@@ -2870,8 +2870,13 @@
       const money = (v) => this._fmtMoney(v, (infos.find((i) => i.price != null) || {}).currency);
       const priceTxt = info && !info.loading && !info.error ? lot('price', money, true) : '';
       const dateTxt = lot('purchaseDate', (v) => this._fmtDate(v), true);
-      const shopTxt = lot('purchaseLocation', (v) => v, false);
-      const urlTxt = lot('purchaseUrl', (v) => v, false);
+      let shopTxt = lot('purchaseLocation', (v) => v, false);
+      let urlTxt = lot('purchaseUrl', (v) => v, false);
+      { // Generic special rule: a single merchant AND a single http(s) address -> the merchant is the link, no second row
+        const uq = (k) => Array.from(new Set(infos.map((i) => i[k]).filter((v) => v != null && v !== '')));
+        const [ls, us] = [uq('purchaseLocation'), uq('purchaseUrl')];
+        if (ls.length === 1 && us.length === 1 && /^https?:\/\//i.test(us[0])) { shopTxt = `<a class="dlink" href="${esc(us[0])}" target="_blank" rel="noopener noreferrer" title="${esc(us[0])}">${esc(ls[0])}</a>`; urlTxt = ''; }
+      }
       const ratingTxt = lot('rating', (v) => String(v) + ((infos.find((i) => i.ratingScale) || {}).ratingScale ? ' / ' + infos.find((i) => i.ratingScale).ratingScale : ''), true);
       const nOrder = bottles.filter((b) => this._info[b.id] && this._info[b.id].onOrder).length;
       const rows = [

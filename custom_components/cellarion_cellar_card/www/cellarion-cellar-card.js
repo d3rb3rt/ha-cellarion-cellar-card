@@ -2484,8 +2484,9 @@
         sec('filters', t('set.filters'), t('set2.sumFilters', { n: shownF, all: fdefs.length }), filtersBody, sw('filters')) +
         grp(t('set2.grpList')) +
         sec('info', t('set.infoList'), t('set2.sumFilters', { n: idefs.filter((d) => this._is.has(d.id)).length, all: idefs.length }), infoBody, sw('info')) +
-        sec('infod', t('set.infoDet'), t('set2.sumFilters', { n: ddefs.filter((d) => !this._iOff.has(d.id)).length, all: ddefs.length }), infoDBody, sw('info')) +
         row(t('set2.showOther'), t('set2.showOtherSub'), sw('hideOther'), chkOpt('showother', '', this._showOther(), t('set.on'))) +
+        grp(t('set2.grpDetails')) +
+        sec('infod', t('set.infoDet'), t('set2.sumFilters', { n: ddefs.filter((d) => !this._iOff.has(d.id)).length, all: ddefs.length }), infoDBody, sw('info')) +
         (racks.length ? grp(t('set2.grpPlaces')) + sec('racks', t('set.racks'), t('set2.sumRacks', { n: racks.length }), racksBody, sw(null, 'all')) : '') +
         grp(t('set2.grpData')) +
         `<div class="ssec hs"><button class="shead" data-act="wzopen"><span class="sdesc"><span class="wname">${esc(t('set.producers'))}</span><span class="wsub">${esc(t('set.producersSub'))}</span></span><span class="chev">›</span></button><div class="sscopeb">${sw(null, 'all')}</div></div>` +

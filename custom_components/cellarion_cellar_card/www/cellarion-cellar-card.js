@@ -2281,6 +2281,20 @@
           return { title: '', sections: [] };
       }
     }
+    // Flag stat3: type drill-down for "Drunk" and "Total": the most important wines, producers, countries and vintages of one wine type
+    _statTypePage(k, scope, S) {
+      const H = this._statHist(), items = (scope === 'arch' ? H.items : S.items.concat(H.items)).filter((b) => (b._type || '') === k);
+      const cnt = (fn) => { const m = new Map(); items.forEach((b) => { const x = fn(b); if (x) m.set(x, (m.get(x) || 0) + 1); }); return Array.from(m.entries()).sort((a, b) => b[1] - a[1] || de.compare(String(a[0]), String(b[0]))); };
+      const wm = new Map();
+      items.forEach((b) => { const id = b.wine || b.name; const w = wm.get(id) || { name: b.name, producer: b.producer, n: 0 }; w.n++; wm.set(id, w); });
+      const wl = Array.from(wm.values()).sort((a, b) => b.n - a.n || de.compare(a.name, b.name)).slice(0, 8);
+      const sec = (head, list, g) => ({ head, rows: list.map(([x, n]) => ({ label: x, n, filter: [g, x] })), total: 0, limit: 99 });
+      return { title: typeLbl(k), sections: [
+        { head: t('stat.wines'), rows: wl.map((w) => ({ label: w.name, sub: w.producer, n: w.n, filter: ['q', w.name] })), total: 0, limit: 99 },
+        sec(t('stat.producers'), cnt((b) => b.producer).slice(0, 8), 'producer'),
+        sec(t('stat.countries'), cnt((b) => b.country), 'country'),
+        sec(t('stat.vintages'), cnt((b) => (/^\d{4}$/.test(String(b.vintage)) ? String(b.vintage) : '')).slice(0, 8), 'vintage')] };
+    }
     // Flag stat3: value drill-down for "Drunk" (archive rows) and "Total" (stock + archive): same structure as the stock statistics (wines, producers, countries, regions, vintages, price bands, types)
     _statValue(scope, S) {
       const H = this._statHist();
@@ -2365,7 +2379,7 @@
             head(t('stat.goneTop'), t('stat.goneTopHint')) + `<div class="slist">${goneTop.map((w) => row(w.name, w.producer, w.n, goneTop[0].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
           head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
           head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +
-          head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" ${arch('types', k)}>${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
+          head(t('stat.byType')) + `<div class="sbars">${H.types.map(([k, n]) => `<button class="sbar" data-act="statgo" data-to="type:${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
             `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(n / tmx * 100))}%"></span></span><span class="sbc">${num(n)}</span></button>`).join('')}</div>` +
           `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
       }
@@ -2378,7 +2392,7 @@
         `<div class="sgrid">${tile(num(S.total), t('stat.sc.stock'), 'stock')}${tile(num(H.total), t('stat.sc.arch'), 'arch')}</div>` +
         (S.value + H.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(money(S.value + H.value))}</span><span class="slbl">${esc(t('stat.totalValue'))}</span><span class="slbl">${esc(t('stat.totalValueHint', { a: money(S.value), b: money(H.value) }))}</span></button>` : '') +
         head(t('stat.byType'), t('stat.stockVsArch')) +
-        `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statfilter" data-g="types" data-v="${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
+        `<div class="sbars">${tk.map((k) => { const a = sm.get(k) || 0, b = hm.get(k) || 0; return `<button class="sbar" data-act="statgo" data-to="type:${esc(k)}">${this._glass(k, '')}<span class="sbn">${esc(typeLbl(k))}</span>` +
           `<span class="sbt two"><span class="sbf" style="width:${(a / tmx * 100).toFixed(1)}%"></span><span class="sbf" style="width:${(b / tmx * 100).toFixed(1)}%;background:var(--s-drunk)"></span></span><span class="sbc">${num(a)} · ${num(b)}</span></button>`; }).join('')}</div>` +
         `<div class="wsub shint">${esc(t('stat.tapHint'))}</div>`;
     }
@@ -2414,7 +2428,7 @@
           `<div class="sgrid">${mini('countries', t('stat.topCountry'), (S.countries[0] || [])[0])}${mini('producers', t('stat.topProducer'), (S.producers[0] || [])[0])}` +
           `${mini('regions', t('stat.topRegion'), (S.regions[0] || [])[0])}${mini('grapes', t('stat.topGrape'), (S.grapes[0] || [])[0])}</div>`;
       } else {
-        const pg = this._statPage(key, key === 'value' && scope !== 'stock' ? this._statValue(scope, S) : S, st.all);
+        const pg = key.startsWith('type:') && scope !== 'stock' ? this._statTypePage(key.slice(5), scope, S) : this._statPage(key, key === 'value' && scope !== 'stock' ? this._statValue(scope, S) : S, st.all);
         const fAct = scope === 'arch' ? 'statarch' : 'statfilter'; // Drunk: a tap shows the archive with this filter
         html = nav(pg.title) + (pg.tabs ? `<div class="stabs">${pg.tabs.map(([k, l]) => `<button class="stab${k === pg.tab ? ' on' : ''}" data-act="stattab" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '') + pg.sections.map((sec) => {
           const mx = Math.max(1, ...sec.rows.map((r) => r.n));

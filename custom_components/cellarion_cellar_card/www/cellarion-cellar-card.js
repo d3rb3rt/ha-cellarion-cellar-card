@@ -2402,7 +2402,7 @@
         return hero(H.total, t('stat.drunkHero')) +
           `<div class="sgrid">${tileGo(num(H.wines.size), t('stat.wines'), 'd:wines')}${tileGo(num(H.gifted), t('stat.gifted'), 'd:gifted')}</div>` +
           (H.value > 0 ? `<button class="stile wide" data-act="statgo" data-to="value"><span class="sbig val">${esc(money(H.value))}</span><span class="slbl">${esc(t('stat.drunkValue'))}</span></button>` : '') +
-          (goneW.length ? head(t('stat.goneHead')) + `<div class="sgrid">${tileGo(num(goneW.length), t('stat.goneWines'), 'd:gonew')}${tileGo(num(goneP.size), t('stat.goneProducers'), 'd:gonep')}</div>` +
+          (goneW.length ? `<div class="sgrid">${tileGo(num(goneW.length), t('stat.goneWines'), 'd:gonew')}${tileGo(num(goneP.size), t('stat.goneProducers'), 'd:gonep')}</div>` +
             head(t('stat.goneTop'), t('stat.goneTopHint')) + `<div class="slist">${goneTop.map((w) => row(w.name, w.producer, w.n, goneTop[0].n, num(w.n), arch('q', w.name))).join('')}</div>` : '') +
           head(t('stat.perYear')) + `<div class="slist">${yrs.map(([y, o]) => row(y, '', o.n, ymx, num(o.n) + (o.v > 0 ? ' · ' + money(o.v) : ''))).join('')}</div>` +
           head(t('stat.mostDrunk')) + `<div class="slist">${top.map((w) => row(w.name, w.producer, w.n, top[0].n, num(w.n), arch('q', w.name))).join('')}</div>` +

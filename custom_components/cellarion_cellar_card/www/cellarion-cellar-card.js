@@ -618,6 +618,7 @@
     .dbot.on { border-color: var(--cb-on); box-shadow: inset 0 0 0 1px var(--cb-on); }
     .dbot .rd { width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box; border: 2px solid var(--cb-ring); flex: none; }
     .dbot.on .rd { border-color: var(--cb-on); background: radial-gradient(var(--cb-on) 0 45%, transparent 50%); }
+    .srow.flat .sbt { visibility: hidden; } /* equal counts: no bar */
     .dlink { color: var(--cb-on); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
     .dnote { white-space: pre-wrap; line-height: 1.4; position: relative; }
     .dpur { color: var(--cb-sub); font-size: .9em; }
@@ -2470,10 +2471,11 @@
         html = nav(pg.title) + (pg.tabs ? `<div class="stabs">${pg.tabs.map(([k, l]) => `<button class="stab${k === pg.tab ? ' on' : ''}" data-act="stattab" data-t="${k}">${esc(l)}</button>`).join('')}</div>` : '') + pg.sections.map((sec) => {
           const mx = Math.max(1, ...sec.rows.map((r) => r.n));
           const more = sec.total > sec.limit && sec.limit !== 99;
+          const flat = sec.rows.every((r) => r.n === sec.rows[0].n); // all counts equal: the bars say nothing, so they are hidden
           return (sec.head ? `<div class="wsub shead">${esc(sec.head)}</div>` : '') + (sec.hint ? `<div class="wsub">${esc(sec.hint)}</div>` : '') +
             `<div class="slist">${sec.rows.map((r) => {
               const attr = r.go ? `data-act="statgo" data-to="${esc(r.go)}"` : `data-act="${fAct}" data-g="${esc(r.filter[0])}" data-v="${esc(r.filter[1])}"`;
-              return `<button class="srow" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
+              return `<button class="srow${flat ? ' flat' : ''}" ${attr}><span class="srl">${r.dot ? this._glass(r.dot, '') : ''}<span class="srt">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</span></span>` +
                 `<span class="sbt"><span class="sbf" style="width:${Math.max(2, Math.round(r.n / mx * 100))}%"></span></span><span class="sbc">${esc(r.text || num(r.n))}</span></button>`;
             }).join('')}</div>` +
             (more || (st.all && sec.total > sec.limit) ? `<button class="btn" data-act="statall">${esc(st.all ? t('stat.less') : t('stat.all', { n: sec.total }))}</button>` : '');
@@ -3459,6 +3461,11 @@
       this._f = { q: '' };
       if (g === 'q') this._f.q = v; else this._fsAdd(g, v);
       this._fs('hist').add('1');
+      if (!this._filtered().length) { // the archive only lists wines with no bottle left: a wine still in the cellar is shown there instead
+        this._fs('hist').clear();
+        const bs = this._filtered(), ks = new Set(bs.map((b) => (b.wine || b.name) + '|' + String(b.vintage || 'NV')));
+        if (ks.size === 1) this._det = { wine: bs[0].wine || bs[0].name, vintage: String(bs[0].vintage || 'NV'), step: 'view', reason: 'drank', sel: null, more: false, busy: false, err: '' };
+      }
       this._open = new Set();
       this._renderDlg(); this._renderAll();
     },

@@ -1017,7 +1017,7 @@
         .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       // Flag detrows: the details also list the vineyard name and the bottle data (price, purchase date ...) as data fields
-      const more = det && this._flag('detrows') ? [{ id: 'vname', label: infoLbl('vineyard_name') }].concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
+      const more = det && this._flag('detrows') ? [{ id: 'vname', label: infoLbl('vineyard_name'), infoOnly: true }].concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
       const all = std.concat(more, pers);
       const pos = (d) => { const k = (this._io || []).indexOf(d.id); return k < 0 ? 1000 + all.indexOf(d) : k; };
       // The price is special (bottle data, not wine data): always last, not sortable
@@ -2420,7 +2420,7 @@
       const grp = (name) => `<div class="sgrp">${esc(name)}</div>`;
       const sec = (id, title, sum, body, scope) => { const o = open.has(id);
         return `<div class="ssec${scope ? ' hs' : ''}"><button class="shead" data-act="sx" data-id="${id}" aria-expanded="${o}"><span class="sdesc"><span class="wname">${esc(title)}</span><span class="wsub">${esc(sum)}</span></span><span class="chev">${o ? '⌄' : '›'}</span></button>` + (scope ? `<div class="sscopeb">${scope}</div>` : '') + (o ? `<div class="sbody">${body}</div>` : '') + `</div>`; };
-      const lbl = (d) => d.personal ? '[' + d.label + ']' : d.clsg !== undefined ? t('filter.cls') + ': ' + d.label : d.label; // split classification filters: "Classification: Vineyard rank"
+      const lbl = (d) => d.personal || d.infoOnly ? '[' + d.label + ']' : d.clsg !== undefined ? t('filter.cls') + ': ' + d.label : d.label; // split classification filters: "Classification: Vineyard rank"
       const fchk = (act, id, on, label) => `<input type="checkbox" data-act="${act}" data-id="${esc(id)}"${on ? ' checked' : ''} aria-label="${esc(t('set.toggle', { label }))}">`;
       const grip = `<span class="grip" role="button" aria-label="${esc(t('set2.drag'))}" title="${esc(t('set2.drag'))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14M5 12h14M5 16h14"/></svg></span>`;
       const fdefs = this._allDefs();

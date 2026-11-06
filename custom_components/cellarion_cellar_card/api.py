@@ -76,6 +76,14 @@ def place(loc: JsonDict | None, geo: dict[str, JsonDict]) -> tuple[str, JsonDict
     return text, raw
 
 
+def sweet(w):
+    """Label sweetness of the wine as the label states it (registry field labelSweetness / label_sweetness: object with name, or text); else None."""
+    v = (w or {}).get("labelSweetness") or (w or {}).get("label_sweetness")
+    if isinstance(v, dict):
+        v = v.get("name")
+    return str(v) if v else None
+
+
 def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | None) -> JsonDict:
     """Reduce an inventory bottle to what the card needs. `wine` is its entry of inventory["wines"] (each wine once)."""
     w = wine or {}
@@ -93,6 +101,7 @@ def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | No
         "appellation": w.get("appellation"),
         "grapes": [str(g) for g in (w.get("grapes") or []) if g],
         "classification": w.get("classification"),
+        "sweetness": sweet(w),
         "drinkFrom": win.get("drinkFrom"),
         "drinkTo": win.get("drinkTo"),
         "peakFrom": win.get("peakFrom"),
@@ -157,7 +166,8 @@ def fallback_from_get_bottle(g: JsonDict) -> JsonDict:
             out[key] = val
     cl = w.get("classification") or ", ".join(str(x) for x in (w.get("classifications") or []) if x)
     facts = {"country": w.get("country"), "region": w.get("region"), "appellation": w.get("appellation"),
-             "grapes": [str(x) for x in (w.get("grapes") or []) if x], "classification": cl}
+             "grapes": [str(x) for x in (w.get("grapes") or []) if x], "classification": cl,
+             "sweetness": sweet(w)}
     facts = {k: v for k, v in facts.items() if v not in (None, "", [])}
     if facts:
         out["wineFacts"] = facts
@@ -245,7 +255,8 @@ def hist_row(b: JsonDict, wine: JsonDict | None, cb: str, multi: bool) -> JsonDi
                    "rating": c.get("rating"), "scale": c.get("ratingScale"), "note": str(c.get("note") or "")[:500],
                    "price": b.get("price"), "currency": b.get("currency"),
                    "country": w.get("country"), "region": w.get("region"), "appellation": w.get("appellation"),
-                   "grapes": [str(g) for g in (w.get("grapes") or []) if g], "classification": w.get("classification")}
+                   "grapes": [str(g) for g in (w.get("grapes") or []) if g], "classification": w.get("classification"),
+                   "sweetness": sweet(w)}
     p = personal(b.get("personal"))
     if p:
         h["p"] = p

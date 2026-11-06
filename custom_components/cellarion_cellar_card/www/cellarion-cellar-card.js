@@ -1044,7 +1044,7 @@
     }
     _infoDefs(det) { // det: the order of the details (only with flag infosplit), without the price
       const std = this._kinds().map((k) => ({ id: 'cls:' + k, label: clsLbl(k), clsg: k })) // clsg: kind, shown as "Classification: <kind>" like in the filter settings
-        .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
+        .concat([['country', t('filter.country')], ['region', t('filter.region')], ['appellation', t('filter.appellation')], ['sweetness', t('filter.sweetness')], ['grape', t('filter.grape')]].map(([id, label]) => ({ id, label })));
       const pers = ((this._data && this._data.fields) || []).filter((l) => !isInfoKey(l)).map((l) => ({ id: 'p:' + l, label: l, personal: true }));
       // Flag detrows: the details also list the vineyard name and the bottle data (price, purchase date ...) as data fields
       const more = det ? this._infoOnly().map((k) => ({ id: 'i:' + k, label: infoLbl(k), infoOnly: true, attr: k })).concat(BOTTLE_ROWS.map(([id, key]) => ({ id, label: t(key), bottle: true }))) : [];
@@ -1268,7 +1268,7 @@
         o._rack = o.where && o.where.rack ? o.where.rack : NO_LOC;
         o._type = o.type || '';
         o._cls = clsOf(o.classification);
-        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification,
+        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.sweetness, o.classification,
           (o.grapes || []).join(' '), o._loc, typeLbl(o.type),
           Object.keys(o.p || {}).filter((k) => !isInfoKey(k)).map((k) => (Array.isArray(o.p[k]) ? o.p[k].join(' ') : o.p[k])).join(' ')].join('\u0001')); // the long info texts and source links are not searched // fields are separated, so a phrase cannot run across two fields
         return o;
@@ -1285,7 +1285,7 @@
         o.wine = o.wine || wineOf.get(k) || 'h:' + k;
         o._hist = true;
         const sm = sampleOf.get(k); // wine facts of a bottle of the same wine in the cellar (if there is one)
-        if (sm) ['country', 'region', 'appellation', 'grapes', 'classification', 'colour', 'p'].forEach((f) => { if (o[f] === undefined) o[f] = sm[f]; });
+        if (sm) ['country', 'region', 'appellation', 'sweetness', 'grapes', 'classification', 'colour', 'p'].forEach((f) => { if (o[f] === undefined) o[f] = sm[f]; });
         o._status = 'drunk';
         o._cn = multi ? names.get(o.cellar || cl[0].id) || '' : '';
         o._price = priceKey(o);
@@ -1293,7 +1293,7 @@
         o._rack = NO_LOC;
         o._type = o.type || '';
         o._cls = clsOf(o.classification);
-        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.classification, (o.grapes || []).join(' '), typeLbl(o.type)].join('\u0001'));
+        o._hay = norm([o.name, o.producer, o.vintage, o.region, o.country, o.appellation, o.sweetness, o.classification, (o.grapes || []).join(' '), typeLbl(o.type)].join('\u0001'));
         return o;
       });
       const count = (get) => {
@@ -1385,6 +1385,7 @@
         { id: 'country', label: t('filter.country'), get: (b) => b.country || null },
         { id: 'region', label: t('filter.region'), get: (b) => b.region },
         { id: 'appellation', label: t('filter.appellation'), get: (b) => b.appellation || null },
+        { id: 'sweetness', label: t('filter.sweetness'), get: (b) => b.sweetness || null },
         { id: 'producer', label: t('filter.producer'), get: (b) => b.producer, sort: byProd },
         { id: 'status', label: t('filter.status'), defs: STATUS, dot: '--s-', get: (b) => (b._status === 'window' ? 'peak' : b._status) },
         { id: 'cls', label: t('filter.cls'), get: (b) => b._cls || [] },
@@ -2094,6 +2095,7 @@
         if (d.id === 'country') return b.country ? this._hl(b.country) : '';
         if (d.id === 'region') return b.region ? this._hl(b.region) : '';
         if (d.id === 'appellation') return b.appellation ? this._hl(b.appellation) : '';
+        if (d.id === 'sweetness') return b.sweetness ? this._hl(b.sweetness) : '';
         if (d.id === 'grape') return b.grapes && b.grapes.length ? this._hl(b.grapes.join(', ')) : '';
         const v = b.p && b.p[d.label];
         return v ? this._hl([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
@@ -2853,7 +2855,7 @@
       if (hist) { // wine facts of a wine that is not in the cellar any more come from the bottle details
         const wf = (info && info.wineFacts) || {};
         sel = Object.assign({}, sel);
-        ['country', 'region', 'appellation'].forEach((f) => { if (!sel[f] && wf[f]) sel[f] = wf[f]; });
+        ['country', 'region', 'appellation', 'sweetness'].forEach((f) => { if (!sel[f] && wf[f]) sel[f] = wf[f]; });
         if (!(sel.grapes || []).length && wf.grapes) sel.grapes = wf.grapes;
         if (!(sel._cls || []).length && wf.classification) sel._cls = String(wf.classification).split(/\s*,\s*/).filter(Boolean);
       }
@@ -2928,6 +2930,7 @@
           else if (d.id === 'country') add(t('filter.country'), esc(sel.country), 'country');
           else if (d.id === 'region') add(t('filter.region'), esc(sel.region), 'region');
           else if (d.id === 'appellation') add(t('filter.appellation'), esc(sel.appellation), 'appellation');
+          else if (d.id === 'sweetness') add(t('filter.sweetness'), esc(sel.sweetness), '');
           else if (d.id === 'grape') add(t('filter.grape'), esc((sel.grapes || []).join(', ')), 'grape');
           else if (d.bottle) { const r = rows[BOTTLE_ROWS.findIndex((x) => x[0] === d.id)]; if (r) add(r[0], r[1], ''); }
           else if (d.personal) {
@@ -3091,6 +3094,7 @@
       if (k === 'country') return sel.country || '';
       if (k === 'region') return sel.region || '';
       if (k === 'appellation') return sel.appellation || '';
+      if (k === 'sweetness') return sel.sweetness || '';
       if (k === 'grape') return (sel.grapes || []).join(', ');
       if (this._kinds().indexOf(k) >= 0) return (sel._cls || []).filter((c) => this._clsKind(c) === k).join(', ');
       const p = sel.p || {};

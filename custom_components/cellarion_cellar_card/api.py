@@ -445,8 +445,5 @@ async def download_image(session: aiohttp.ClientSession, base_url: str, path: st
         data = await resp.content.read(MAX_IMAGE_BYTES + 1)
     if len(data) > MAX_IMAGE_BYTES:
         return False
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    tmp = dest.with_suffix(dest.suffix + ".tmp")
-    tmp.write_bytes(data)
-    tmp.replace(dest)
+    await asyncio.to_thread(_write_image, dest, data)
     return True

@@ -129,3 +129,64 @@ def test_rack_geo_lists_the_rows_per_shelf_from_the_bottom():
 
 def test_class_kinds_keep_every_kind_cellarion_delivers():
     assert api.class_kinds([{"name": "Foo", "kind": "brand_new_kind", "synonyms": ["Bar"]}, {"name": "No kind"}]) == {"foo": "brand_new_kind", "bar": "brand_new_kind"}
+
+
+# ---- download_image must keep file work off the event loop (HACS review) ----
+import asyncio  # noqa: E402
+import inspect  # noqa: E402
+import tempfile  # noqa: E402
+
+
+class _Content:
+    def __init__(self, data):
+        self._data = data
+
+    async def read(self, n):
+        return self._data[:n]
+
+
+class _Resp:
+    def __init__(self, data):
+        self.content = _Content(data)
+
+    def raise_for_status(self):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return False
+
+
+class _Session:
+    def __init__(self, data):
+        self.data, self.calls = data, 0
+
+    def get(self, *a, **k):
+        self.calls += 1
+        return _Resp(self.data)
+
+
+def test_download_image_source_has_no_blocking_file_calls():
+    src = inspect.getsource(api.download_image)
+    for blocked in ("write_bytes", "mkdir(", ".replace(", ".exists("):
+        assert blocked not in src, f"{blocked} would block the event loop"
+    assert "_write_image" in src and "to_thread" in src
+
+
+async def test_download_image_writes_once_and_caches():
+    dest = pathlib.Path(tempfile.mkdtemp()) / "sub" / "x.webp"
+    session = _Session(b"abc")
+    assert await api.download_image(session, "https://x", "/p", dest) is True
+    assert dest.read_bytes() == b"abc" and session.calls == 1
+    assert await api.download_image(session, "https://x", "/p", dest) is True
+    assert session.calls == 1  # cached: no second download
+    assert not list(dest.parent.glob("*.tmp"))
+
+
+async def test_download_image_rejects_oversized():
+    dest = pathlib.Path(tempfile.mkdtemp()) / "big.webp"
+    session = _Session(b"a" * (api.MAX_IMAGE_BYTES + 5))
+    assert await api.download_image(session, "https://x", "/p", dest) is False
+    assert not dest.exists()

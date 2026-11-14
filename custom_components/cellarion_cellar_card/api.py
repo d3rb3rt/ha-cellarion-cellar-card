@@ -109,6 +109,7 @@ def slim(bottle: JsonDict, wine: JsonDict | None, plc: tuple[str, JsonDict] | No
         "price": bottle.get("price"),
         "currency": bottle.get("currency"),
         "shop": bottle.get("purchaseLocation"),
+        "added": bottle.get("addedAt"),  # when the bottle was created in Cellarion (ISO), for the "Recently added" sort
     }
     if plc:
         out["location"], out["where"] = plc

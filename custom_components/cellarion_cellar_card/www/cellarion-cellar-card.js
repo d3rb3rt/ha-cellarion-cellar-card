@@ -257,10 +257,7 @@
     .ddpop .ddselt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     .ddpop .ddx { flex: none; width: 28px; height: 28px; min-width: 0; min-height: 0; padding: 0 0 2px; border: 0; border-radius: 50%; background: transparent; color: var(--cb-text); font-size: 20px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
     .ddpop .ddx:hover { background: color-mix(in srgb, var(--cb-text) 14%, transparent); }
-    .ddpop .ddhint { display: flex; align-items: center; gap: 8px; flex: none; padding: 6px 12px; font-size: 12px; color: var(--cb-sub); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
-    .ddpop .ddhintt { flex: 1; min-width: 0; }
-    .ddpop .dddir { flex: none; min-height: 28px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--cb-text) 45%, transparent); border-radius: 14px; background: var(--cb-chip); color: var(--cb-text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .ddpop .dddir:active { background: color-mix(in srgb, var(--cb-text) 25%, var(--cb-chip)); }
+    .ddpop .ddhint { flex: none; padding: 6px 12px; font-size: 12px; color: var(--cb-sub); border-bottom: 1px solid color-mix(in srgb, var(--cb-text) 18%, transparent); }
     .ddpop .ddlist { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
     .ddi { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 0; border-top: 1px solid var(--cb-line); background: transparent; color: var(--cb-text); font: inherit; text-align: left; cursor: pointer; }
     .ddi:active { background: var(--cb-chip); }
@@ -885,7 +882,6 @@
       this._view = this._cfg.view === 'flat' ? 'flat' : 'wine';
       this._local = st.local && typeof st.local === 'object' ? st.local : {};
       this._sort = 'name';
-      this._fd = {}; // pick lists of alphabetical filters: id of the filter -> true when reversed (Z to A)
       this._scale = this._clampScale(st.scale != null ? st.scale : this._cfg.font_scale);
       this._f = { q: '' };
       this._st = st; this._restored = false;
@@ -1111,7 +1107,6 @@
       const st = this._st || {};
       if (!this._keep()) return;
       this._sort = st.sort || 'name';
-      this._fd = st.fd && typeof st.fd === 'object' ? st.fd : {};
       this._fmode = st.fm === 'or' || st.fm === 'not' ? st.fm : 'std';
       if (st.f && typeof st.f === 'object') {
         for (const k of Object.keys(st.f)) {
@@ -1127,7 +1122,7 @@
           f = { q: this._f.q || '' };
           for (const k of Object.keys(this._f)) if (k !== 'q' && this._f[k] && this._f[k].size) f[k] = Array.from(this._f[k]);
         }
-        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._restored ? this._sort : ((this._st || {}).sort || this._sort), scale: this._scale, local: this._local, f, fm: this._restored ? this._fm() : (this._st || {}).fm, fd: this._restored ? this._fd : (this._st || {}).fd })); } catch (e) { /* ohne Speicher weiter */ }
+        localStorage.setItem(this._key, JSON.stringify({ view: this._view, sort: this._restored ? this._sort : ((this._st || {}).sort || this._sort), scale: this._scale, local: this._local, f, fm: this._restored ? this._fm() : (this._st || {}).fm })); } catch (e) { /* ohne Speicher weiter */ }
     }
 
     // ---------- Data ----------
@@ -1708,7 +1703,7 @@
         return { v: k, t: `${l} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` };
       });
     }
-    _opts(map, selected, sortFn, desc) {
+    _opts(map, selected, sortFn) {
       const TOP_MIN = 8, TOP_MAX = 10;
       const all = Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0]));
       const byCount = all.slice().sort((a, b) => b[1].f - a[1].f || de.compare(a[0], b[0]));
@@ -1716,7 +1711,7 @@
       k = Math.min(TOP_MAX, Math.max(k, Math.min(3, all.length)));
       if (k >= all.length) k = 0;
       const top = byCount.slice(0, k), top0 = new Set(top.map((x) => x[0]));
-      const rest = all.filter((x) => !top0.has(x[0])).sort(desc ? (a, b) => sortFn(b, a) : sortFn);
+      const rest = all.filter((x) => !top0.has(x[0])).sort(sortFn);
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
       return top.map(opt).concat(top.length && rest.length ? [{ sep: true }] : [], rest.map(opt));
     }
@@ -1729,15 +1724,15 @@
       return r.concat([KIND_REST]);
     }
     // Pick list of one classification kind: alphabetical, not by count
-    _optsCls(map, selected, desc) {
+    _optsCls(map, selected) {
       const opt = ([v, o]) => ({ v, t: `${v} (${o.f === 1 ? 1 : o.w + ' | ' + o.j + ' | ' + o.f})` });
-      return Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0])).sort(desc ? (a, b) => de.compare(b[0], a[0]) : (a, b) => de.compare(a[0], b[0])).map(opt);
+      return Array.from(map.entries()).filter((x) => !selected || !selected.has(x[0])).sort((a, b) => de.compare(a[0], b[0])).map(opt);
     }
     // Own pick menu instead of the native Android list (it was sometimes black, sometimes transparent, shifted when zooming and pulled in the navigation bar)
     _renderDd() {
       const el = this._dlg, d = this._ddItems[this._dd];
       if (!d) { this._dd = null; el.hidden = true; el.innerHTML = ''; return; }
-      el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint"><span class="ddhintt">${esc(d.hint)}</span>${d.dir ? `<button type="button" class="dddir" data-act="dddir" aria-label="${esc(t(d.dir === 'desc' ? 'dd.za' : 'dd.az'))}">${d.dir === 'desc' ? '↓ ' : '↑ '}${esc(t(d.dir === 'desc' ? 'dd.za' : 'dd.az'))}</button>` : ''}</div>` : '') + (d.sel ? `<div class="ddsel"><span class="ddselt">${esc(t('dd.selected'))}: <b>${esc(d.sel)}</b></span><button type="button" class="ddx" data-act="ddclr" aria-label="${esc(t('dd.clear'))}">×</button></div>` : '') +
+      el.innerHTML = `<div class="ddpop" role="listbox" aria-label="${esc(d.label)}">` + (d.hint ? `<div class="ddhint">${esc(d.hint)}</div>` : '') + (d.sel ? `<div class="ddsel"><span class="ddselt">${esc(t('dd.selected'))}: <b>${esc(d.sel)}</b></span><button type="button" class="ddx" data-act="ddclr" aria-label="${esc(t('dd.clear'))}">×</button></div>` : '') +
         (`<div class="ddlist">` + d.items.map((o) => o.sep ? '<div class="ddsep"></div>' : o.and ? `<div class="ddrow"><button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button><button type="button" class="ddand" data-act="ddand" data-v="${esc(o.v)}" title="${esc(t('filter.andAdd'))}" aria-label="${esc(t('filter.andAdd'))}">&amp;<small>(${o.nAnd})</small></button></div>` : `<button type="button" class="ddi${o.v === d.curV ? ' cur' : ''}" role="option" data-act="ddpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('') + `</div></div>`);
       el.hidden = false;
       const pop = el.firstElementChild, an = this._ddAnchor;
@@ -1855,9 +1850,9 @@
             if (!m.size && !set.size) return hasAny(d) ? `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>` : '';
             // nothing chosen yet and every bottle shown has the one remaining value: choosing it would change nothing
             if (!set.size && m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length) return `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-            const items = d.defs ? this._optsK(d.defs, m, set) : d.clsg !== undefined ? this._optsCls(m, set, !!this._fd[d.id]) : this._opts(m, set, d.sort || by, !!this._fd[d.id]);
+            const items = d.defs ? this._optsK(d.defs, m, set) : d.clsg !== undefined ? this._optsCls(m, set) : this._opts(m, set, d.sort || by);
             if (d.id === 'grape' && set.size && !this._multi()) { const co = new Map(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => { if (!co.has(g)) co.set(g, new Set()); co.get(g).add(b.wine); })); items.forEach((o) => { if (o.v !== undefined) { o.and = co.has(o.v); o.nAnd = o.and ? co.get(o.v).size : 0; } }); } // & only where the grape occurs together with the chosen ones, with the number of wines that would remain
-            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), dir: (d.defs || d.id === 'vintage') ? null : (this._fd[d.id] ? 'desc' : 'asc'), wide: d.id === 'grape' && !!set.size && !this._multi(),
+            this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size && !this._multi(),
               sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' && !this._multi() ? ' & ' : ', ') : '' };
             return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + fmChip + histChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
@@ -3487,12 +3482,6 @@
     ddclr() { // the list stays open: refresh the filters, re-find the (possibly re-created) button and redraw the list
       const id = this._dd; if (!id || !this._f[id]) return;
       this._f[id].clear(); this._renderAll();
-      const an = this.shadowRoot.querySelector('[data-act="dd"][data-id="' + id + '"]'); if (an) this._ddAnchor = an;
-      this._renderDlg();
-    },
-    dddir() { // reverse the pick list of an alphabetical filter (A-Z / Z-A); the list stays open
-      const id = this._dd; if (!id || id === 'sort' || id === 'cellarsel' || id === 'fmode') return;
-      this._fd[id] = !this._fd[id]; this._saveState(); this._renderAll();
       const an = this.shadowRoot.querySelector('[data-act="dd"][data-id="' + id + '"]'); if (an) this._ddAnchor = an;
       this._renderDlg();
     },

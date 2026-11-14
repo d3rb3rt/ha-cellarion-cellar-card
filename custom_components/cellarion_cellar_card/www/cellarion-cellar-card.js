@@ -1809,8 +1809,8 @@
         const sortBtn = (() => {
             // One entry per sort criterion: the first tap sorts in its natural direction, a second tap on the active entry reverses it (arrow = direction of the values)
             const base = SORT_BASE[this._sort] || this._sort, arrow = (v) => (SORT_ARROW[v] ? ' ' + SORT_ARROW[v] : '');
-            const AZ = ['name', 'producer', 'region']; // A-Z entries say A–Z / Z–A in their own text, the others get an arrow
-            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: AZ.indexOf(v) >= 0 ? t('sort.' + (v === base ? this._sort : v)) : t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
+            const AZ = ['name', 'producer', 'region']; // A-Z entries say A–Z / Z–A and also get an arrow (up = A–Z, down = Z–A), the others only the arrow
+            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: AZ.indexOf(v) >= 0 ? t('sort.' + (v === base ? this._sort : v)) + ' ' + (v === base && /Desc$/.test(this._sort) ? '↓' : '↑') : t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
             const cur = (so.find((o) => o.v === base) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;

@@ -87,6 +87,7 @@
  "det.close": "Schließen",
  "det.confirmTitle": "Diese Flasche entnehmen?",
  "det.reason": "Grund",
+ "det.notePh": "Notiz zur Flasche (optional)",
  "det.cancel": "Abbrechen",
  "det.taking": "Entnehme …",
  "det.takeYes": "Ja, entnehmen",

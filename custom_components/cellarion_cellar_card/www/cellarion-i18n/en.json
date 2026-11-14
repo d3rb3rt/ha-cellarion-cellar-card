@@ -87,6 +87,7 @@
  "det.close": "Close",
  "det.confirmTitle": "Take out this bottle?",
  "det.reason": "Reason",
+ "det.notePh": "Note about the bottle (optional)",
  "det.cancel": "Cancel",
  "det.taking": "Taking out …",
  "det.takeYes": "Yes, take out",

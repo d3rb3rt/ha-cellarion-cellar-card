@@ -744,6 +744,7 @@
     .scopeone { flex: none; cursor: default; pointer-events: none; }
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
+    .dnin { box-sizing: border-box; width: 100%; resize: vertical; min-height: 64px; padding: 8px 10px; border: 1px solid var(--cb-line); border-radius: 8px; background: var(--cb-chip); color: var(--cb-text); font: inherit; }
     .dask { font-size: 1.1em; font-weight: 600; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     @media (min-width: 700px) { .dsheet.statsheet { height: 86%; } } /* fixed height: pills and cards do not jump between pages of different length */
@@ -3336,6 +3337,7 @@
           `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : (this._exactPlace(sel) || sel._loc))}</span></div>` +
           `<div class="dsec">${esc(t('det.reason'))}</div><div class="row-chips">` +
           reasons.map(([v, l]) => `<button class="chip${d.reason === v ? ' on' : ''}" data-act="dreason" data-v="${v}">${l}</button>`).join('') + `</div>` +
+          `<div class="dsec">${esc(t('det.note'))}</div><textarea class="dnin" data-dnin rows="3" maxlength="1000" placeholder="${esc(t('det.notePh'))}"${d.busy ? ' disabled' : ''}>${esc(d.note || '')}</textarea>` +
           (d.err ? `<div class="derr">${esc(d.err)}</div>` : '') +
           `<div class="dact"><button class="btn" data-act="dback" ${d.busy ? 'disabled' : ''}>${esc(t('det.cancel'))}</button>` +
           `<button class="btn danger" data-act="dgo" ${d.busy ? 'disabled' : ''}>${esc(d.busy ? t('det.taking') : t('det.takeYes'))}</button></div>`;
@@ -3381,7 +3383,8 @@
       this._renderDlg();
       try {
         const { domain, service } = this._svc(this._cfg.consume_service || 'cellarion_cellar_card.consume_bottle');
-        await this._hass.callService(domain, service, { bottle_id: sel.id, reason: d.reason });
+        const note = String(d.note || '').trim();
+        await this._hass.callService(domain, service, note ? { bottle_id: sel.id, reason: d.reason, note } : { bottle_id: sel.id, reason: d.reason });
       } catch (e) {
         d.busy = false;
         d.err = t('det.takeFailed', { err: (e && e.message) || String(e) });
@@ -3496,6 +3499,7 @@
       this._renderAll();
     }
     _onInput(e) {
+      if (e.target.dataset && e.target.dataset.dnin !== undefined && this._det) { this._det.note = e.target.value; return; } // note of the take-out confirmation
       if (e.target.dataset && e.target.dataset.archn !== undefined) { const n = Math.max(0, Math.min(99, parseInt(e.target.value, 10) || 0)); if (this._local.archN !== undefined) { this._local.archN = n; this._saveState(); } else { this._shared.archN = n; this._saveSettings(); } this._renderAll(); return; }
       if (e.target.dataset && e.target.dataset.wzq !== undefined && this._wz) { this._wz.q = e.target.value; this._renderWzList(); return; }
       if (!e.target.matches || !e.target.matches('input[type=search]')) return;

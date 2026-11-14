@@ -1621,6 +1621,20 @@
       this.shadowRoot.addEventListener('scroll', (e) => { if (this._det && this._det.dnote && !(e.target.closest && e.target.closest('.dnpop'))) this._dnoteClose(); }, true); // scrolling closes the drunk overlay
       this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
       this.shadowRoot.addEventListener('pointerdown', (e) => this._onGrip(e));
+      // Sort menu: a long press on a two-direction entry picks the opposite direction of what a tap would pick
+      {
+        let tm = 0, x0 = 0, y0 = 0;
+        const stop = () => { if (tm) { clearTimeout(tm); tm = 0; } };
+        this.shadowRoot.addEventListener('pointerdown', (e) => {
+          const b = this._dd === 'sort' && e.target.closest && e.target.closest('.ddi[data-act="ddpick"]');
+          if (!b || !SORT_PAIR[b.dataset.v]) return;
+          stop(); x0 = e.clientX; y0 = e.clientY;
+          tm = setTimeout(() => { tm = 0; this._lpDone = true; setTimeout(() => { this._lpDone = false; }, 800); this._sortPick(b.dataset.v, true); }, 500);
+        });
+        this.shadowRoot.addEventListener('pointermove', (e) => { if (tm && Math.abs(e.clientX - x0) + Math.abs(e.clientY - y0) > 12) stop(); });
+        ['pointerup', 'pointercancel'].forEach((n) => this.shadowRoot.addEventListener(n, stop));
+        this.shadowRoot.addEventListener('contextmenu', (e) => { if (this._dd === 'sort' && e.target.closest && e.target.closest('.ddi')) e.preventDefault(); });
+      }
       this.shadowRoot.addEventListener('input', (e) => this._onInput(e));
       this.shadowRoot.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && this._dd) { this._dd = null; this._renderDlg(); return; }
@@ -1993,6 +2007,12 @@
     }
 
     // A-Z bar: only for wine A-Z / producer A-Z. Letter = start of the wine name or of the producer's sort word.
+    // Pick a sort entry: a tap takes the natural direction (or reverses the active entry), a long press (rev) the opposite of that
+    _sortPick(v, rev, fromTap) {
+      const pr = SORT_PAIR[v];
+      if (pr) { const tap = pr.indexOf(this._sort) === 0 ? pr[1] : pr[0]; this._sort = rev ? (tap === pr[0] ? pr[1] : pr[0]) : tap; } else this._sort = v;
+      this._saveState(); this._dd = null; this._renderDlg(); this._renderAll();
+    }
     _sb() { return SORT_BASE[this._sort] || this._sort; } // menu entry of the current sort (both directions)
     _azKey(b) {
       const k = norm(this._sb() === 'producer' ? this._pkey(b.producer) : b.name).replace(/[^a-z0-9]/g, '').charAt(0);
@@ -3393,6 +3413,7 @@
       this.shadowRoot.querySelectorAll('.dlink[aria-expanded]').forEach((n) => n.setAttribute('aria-expanded', 'false'));
     }
     _onClick(e) {
+      if (this._lpDone) { this._lpDone = false; return; } // the click after a long press was already handled
       if (this._det && this._det.dnote && !(e.target.closest && e.target.closest('[data-act="dnote"]'))) { this._dnoteClose(); return; } // click outside closes the overlay
       if (this._backdropClick(e)) return;
       const t = e.target.closest && e.target.closest('[data-act]');
@@ -3494,7 +3515,7 @@
         return;
       }
       this._dd = null;
-      if (id === 'sort') { const pr = SORT_PAIR[v]; this._sort = pr ? (pr.indexOf(this._sort) === 0 ? pr[1] : pr[0]) : v; this._saveState(); } // second tap on the active entry reverses
+      if (id === 'sort') { this._sortPick(v, false, true); return; } // second tap on the active entry reverses
       else if (id === 'cellarsel') { // other cellar (or all): filters and search stay, open rows belong to the old selection and are cleared
         this._local.cellar = v; this._open = new Set(); this._saveState();
         if (this._raw) this._ingest(this._raw);

@@ -116,7 +116,7 @@
 
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) ----
   // Sort criteria with two directions: [natural, reversed]; SORT_BASE maps every sort value to its menu entry, SORT_ARROW shows the direction of the values
-  const SORT_PAIR = { drinkTo: ['drinkTo', 'drinkToDesc'], vintage: ['vintage', 'vintageAsc'], price: ['priceAsc', 'priceDesc'], count: ['countDesc', 'countAsc'], added: ['added', 'addedAsc'] };
+  const SORT_PAIR = { name: ['name', 'nameDesc'], producer: ['producer', 'producerDesc'], region: ['region', 'regionDesc'], drinkTo: ['drinkTo', 'drinkToDesc'], vintage: ['vintage', 'vintageAsc'], price: ['priceAsc', 'priceDesc'], count: ['countDesc', 'countAsc'], added: ['added', 'addedAsc'] };
   const SORT_BASE = {}; Object.keys(SORT_PAIR).forEach((k) => SORT_PAIR[k].forEach((v) => { SORT_BASE[v] = k; }));
   const SORT_ARROW = { drinkTo: '↑', drinkToDesc: '↓', vintage: '↓', vintageAsc: '↑', priceAsc: '↑', priceDesc: '↓', countDesc: '↓', countAsc: '↑', added: '↓', addedAsc: '↑' };
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['burl', 'det.purchaseUrl'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
@@ -1482,6 +1482,9 @@
         case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '');
         case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
         case 'added': return (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || '');
+        case 'nameDesc': return de.compare(b.b.name || '', a.b.name || '') || de.compare(b.b.producer || '', a.b.producer || '') || this._vint(b.vintage) - this._vint(a.vintage);
+        case 'producerDesc': return de.compare(this._pkey(b.b.producer), this._pkey(a.b.producer)) || de.compare(b.b.name || '', a.b.name || '') || this._vint(b.vintage) - this._vint(a.vintage);
+        case 'regionDesc': return (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(b.b.region || '', a.b.region || '') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '');
         case 'addedAsc': return (a.added || '9').localeCompare(b.added || '9') || de.compare(a.b.name || '', b.b.name || '');
         case 'countAsc': return (a.bottles || []).length - (b.bottles || []).length || de.compare(a.b.name || '', b.b.name || '');
         case 'drinkToDesc': return (b.drinkTo === 9999 ? -1 : b.drinkTo) - (a.drinkTo === 9999 ? -1 : a.drinkTo) || de.compare(a.b.name || '', b.b.name || '');
@@ -1518,6 +1521,9 @@
         vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
         countDesc: (a, b) => b.count - a.count || de.compare(a.b.name || '', b.b.name || ''),
         added: (a, b) => (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || ''),
+        nameDesc: (a, b) => de.compare(b.b.name || '', a.b.name || '') || de.compare(b.b.producer || '', a.b.producer || ''),
+        producerDesc: (a, b) => de.compare(this._pkey(b.b.producer), this._pkey(a.b.producer)) || de.compare(b.b.name || '', a.b.name || ''),
+        regionDesc: (a, b) => (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(b.b.region || '', a.b.region || '') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         addedAsc: (a, b) => (a.added || '9').localeCompare(b.added || '9') || de.compare(a.b.name || '', b.b.name || ''),
         countAsc: (a, b) => a.count - b.count || de.compare(a.b.name || '', b.b.name || ''),
         drinkToDesc: (a, b) => (b.drinkTo === 9999 ? -1 : b.drinkTo) - (a.drinkTo === 9999 ? -1 : a.drinkTo) || de.compare(a.b.name || '', b.b.name || ''),
@@ -1798,7 +1804,8 @@
         const sortBtn = (() => {
             // One entry per sort criterion: the first tap sorts in its natural direction, a second tap on the active entry reverses it (arrow = direction of the values)
             const base = SORT_BASE[this._sort] || this._sort, arrow = (v) => (SORT_ARROW[v] ? ' ' + SORT_ARROW[v] : '');
-            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
+            const AZ = ['name', 'producer', 'region']; // A-Z entries say A–Z / Z–A in their own text, the others get an arrow
+            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: AZ.indexOf(v) >= 0 ? t('sort.' + (v === base ? this._sort : v)) : t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
             const cur = (so.find((o) => o.v === base) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
@@ -1947,7 +1954,7 @@
         const groups = this._groups(entries);
         nWine = groups.length;
         const hk = { vintage: (g) => (g.maxVint > 0 ? String(g.maxVint) : 'NV'), vintageAsc: (g) => (g.minVint < 99999 ? String(g.minVint) : 'NV'),
-          region: (g) => g.b.region || t('list.noRegion') }[this._sort];
+          region: (g) => g.b.region || t('list.noRegion'), regionDesc: (g) => g.b.region || t('list.noRegion') }[this._sort];
         if (hk) {
           const tot = new Map();
           groups.forEach((g) => { const k = hk(g); const o = tot.get(k) || { w: 0, n: 0 }; o.w++; o.n += g.count; tot.set(k, o); });
@@ -1987,12 +1994,13 @@
     }
 
     // A-Z bar: only for wine A-Z / producer A-Z. Letter = start of the wine name or of the producer's sort word.
+    _sb() { return SORT_BASE[this._sort] || this._sort; } // menu entry of the current sort (both directions)
     _azKey(b) {
-      const k = norm(this._sort === 'producer' ? this._pkey(b.producer) : b.name).replace(/[^a-z0-9]/g, '').charAt(0);
+      const k = norm(this._sb() === 'producer' ? this._pkey(b.producer) : b.name).replace(/[^a-z0-9]/g, '').charAt(0);
       return k >= 'a' && k <= 'z' ? k.toUpperCase() : '#';
     }
     _azAnchor(b) {
-      if (this._sort !== 'name' && this._sort !== 'producer') return '';
+      if (this._sb() !== 'name' && this._sb() !== 'producer') return '';
       const k = this._azKey(b);
       if (this._az.has(k)) return '';
       this._az.add(k);
@@ -2017,11 +2025,13 @@
     _renderAz() {
       const bar = this._azEl;
       if (!bar) return;
-      const on = (this._sort === 'name' || this._sort === 'producer') && this._data && this._az.size > 0;
+      const on = (this._sb() === 'name' || this._sb() === 'producer') && this._data && this._az.size > 0;
       bar.hidden = !on;
       if (!on) { bar.innerHTML = ''; return; }
       const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-      if (this._az.has('#')) L.unshift('#');
+      const rev = /Desc$/.test(this._sort); // reversed sort: mirrored bar (Z to A, # at the end)
+      if (rev) L.reverse();
+      if (this._az.has('#')) { if (rev) L.push('#'); else L.unshift('#'); }
       bar.innerHTML = L.map((k) => `<button data-act="az" data-k="${k}"${this._az.has(k) ? '' : ' disabled'}>${k}</button>`).join('');
       this._azCur = null;
       this._azUpdate();
@@ -2097,7 +2107,7 @@
     _prodHtml(name) {
       const i = this._sortMap && this._sortMap[name];
       const w = this._words(name);
-      if (this._sort !== 'producer' || i === undefined || !(i >= 0 && i < w.length)) return this._hl(name);
+      if (this._sb() !== 'producer' || i === undefined || !(i >= 0 && i < w.length)) return this._hl(name);
       return w.map((x, k) => (k === i ? `<b class="wsl">${esc(x.charAt(0))}</b>${esc(x.slice(1))}` : esc(x))).join(' ');
     }
     // Line 1: wine name and producer, line 2: the info items (setting "Info in the list"). The price is vintage info and sits
@@ -2116,7 +2126,7 @@
         const v = b.p && b.p[d.label];
         return v ? this._hl([].concat(v).map((x) => this._fmtVal(x)).join(', ')) : '';
       };
-      const swap = this._sort === 'producer' && b.producer;
+      const swap = this._sb() === 'producer' && b.producer;
       const vj = detail && b.vintage && String(b.vintage).toUpperCase() !== 'NV' ? `<span class="wvj">${esc(b.vintage)}</span> ` : ''; // detail header (flag detrows): the vintage always in front of the wine name, empty without one
       const head = swap ? [['wprod', this._prodHtml(b.producer)], ['wname', vj + this._hl(b.name)]]
         : [['wname', vj + this._hl(b.name)]].concat(b.producer ? [['wprod', this._prodHtml(b.producer)]] : []);

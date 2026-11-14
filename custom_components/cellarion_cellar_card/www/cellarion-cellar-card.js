@@ -118,7 +118,7 @@
   // Sort criteria with two directions: [natural, reversed]; SORT_BASE maps every sort value to its menu entry, SORT_ARROW shows the direction of the values
   const SORT_PAIR = { name: ['name', 'nameDesc'], producer: ['producer', 'producerDesc'], region: ['region', 'regionDesc'], drinkTo: ['drinkTo', 'drinkToDesc'], vintage: ['vintage', 'vintageAsc'], price: ['priceAsc', 'priceDesc'], count: ['countDesc', 'countAsc'], added: ['added', 'addedAsc'] };
   const SORT_BASE = {}; Object.keys(SORT_PAIR).forEach((k) => SORT_PAIR[k].forEach((v) => { SORT_BASE[v] = k; }));
-  const SORT_ARROW = { drinkTo: '↑', drinkToDesc: '↓', vintage: '↓', vintageAsc: '↑', priceAsc: '↑', priceDesc: '↓', countDesc: '↓', countAsc: '↑', added: '↓', addedAsc: '↑' };
+  const SORT_ARROW = { name: '↑', nameDesc: '↓', producer: '↑', producerDesc: '↓', region: '↑', regionDesc: '↓', drinkTo: '↑', drinkToDesc: '↓', vintage: '↓', vintageAsc: '↑', priceAsc: '↑', priceDesc: '↓', countDesc: '↓', countAsc: '↑', added: '↓', addedAsc: '↑' };
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['burl', 'det.purchaseUrl'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
   // Defaults as long as nothing is saved (settings that exist are never touched): filters on, info in the list, details behind the arrow / off
@@ -1804,8 +1804,7 @@
         const sortBtn = (() => {
             // One entry per sort criterion: the first tap sorts in its natural direction, a second tap on the active entry reverses it (arrow = direction of the values)
             const base = SORT_BASE[this._sort] || this._sort, arrow = (v) => (SORT_ARROW[v] ? ' ' + SORT_ARROW[v] : '');
-            const AZ = ['name', 'producer', 'region']; // A-Z entries say A–Z / Z–A and also get an arrow (up = A–Z, down = Z–A), the others only the arrow
-            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: AZ.indexOf(v) >= 0 ? t('sort.' + (v === base ? this._sort : v)) + ' ' + (v === base && /Desc$/.test(this._sort) ? '↓' : '↑') : t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
+            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
             const cur = (so.find((o) => o.v === base) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;

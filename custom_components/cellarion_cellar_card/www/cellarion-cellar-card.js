@@ -744,8 +744,8 @@
     .scopeone { flex: none; cursor: default; pointer-events: none; }
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
-    @media (min-width: 700px) { .dlg.kb { align-items: flex-start; padding-top: 6px; } .dlg.kb .dsheet { max-height: 52%; } }
-    .dnin { box-sizing: border-box; width: 100%; resize: vertical; min-height: 64px; padding: 8px 10px; border: 1px solid var(--cb-line); border-radius: 8px; background: var(--cb-chip); color: var(--cb-text); font: inherit; }
+    @media (min-width: 700px) { .dlg.kb { align-items: flex-start; padding-top: 6px; } .dlg.kb .dsheet { max-height: 54%; overflow-y: scroll; } }
+    .dnin { touch-action: pan-y; overflow: auto; box-sizing: border-box; width: 100%; resize: vertical; min-height: 64px; padding: 8px 10px; border: 1px solid var(--cb-line); border-radius: 8px; background: var(--cb-chip); color: var(--cb-text); font: inherit; }
     .dask { font-size: 1.1em; font-weight: 600; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
     @media (min-width: 700px) { .dsheet.statsheet { height: 86%; } } /* fixed height: pills and cards do not jump between pages of different length */
@@ -1628,7 +1628,7 @@
       this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
       this.shadowRoot.addEventListener('pointerdown', (e) => this._onGrip(e));
       // take-out note: the on-screen keyboard covers the lower half, so move the dialog to the top while typing
-      this.shadowRoot.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) { clearTimeout(this._kbT); this._kbT = setTimeout(() => { if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.matches('.dnin')) d.classList.add('kb'); }, 450); } } }); // delayed: moving the sheet before the click ends made the click hit the backdrop and closed the dialog
+      this.shadowRoot.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) { clearTimeout(this._kbT); this._kbT = setTimeout(() => { if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.matches('.dnin')) d.classList.add('kb'); this.shadowRoot.activeElement.scrollIntoView({ block: 'nearest' }); }, 450); } } }); // delayed: moving the sheet before the click ends made the click hit the backdrop and closed the dialog
       this.shadowRoot.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); clearTimeout(this._kbT); if (d) d.classList.remove('kb'); } });
       // Sort menu: a long press on a two-direction entry picks the opposite direction of what a tap would pick
       {

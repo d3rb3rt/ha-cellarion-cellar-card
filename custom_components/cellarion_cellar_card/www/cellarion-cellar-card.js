@@ -1456,6 +1456,7 @@
         const ends = e.bottles.map((x) => x.drinkTo).filter(Boolean);
         e.drinkTo = ends.length ? Math.min.apply(null, ends) : 9999;
         e.hist = !!e.b._hist; // drunk entry (flag history)
+        e.added = e.bottles.reduce((x, y) => (y.added && y.added > x ? y.added : x), ''); // newest added bottle (ISO text compares in time order)
       });
       return Array.from(m.values());
     }
@@ -1476,6 +1477,7 @@
         case 'countDesc': return (b.bottles || []).length - (a.bottles || []).length || de.compare(a.b.name || '', b.b.name || '');
         case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(a.b.name || '', b.b.name || '');
         case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
+        case 'added': return (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || '');
         default: return de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || '') || this._vint(b.vintage) - this._vint(a.vintage);
       }
     }
@@ -1493,6 +1495,7 @@
         g.drinkTo = Math.min.apply(null, g.entries.map((x) => x.drinkTo));
         g.maxVint = Math.max.apply(null, g.entries.map((x) => this._vint(x.vintage)));
         g.minVint = Math.min.apply(null, g.entries.map((x) => this._old(x.vintage)));
+        g.added = g.entries.reduce((x, y) => (y.added && y.added > x ? y.added : x), '');
       });
       const rt = new Map();
       groups.forEach((g) => rt.set(g.b.region || '', (rt.get(g.b.region || '') || 0) + g.count));
@@ -1509,6 +1512,7 @@
         region: (a, b) => (rt.get(b.b.region || '') || 0) - (rt.get(a.b.region || '') || 0) || (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(a.b.name || '', b.b.name || ''),
         vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
         countDesc: (a, b) => b.count - a.count || de.compare(a.b.name || '', b.b.name || ''),
+        added: (a, b) => (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || ''),
         priceAsc: (a, b) => gp(a, 'min') - gp(b, 'min') || de.compare(a.b.name || '', b.b.name || ''),
         priceDesc: (a, b) => gp(b, 'max') - gp(a, 'max') || de.compare(a.b.name || '', b.b.name || ''),
       }[this._sort] || ((a, b) => de.compare(a.b.name || '', b.b.name || '') || de.compare(a.b.producer || '', b.b.producer || ''));
@@ -1784,7 +1788,7 @@
           return m;
         };
         const sortBtn = (() => {
-            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc', 'countDesc'].map((v) => ({ v, t: t('sort.' + v) }));
+            const so = ['name', 'producer', 'drinkTo', 'vintage', 'vintageAsc', 'region', 'priceAsc', 'priceDesc', 'countDesc', 'added'].map((v) => ({ v, t: t('sort.' + v) }));
             const cur = (so.find((o) => o.v === this._sort) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;

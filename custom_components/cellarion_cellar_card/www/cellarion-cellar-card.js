@@ -1479,7 +1479,7 @@
           return (this._sort === 'priceAsc' ? x - y : y - x) || de.compare(a.b.name || '', b.b.name || '');
         }
         case 'countDesc': return (b.bottles || []).length - (a.bottles || []).length || de.compare(a.b.name || '', b.b.name || '');
-        case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(a.b.name || '', b.b.name || '');
+        case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '');
         case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
         case 'added': return (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || '');
         case 'addedAsc': return (a.added || '9').localeCompare(b.added || '9') || de.compare(a.b.name || '', b.b.name || '');
@@ -1516,7 +1516,7 @@
         producer: (a, b) => de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         drinkTo: (a, b) => a.drinkTo - b.drinkTo || de.compare(a.b.name || '', b.b.name || ''),
         vintage: (a, b) => b.maxVint - a.maxVint || de.compare(a.b.name || '', b.b.name || ''),
-        region: (a, b) => (rt.get(b.b.region || '') || 0) - (rt.get(a.b.region || '') || 0) || (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(a.b.name || '', b.b.name || ''),
+        region: (a, b) => (rt.get(b.b.region || '') || 0) - (rt.get(a.b.region || '') || 0) || (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
         countDesc: (a, b) => b.count - a.count || de.compare(a.b.name || '', b.b.name || ''),
         added: (a, b) => (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || ''),

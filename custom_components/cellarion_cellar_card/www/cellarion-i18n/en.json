@@ -310,6 +310,8 @@
  "filter.andAdd": "Add as a further condition (AND)",
  "dd.clear": "Clear selection",
  "dd.selected": "Selected",
+ "dd.az": "A–Z",
+ "dd.za": "Z–A",
  "fstate.vis": "On",
  "fstate.more": "…",
  "fstate.off": "Off",

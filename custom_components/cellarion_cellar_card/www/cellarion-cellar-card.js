@@ -744,6 +744,7 @@
     .scopeone { flex: none; cursor: default; pointer-events: none; }
     .btn.round { width: var(--cb-chip-h, 40px); padding: 0; font-size: 20px; flex: none; }
     .derr { color: var(--s-over); }
+    @media (min-width: 700px) { .dlg.kb { align-items: flex-start; padding-top: 6px; } .dlg.kb .dsheet { max-height: 52%; } }
     .dnin { box-sizing: border-box; width: 100%; resize: vertical; min-height: 64px; padding: 8px 10px; border: 1px solid var(--cb-line); border-radius: 8px; background: var(--cb-chip); color: var(--cb-text); font: inherit; }
     .dask { font-size: 1.1em; font-weight: 600; }
     @media (min-width: 700px) { .dlg { align-items: center; } .dsheet { border-radius: 16px; max-height: 86%; } }
@@ -1626,6 +1627,9 @@
       this.shadowRoot.addEventListener('scroll', (e) => { if (this._det && this._det.dnote && !(e.target.closest && e.target.closest('.dnpop'))) this._dnoteClose(); }, true); // scrolling closes the drunk overlay
       this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
       this.shadowRoot.addEventListener('pointerdown', (e) => this._onGrip(e));
+      // take-out note: the on-screen keyboard covers the lower half, so move the dialog to the top while typing
+      this.shadowRoot.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) d.classList.add('kb'); } });
+      this.shadowRoot.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) d.classList.remove('kb'); } });
       // Sort menu: a long press on a two-direction entry picks the opposite direction of what a tap would pick
       {
         let tm = 0, x0 = 0, y0 = 0;

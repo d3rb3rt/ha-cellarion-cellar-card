@@ -1628,8 +1628,8 @@
       this.shadowRoot.addEventListener('change', (e) => this._onChange(e));
       this.shadowRoot.addEventListener('pointerdown', (e) => this._onGrip(e));
       // take-out note: the on-screen keyboard covers the lower half, so move the dialog to the top while typing
-      this.shadowRoot.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) d.classList.add('kb'); } });
-      this.shadowRoot.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) d.classList.remove('kb'); } });
+      this.shadowRoot.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); if (d) { clearTimeout(this._kbT); this._kbT = setTimeout(() => { if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.matches('.dnin')) d.classList.add('kb'); }, 450); } } }); // delayed: moving the sheet before the click ends made the click hit the backdrop and closed the dialog
+      this.shadowRoot.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('.dnin')) { const d = this.shadowRoot.querySelector('.dlg'); clearTimeout(this._kbT); if (d) d.classList.remove('kb'); } });
       // Sort menu: a long press on a two-direction entry picks the opposite direction of what a tap would pick
       {
         let tm = 0, x0 = 0, y0 = 0;

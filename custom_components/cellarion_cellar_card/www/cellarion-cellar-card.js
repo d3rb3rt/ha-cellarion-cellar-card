@@ -303,6 +303,7 @@
     :host([data-arch]:not([data-fm])) .fwrap, :host([data-arch]:not([data-fm])) .fpills { --cb-on: var(--s-drunk); } /* archive on: highlight colour of the filter pills */
     button.sel.fs.swp.on, :host([data-fm]) button.sel.fs.swp.on { box-shadow: 0 0 0 1px var(--s-drunk) inset; }
     .fwrap .sel.fs.swp.on { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 14%, transparent); } /* archive on: the colour of the drunk wines */
+    .fpill.fxpill, :host([data-fm]) .fpill.fxpill { border-color: var(--cb-neg, var(--error-color, #c0392b)); color: var(--cb-neg, var(--error-color, #c0392b)); background: color-mix(in srgb, var(--cb-neg, var(--error-color, #c0392b)) 12%, transparent); box-shadow: none; }
     .fpill.hpill, :host([data-fm]) .fpill.hpill { border-color: var(--s-drunk); color: var(--s-drunk); background: color-mix(in srgb, var(--s-drunk) 14%, transparent); }
     .swp.on .swt i { transform: translateX(10px); }
     .hempty { margin: 10px 0 2px; padding: 10px 12px; border: 1px dashed var(--s-drunk); border-radius: 10px; background: color-mix(in srgb, var(--s-drunk) 12%, transparent); }
@@ -1370,13 +1371,14 @@
     _pillSep(d) { return d.id === 'grape' && !this._multi() ? '<span class="fand">&amp;</span>' : ''; }
     _pillWrap(d, html) { return d.id === 'grape' && !this._multi() && this._fs(d.id).size > 1 ? `<span class="fgrp">${html}</span>` : html; }
     _fs(id) { return this._f[id] || (this._f[id] = new Set()); }
+    _fx(id) { return this._f['!' + id] || (this._f['!' + id] = new Set()); } // values of a filter that are always excluded (long press in the pick list), whatever the filter mode is
     // Filter mode: 'std' (one value per filter, as before), 'or' (a bottle shows if ANY chosen value of ANY filter matches), 'not' (a bottle shows if NO chosen value matches)
     _fm() { return (this._fmode === 'or' || this._fmode === 'not') && !(this._fh && this._fh.has('fmode:off')) ? this._fmode : 'std'; }
     _multi() { return this._fm() !== 'std'; }
     // Back to the standard mode: every filter keeps one value again (grapes stay an AND group)
     _setFm(v) {
       this._fmode = v === 'or' || v === 'not' ? v : 'std';
-      if (this._fmode === 'std') for (const k of Object.keys(this._f)) if (k !== 'q' && k !== 'grape' && this._f[k] && this._f[k].size > 1) this._f[k] = new Set([Array.from(this._f[k])[0]]);
+      if (this._fmode === 'std') for (const k of Object.keys(this._f)) if (k !== 'q' && k !== 'grape' && k.charAt(0) !== '!' && this._f[k] && this._f[k].size > 1) this._f[k] = new Set([Array.from(this._f[k])[0]]);
     }
     // Standard: a pick replaces the chosen value of its filter (every filter holds one value; for grapes the & button in the list adds a further one, see ddand). OR / NOT: a pick adds a value
     _fsAdd(id, v) { const S = this._fs(id); if (!this._multi()) S.clear(); S.add(v); }
@@ -1431,6 +1433,7 @@
       const toks = this._qToks();
       const act = this._allDefs().filter((d) => d.id !== skip && f[d.id] && f[d.id].size);
       const gid = grp || skip, skipDef = gid && this._allDefs().find((d) => d.id === gid);
+      const xs = this._allDefs().filter((d) => f['!' + d.id] && f['!' + d.id].size);
       const noOther = gid !== 'types' && !(skipDef && skipDef.personal) && this._hideOther(); // the type pulldown and the personal-field pulldowns still count Other, so they can be chosen (e.g. "Type (Other)")
       return pool.filter((b) => {
         if (noOther && b._type === 'other') return false;
@@ -1442,6 +1445,7 @@
           // Grapes: the wine must have all chosen grapes (AND group); every other filter holds one value
           for (const d of act) { const vals = [].concat(d.get(b)); if (d.id === 'grape' ? !Array.from(f[d.id]).every((v) => vals.includes(v)) : !vals.some((v) => f[d.id].has(v))) return false; }
         }
+        for (const d of xs) { if ([].concat(d.get(b)).some((v) => f['!' + d.id].has(v))) return false; }
         for (const t of toks) if (wordAt(b._hay, t) < 0) return false;
         return true;
       });
@@ -1626,14 +1630,22 @@
         let tm = 0, x0 = 0, y0 = 0;
         const stop = () => { if (tm) { clearTimeout(tm); tm = 0; } };
         this.shadowRoot.addEventListener('pointerdown', (e) => {
-          const b = this._dd === 'sort' && e.target.closest && e.target.closest('.ddi[data-act="ddpick"]');
-          if (!b || !SORT_PAIR[b.dataset.v]) return;
+          const b = this._dd && e.target.closest && e.target.closest('.ddi[data-act="ddpick"]');
+          if (!b) return;
+          const id = this._dd, sortPick = id === 'sort';
+          if (sortPick ? !SORT_PAIR[b.dataset.v] : (id === 'cellarsel' || id === 'fmode' || this._fm() === 'not')) return; // filter lists: long press excludes the value (in NOT mode a tap already does)
           stop(); x0 = e.clientX; y0 = e.clientY;
-          tm = setTimeout(() => { tm = 0; this._lpDone = true; setTimeout(() => { this._lpDone = false; }, 800); this._sortPick(b.dataset.v, true); }, 500);
+          tm = setTimeout(() => {
+            tm = 0; this._lpDone = true; setTimeout(() => { this._lpDone = false; }, 800);
+            if (sortPick) { this._sortPick(b.dataset.v, true); return; }
+            this._fs(id).delete(b.dataset.v); this._fx(id).add(b.dataset.v); this._renderAll();
+            if (this._multi()) { const an = this.shadowRoot.querySelector('[data-act="dd"][data-id="' + id + '"]'); if (an) this._ddAnchor = an; } else this._dd = null;
+            this._renderDlg();
+          }, 500);
         });
         this.shadowRoot.addEventListener('pointermove', (e) => { if (tm && Math.abs(e.clientX - x0) + Math.abs(e.clientY - y0) > 12) stop(); });
         ['pointerup', 'pointercancel'].forEach((n) => this.shadowRoot.addEventListener(n, stop));
-        this.shadowRoot.addEventListener('contextmenu', (e) => { if (this._dd === 'sort' && e.target.closest && e.target.closest('.ddi')) e.preventDefault(); });
+        this.shadowRoot.addEventListener('contextmenu', (e) => { if (this._dd && e.target.closest && e.target.closest('.ddi')) e.preventDefault(); });
       }
       this.shadowRoot.addEventListener('input', (e) => this._onInput(e));
       this.shadowRoot.addEventListener('keydown', (e) => {
@@ -1828,10 +1840,10 @@
           stat + reload + gear + `</div>`;
         const vis = this._orderedDefs(), hid = this._allDefs().filter((d) => this._fh.has(d.id) && !this._fh.has('off:' + d.id)); // filters set to "off" are not offered at all
         // Hidden filters (settings) only count when there is something to choose right now (or a value is chosen): no greyed-out ones behind the "..." button, and no button when it would only open greyed-out ones
-        const useful = (d) => { if (this._fs(d.id).size) return true; const m = cnt3(d.id, d.get); return m.size > 0 && !(m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length); };
+        const useful = (d) => { if (this._fs(d.id).size || this._fx(d.id).size) return true; const m = cnt3(d.id, d.get); return m.size > 0 && !(m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length); };
         const hidUse = hid.filter(useful);
         const moreBtn = true; // the "..." button always exists now: behind it sit the hidden filters (if any) and the filter mode pulldown
-        const extra = new Set((this._showHid ? hidUse : hid.filter((d) => this._fs(d.id).size)).map((d) => d.id)), visS = new Set(vis.map((d) => d.id));
+        const extra = new Set((this._showHid ? hidUse : hid.filter((d) => this._fs(d.id).size || this._fx(d.id).size)).map((d) => d.id)), visS = new Set(vis.map((d) => d.id));
         const defs = this._allDefs().filter((d) => visS.has(d.id) || extra.has(d.id)); // filters behind "..." keep their place in the sort order when opened (not appended at the end)
         const t3 = {};
         defs.forEach((d) => { t3[d.id] = cnt3(d.id, d.get); });
@@ -1863,11 +1875,12 @@
             if (!m.size && !set.size) return hasAny(d) ? `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>` : '';
             // nothing chosen yet and every bottle shown has the one remaining value: choosing it would change nothing
             if (!set.size && m.size === 1 && Array.from(m.values())[0].f === this._filtered(d.id).length) return `<button type="button" class="sel fs dis" disabled aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
-            const items = d.defs ? this._optsK(d.defs, m, set) : d.clsg !== undefined ? this._optsCls(m, set) : this._opts(m, set, d.sort || by);
+            const xset = this._fx(d.id), pickSet = xset.size ? new Set([...set, ...xset]) : set; // chosen and excluded values are not offered again
+            const items = d.defs ? this._optsK(d.defs, m, pickSet) : d.clsg !== undefined ? this._optsCls(m, pickSet) : this._opts(m, pickSet, d.sort || by);
             if (d.id === 'grape' && set.size && !this._multi()) { const co = new Map(); this._filtered(null, 'grape').forEach((b) => (b.grapes || []).forEach((g) => { if (!co.has(g)) co.set(g, new Set()); co.get(g).add(b.wine); })); items.forEach((o) => { if (o.v !== undefined) { o.and = co.has(o.v); o.nAnd = o.and ? co.get(o.v).size : 0; } }); } // & only where the grape occurs together with the chosen ones, with the number of wines that would remain
             this._ddItems[d.id] = { label: d.label, items, cur: '', hint: t('dd.countHint'), wide: d.id === 'grape' && !!set.size && !this._multi(),
               sel: set.size ? Array.from(set).map((v) => (d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v)).join(d.id === 'grape' && !this._multi() ? ' & ' : ', ') : '' };
-            return `<button type="button" class="sel fs${set.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
+            return `<button type="button" class="sel fs${set.size || xset.size ? ' hasv' : ''}" data-act="dd" data-id="${esc(d.id)}" aria-haspopup="listbox" aria-label="${esc(d.label)}">${esc(d.label)}</button>`;
           }).join('') + fmChip + histChip + `<span class="fend">` + (moreBtn ? `<button type="button" class="sel fs more-pill${this._showHid ? ' open' : ''}" data-act="showhid" aria-expanded="${this._showHid ? 'true' : 'false'}" aria-label="${esc(this._showHid ? t('head.moreHide') : t('head.moreShow'))}">…</button>` : '') +
           `</span></div></div>`;
         const ic = (dot) => this._dotIc(dot);
@@ -1878,7 +1891,10 @@
           const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
           return `<button class="fpill" data-act="fdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">${d.dot ? ic(d.dot + v) : ''}` +
             `${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
-        }).join(this._pillSep(d)))).join('');
+        }).join(this._pillSep(d))) + Array.from(this._fx(d.id)).map((v) => { // excluded values
+          const label = d.defs ? (d.defs.find((x) => x[0] === v) || [0, v])[1] : v;
+          return `<button class="fpill fxpill" data-act="fxdel" data-g="${esc(d.id)}" data-v="${esc(v)}" aria-label="${esc(t('head.removePill', { label }))}">≠ ${d.personal ? esc(d.label) + ': ' : ''}${esc(label)}<span class="x">✕</span></button>`;
+        }).join('')).join('');
         html += `<div class="fpills">${pills}<button class="btn round sm on" data-act="reset" data-reset title="${esc(t('head.resetFilters'))}" aria-label="${esc(t('head.resetFilters'))}"${active ? '' : ' hidden'}>✕</button></div>`;
         html += `<div class="sumline"><span class="grow" data-sum></span>${sortBtn}</div>`;
       }
@@ -3654,6 +3670,7 @@
     },
     fmoff() { this._setFm('std'); this._renderDlg(); this._renderAll(); },
     histtoggle() { const S = this._fs('hist'); if (S.size) S.clear(); else S.add('1'); this._open = new Set(); this._renderAll(); },
+    fxdel(t) { this._fx(t.dataset.g).delete(t.dataset.v); this._renderAll(); },
     fdel(t) { this._f[t.dataset.g].delete(t.dataset.v); this._renderAll(); },
     pyes() { this._cfm = false; this._renderDlg(); this._refreshNow(); },
     pno() { this._cfm = false; this._renderDlg(); },

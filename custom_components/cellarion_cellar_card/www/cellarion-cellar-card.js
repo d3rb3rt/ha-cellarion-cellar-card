@@ -1726,10 +1726,12 @@
       const rightHalf = (a.left + a.right) / 2 - ov.left > ov.width / 2;
       const left = Math.max(m, Math.min(rightHalf ? a.right - ov.left - w : a.left - ov.left, ov.width - w - m));
       const below = ov.bottom - a.bottom - m - 4, above = a.top - ov.top - m - 4;
-      pop.style.width = w + 'px';
-      pop.style.left = left + 'px';
-      if (below >= 220 || below >= above) { pop.style.top = (a.bottom - ov.top + 4) + 'px'; pop.style.maxHeight = Math.max(120, below) + 'px'; }
-      else { pop.style.bottom = (ov.bottom - a.top + 4) + 'px'; pop.style.maxHeight = Math.max(120, above) + 'px'; }
+      // The list sits inside the zoomed .wrap: rects are measured on screen, styles are set in unzoomed px (divide by the card scale)
+      const z = this._scale || 1, px = (v) => (v / z) + 'px';
+      pop.style.width = px(w);
+      pop.style.left = px(left);
+      if (below >= 220 || below >= above) { pop.style.top = px(a.bottom - ov.top + 4); pop.style.maxHeight = px(Math.max(120, below)); }
+      else { pop.style.bottom = px(ov.bottom - a.top + 4); pop.style.maxHeight = px(Math.max(120, above)); }
       return;
     }
 

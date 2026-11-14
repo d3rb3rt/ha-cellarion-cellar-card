@@ -3337,11 +3337,10 @@
           `<button class="btn on" data-act="dclose">${esc(t('det.done'))}</button></div>`;
       } else if (d.step === 'confirm') {
         const reasons = ['drank', 'gifted', 'sold', 'other'].map((v) => [v, t('reason.' + v)]);
-        body = `<div class="dask">${esc(t('det.confirmTitle'))}</div>` +
-          `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : (this._exactPlace(sel) || sel._loc))}</span></div>` +
+        body = `<div><b>${esc(sel.name)} ${esc(sel.vintage || '')}</b><br><span class="dpur">${esc(sel._loc === NO_LOC ? t('loc.noneShort') : (this._exactPlace(sel) || sel._loc))}</span></div>` +
+          `<div class="dsec">${esc(t('det.note'))}</div><textarea class="dnin" data-dnin rows="2" maxlength="1000" placeholder="${esc(t('det.notePh'))}"${d.busy ? ' disabled' : ''}>${esc(d.note || '')}</textarea>` +
           `<div class="dsec">${esc(t('det.reason'))}</div><div class="row-chips">` +
           reasons.map(([v, l]) => `<button class="chip${d.reason === v ? ' on' : ''}" data-act="dreason" data-v="${v}">${l}</button>`).join('') + `</div>` +
-          `<div class="dsec">${esc(t('det.note'))}</div><textarea class="dnin" data-dnin rows="3" maxlength="1000" placeholder="${esc(t('det.notePh'))}"${d.busy ? ' disabled' : ''}>${esc(d.note || '')}</textarea>` +
           (d.err ? `<div class="derr">${esc(d.err)}</div>` : '') +
           `<div class="dact"><button class="btn" data-act="dback" ${d.busy ? 'disabled' : ''}>${esc(t('det.cancel'))}</button>` +
           `<button class="btn danger" data-act="dgo" ${d.busy ? 'disabled' : ''}>${esc(d.busy ? t('det.taking') : t('det.takeYes'))}</button></div>`;

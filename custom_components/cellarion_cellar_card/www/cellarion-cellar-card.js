@@ -1800,7 +1800,7 @@
         const sortBtn = (() => {
             // One entry per sort criterion: the first tap sorts in its natural direction, a second tap on the active entry reverses it (arrow = direction of the values)
             const base = SORT_BASE[this._sort] || this._sort, arrow = (v) => (SORT_ARROW[v] ? ' ' + SORT_ARROW[v] : '');
-            const so = ['name', 'producer', 'drinkTo', 'vintage', 'region', 'price', 'count', 'added'].map((v) => ({ v, t: t('sort.' + v) + (v === base ? arrow(this._sort) : '') }));
+            const so = ['name', 'producer', 'drinkTo', 'vintage', 'region', 'price', 'count', 'added'].map((v) => ({ v, t: t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
             const cur = (so.find((o) => o.v === base) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;

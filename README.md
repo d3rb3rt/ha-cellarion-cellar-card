@@ -358,8 +358,9 @@ data:
 ## Privacy
 
 Only your own Cellarion server (or cellarion.app) is contacted, from your Home Assistant server. Label images are cached
-in `<config>/cellarion_cellar_card_img` and served without login to the browser, like other files in `www`. Personal data fields and
-notes are shown only in the card, to whoever can open the dashboard.
+in `<config>/cellarion_cellar_card_img` and served only to logged-in Home Assistant users: the card receives short-lived signed
+URLs (valid for 24 hours), and the images cannot be fetched without them. Personal data fields and notes are shown only in the
+card, to whoever can open the dashboard.
 
 ## Development
 

@@ -2031,7 +2031,11 @@
     // Pick a sort entry: a tap takes the natural direction (or reverses the active entry), a long press (rev) the opposite of that
     _sortPick(v, rev, fromTap) {
       const pr = SORT_PAIR[v];
-      if (pr) { const tap = pr.indexOf(this._sort) === 0 ? pr[1] : pr[0]; this._sort = rev ? (tap === pr[0] ? pr[1] : pr[0]) : tap; } else this._sort = v;
+      if (pr) {
+        const i = pr.indexOf(this._sort); // -1: entry is not the current sort
+        // tap: natural direction, on the current entry the other one; long press: always the direction opposite to the arrow the entry shows (the current entry flips, any other entry starts reversed)
+        this._sort = rev ? (i === -1 ? pr[1] : pr[1 - i]) : (i === 0 ? pr[1] : pr[0]);
+      } else this._sort = v;
       this._saveState(); this._dd = null; this._renderDlg(); this._renderAll();
     }
     _sb() { return SORT_BASE[this._sort] || this._sort; } // menu entry of the current sort (both directions)

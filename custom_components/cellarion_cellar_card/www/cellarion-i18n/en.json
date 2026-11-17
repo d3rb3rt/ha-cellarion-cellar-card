@@ -34,7 +34,6 @@
  "sort.drinkTo": "Drink by",
  "sort.vintage": "Vintage",
  "sort.vintageAsc": "Vintage, oldest",
- "sort.region": "Region",
  "head.settings": "Settings",
  "head.reload": "↻ Reload",
  "head.loading": "Loading …",
@@ -52,7 +51,6 @@
  "list.reload": "Reload",
  "list.loading": "Loading inventory …",
  "list.empty": "No bottles for this selection.",
- "list.noRegion": "No region",
  "count.wines": {
   "one": "{n} wine",
   "other": "{n} wines"

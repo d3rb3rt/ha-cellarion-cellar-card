@@ -116,9 +116,9 @@
 
   // ---- Info texts: personal wine fields "info:<attribute>" (text for the VALUE of that attribute) ----
   // Sort criteria with two directions: [natural, reversed]; SORT_BASE maps every sort value to its menu entry, SORT_ARROW shows the direction of the values
-  const SORT_PAIR = { name: ['name', 'nameDesc'], producer: ['producer', 'producerDesc'], region: ['region', 'regionDesc'], drinkTo: ['drinkTo', 'drinkToDesc'], vintage: ['vintage', 'vintageAsc'], price: ['priceAsc', 'priceDesc'], count: ['countDesc', 'countAsc'], added: ['added', 'addedAsc'] };
+  const SORT_PAIR = { name: ['name', 'nameDesc'], producer: ['producer', 'producerDesc'], drinkTo: ['drinkTo', 'drinkToDesc'], vintage: ['vintage', 'vintageAsc'], price: ['priceAsc', 'priceDesc'], count: ['countDesc', 'countAsc'], added: ['added', 'addedAsc'] };
   const SORT_BASE = {}; Object.keys(SORT_PAIR).forEach((k) => SORT_PAIR[k].forEach((v) => { SORT_BASE[v] = k; }));
-  const SORT_ARROW = { name: '↑', nameDesc: '↓', producer: '↑', producerDesc: '↓', region: '↑', regionDesc: '↓', drinkTo: '↑', drinkToDesc: '↓', vintage: '↓', vintageAsc: '↑', priceAsc: '↑', priceDesc: '↓', countDesc: '↓', countAsc: '↑', added: '↓', addedAsc: '↑' };
+  const SORT_ARROW = { name: '↑', nameDesc: '↓', producer: '↑', producerDesc: '↓', drinkTo: '↑', drinkToDesc: '↓', vintage: '↓', vintageAsc: '↑', priceAsc: '↑', priceDesc: '↓', countDesc: '↓', countAsc: '↑', added: '↓', addedAsc: '↑' };
   const BOTTLE_ROWS = [['bprice', 'det.price'], ['bdate', 'det.purchaseDate'], ['bshop', 'det.shop'], ['burl', 'det.purchaseUrl'], ['bsize', 'det.size'], ['brating', 'det.rating'], ['bocc', 'det.occasion'], ['bord', 'det.onOrder']]; // bottle data rows of the detail (flag detrows), in the order of the rows array of _viewV2
   const WINE_ATTR = ['producer', 'country', 'region', 'appellation', 'grape']; // info attributes that have their value in a Cellarion wine field (see _infoVal)
   // Defaults as long as nothing is saved (settings that exist are never touched): filters on, info in the list, details behind the arrow / off
@@ -1109,7 +1109,7 @@
       this._restored = true;
       const st = this._st || {};
       if (!this._keep()) return;
-      this._sort = st.sort || 'name';
+      this._sort = st.sort && !/^region/.test(st.sort) ? st.sort : 'name'; // the former region sort no longer exists
       this._fmode = st.fm === 'or' || st.fm === 'not' ? st.fm : 'std';
       if (st.f && typeof st.f === 'object') {
         for (const k of Object.keys(st.f)) {
@@ -1485,12 +1485,10 @@
           return (this._sort === 'priceAsc' ? x - y : y - x) || de.compare(a.b.name || '', b.b.name || '');
         }
         case 'countDesc': return (b.bottles || []).length - (a.bottles || []).length || de.compare(a.b.name || '', b.b.name || '');
-        case 'region': return de.compare(a.b.region || '~', b.b.region || '~') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '');
         case 'vintageAsc': return this._old(a.vintage) - this._old(b.vintage) || de.compare(a.b.name || '', b.b.name || '');
         case 'added': return (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || '');
         case 'nameDesc': return de.compare(b.b.name || '', a.b.name || '') || de.compare(b.b.producer || '', a.b.producer || '') || this._vint(b.vintage) - this._vint(a.vintage);
         case 'producerDesc': return de.compare(this._pkey(b.b.producer), this._pkey(a.b.producer)) || de.compare(b.b.name || '', a.b.name || '') || this._vint(b.vintage) - this._vint(a.vintage);
-        case 'regionDesc': return (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(b.b.region || '', a.b.region || '') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || '');
         case 'addedAsc': return (a.added || '9').localeCompare(b.added || '9') || de.compare(a.b.name || '', b.b.name || '');
         case 'countAsc': return (a.bottles || []).length - (b.bottles || []).length || de.compare(a.b.name || '', b.b.name || '');
         case 'drinkToDesc': return (b.drinkTo === 9999 ? -1 : b.drinkTo) - (a.drinkTo === 9999 ? -1 : a.drinkTo) || de.compare(a.b.name || '', b.b.name || '');
@@ -1523,13 +1521,11 @@
         producer: (a, b) => de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         drinkTo: (a, b) => a.drinkTo - b.drinkTo || de.compare(a.b.name || '', b.b.name || ''),
         vintage: (a, b) => b.maxVint - a.maxVint || de.compare(a.b.name || '', b.b.name || ''),
-        region: (a, b) => (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(a.b.region || '', b.b.region || '') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         vintageAsc: (a, b) => a.minVint - b.minVint || de.compare(a.b.name || '', b.b.name || ''),
         countDesc: (a, b) => b.count - a.count || de.compare(a.b.name || '', b.b.name || ''),
         added: (a, b) => (b.added || '').localeCompare(a.added || '') || de.compare(a.b.name || '', b.b.name || ''),
         nameDesc: (a, b) => de.compare(b.b.name || '', a.b.name || '') || de.compare(b.b.producer || '', a.b.producer || ''),
         producerDesc: (a, b) => de.compare(this._pkey(b.b.producer), this._pkey(a.b.producer)) || de.compare(b.b.name || '', a.b.name || ''),
-        regionDesc: (a, b) => (a.b.region ? 0 : 1) - (b.b.region ? 0 : 1) || de.compare(b.b.region || '', a.b.region || '') || de.compare(this._pkey(a.b.producer), this._pkey(b.b.producer)) || de.compare(a.b.name || '', b.b.name || ''),
         addedAsc: (a, b) => (a.added || '9').localeCompare(b.added || '9') || de.compare(a.b.name || '', b.b.name || ''),
         countAsc: (a, b) => a.count - b.count || de.compare(a.b.name || '', b.b.name || ''),
         drinkToDesc: (a, b) => (b.drinkTo === 9999 ? -1 : b.drinkTo) - (a.drinkTo === 9999 ? -1 : a.drinkTo) || de.compare(a.b.name || '', b.b.name || ''),
@@ -1835,7 +1831,7 @@
         const sortBtn = (() => {
             // One entry per sort criterion: the first tap sorts in its natural direction, a second tap on the active entry reverses it (arrow = direction of the values)
             const base = SORT_BASE[this._sort] || this._sort, arrow = (v) => (SORT_ARROW[v] ? ' ' + SORT_ARROW[v] : '');
-            const so = ['name', 'producer', 'region', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
+            const so = ['name', 'producer', 'drinkTo', 'vintage', 'price', 'count', 'added'].map((v) => ({ v, t: t('sort.' + v) + (v === base ? arrow(this._sort) : SORT_PAIR[v] ? arrow(SORT_PAIR[v][0]) : '') })); // inactive entries show the arrow of their first tap
             const cur = (so.find((o) => o.v === base) || so[0]);
             this._ddItems.sort = { label: t('sort.title'), items: so, cur: cur.t, curV: cur.v };
             return `<button type="button" class="sel" data-act="dd" data-id="sort" aria-haspopup="listbox" aria-label="${esc(t('sort.title'))}">${esc(cur.t)}</button>`;
@@ -1987,8 +1983,7 @@
       } else {
         const groups = this._groups(entries);
         nWine = groups.length;
-        const hk = { vintage: (g) => (g.maxVint > 0 ? String(g.maxVint) : 'NV'), vintageAsc: (g) => (g.minVint < 99999 ? String(g.minVint) : 'NV'),
-          region: (g) => g.b.region || t('list.noRegion'), regionDesc: (g) => g.b.region || t('list.noRegion') }[this._sort];
+        const hk = { vintage: (g) => (g.maxVint > 0 ? String(g.maxVint) : 'NV'), vintageAsc: (g) => (g.minVint < 99999 ? String(g.minVint) : 'NV') }[this._sort];
         if (hk) {
           const tot = new Map();
           groups.forEach((g) => { const k = hk(g); const o = tot.get(k) || { w: 0, n: 0 }; o.w++; o.n += g.count; tot.set(k, o); });

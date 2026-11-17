@@ -34,7 +34,6 @@
  "sort.drinkTo": "Trinkende",
  "sort.vintage": "Jahrgang",
  "sort.vintageAsc": "Jahrgang alt",
- "sort.region": "Region",
  "head.settings": "Einstellungen",
  "head.reload": "↻ Neu laden",
  "head.loading": "Lädt …",
@@ -52,7 +51,6 @@
  "list.reload": "Neu laden",
  "list.loading": "Lade Bestand …",
  "list.empty": "Keine Flaschen für diese Auswahl.",
- "list.noRegion": "Ohne Region",
  "count.wines": {
   "one": "{n} Wein",
   "other": "{n} Weine"

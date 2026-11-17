@@ -121,10 +121,9 @@ Update automations and scripts that call the old services or the old sensor by h
   wine must then have all chosen grapes. The **label sweetness** (for example *Brut Nature* or *feinherb*) is a filter of
   its own once Cellarion has a value for a wine. **Long press a value** in a pick list to exclude it instead (shown as a
   red pill with ≠); that works in every filter mode.
-- **Sorting**: the sort menu has one entry per criterion (wine, producer, region, drink by, vintage, price, bottles,
-  added). The first tap sorts in the natural direction, a second tap reverses it, and the arrow shows the direction of the
-  values; a **long press** on an entry picks the opposite direction right away. Region sorts by producer inside each region,
-  and *Added* lists the newest bottle first.
+- **Sorting**: the sort menu has one entry per criterion (wine, producer, drink by, vintage, price, bottles, added). The
+  first tap sorts in the natural direction, a second tap reverses it, and the arrow shows the direction of the values; a
+  **long press** on an entry picks the opposite direction right away. *Added* lists the newest bottle first.
 - **Several cellars**: with more than one cellar the cellar name in the header is a tinted pulldown. *All cellars* is
   listed first and is the start view until you pick a cellar; the cellars below it are sorted alphabetically. In the
   combined view every storage place carries a small cellar tag, and the statistics, filters and search cover all cellars.

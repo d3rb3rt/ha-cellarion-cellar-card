@@ -110,7 +110,7 @@ Update automations and scripts that call the old services or the old sensor by h
 
 ## Using the card
 
-- **Search** looks in name, producer, vintage, region, country, appellation, classification, grapes, storage place, type
+- **Search** looks in name, producer, vintage, region, country, appellation, label sweetness, classification, grapes, storage place, type
   and your personal fields. Several words must all match; a word matches at the start of a word, and the whole phrase is
   tried first. Enter opens the only remaining hit. If the stock has few hits, matching archive wines are added (see
   *Archive* in the settings).
@@ -118,7 +118,13 @@ Update automations and scripts that call the old services or the old sensor by h
   with nothing to choose right now stays in place, greyed out. The *Selected* line at the top of a pick list has an x to
   clear that filter. Filters you moved behind the **...** button are listed there. The classification is split into
   one filter per kind (vineyard rank, ripeness, ageing, other); for grapes an **&** button adds a further grape, and the
-  wine must then have all chosen grapes.
+  wine must then have all chosen grapes. The **label sweetness** (for example *Brut Nature* or *feinherb*) is a filter of
+  its own once Cellarion has a value for a wine. **Long press a value** in a pick list to exclude it instead (shown as a
+  red pill with ≠); that works in every filter mode.
+- **Sorting**: the sort menu has one entry per criterion (wine, producer, region, drink by, vintage, price, bottles,
+  added). The first tap sorts in the natural direction, a second tap reverses it, and the arrow shows the direction of the
+  values; a **long press** on an entry picks the opposite direction right away. Region sorts by producer inside each region,
+  and *Added* lists the newest bottle first.
 - **Several cellars**: with more than one cellar the cellar name in the header is a tinted pulldown. *All cellars* is
   listed first and is the start view until you pick a cellar; the cellars below it are sorted alphabetically. In the
   combined view every storage place carries a small cellar tag, and the statistics, filters and search cover all cellars.
@@ -136,7 +142,9 @@ Update automations and scripts that call the old services or the old sensor by h
 - **Vintage colours show maturity**, based on your drink window (or Cellarion's curated one):
   blue = not ready yet, teal = in the window, before the peak, green = at its peak, orange = in the window, past the peak,
   red = past the window. The same colours are used in the drink-window bar in the details.
-- **Details**: *Take out …* asks for the reason and confirms before anything is written. *Edit in Cellarion* opens the
+- **Details**: *Take out …* asks for the reason, lets you add a note about the bottle (saved with the consumption in
+  Cellarion) and confirms before anything is written. Web addresses in values and notes open as links, and a bottle's
+  purchase link is shown as a row of its own (or as the merchant name, when both are set). *Edit in Cellarion* opens the
   bottle in the Cellarion app.
 
 <p align="center">
@@ -208,7 +216,8 @@ kinds, price, purchase, merchant, …) and every personal field you keep in Cell
 The chart icon in the card header opens an overview of the cellar, with the tabs **Total**, **Stock** and **Drunk**:
 bottles, wines, countries, producers, oldest vintage, value (purchase prices), bottles per type and the top country,
 producer, region and grape. *Drunk* adds the wines and producers with nothing left in stock and a list of your most
-drunk wines that are gone, as re-buy candidates.
+drunk wines that are gone, as re-buy candidates. The **Consumption** tile counts everything taken out (drunk, gifted,
+sold, …) with a page per kind, the most recently taken bottles with their notes and the consumption per year.
 
 - **Everything in the overview is linked.** Tap a **type bar** (or a similar row) to close the overview and filter the list
   by it, for example only the sparkling wines.
@@ -264,8 +273,6 @@ only** (stored in the browser).
 **Archive**
 - *Archive hits in the search*: a text search also shows archive wines when the stock has fewer hits than this number
   (0 = only when nothing is found in stock).
-
-The list can also be sorted by **bottles (most first)**.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings.png?v=2.5.0" alt="Settings" width="360">

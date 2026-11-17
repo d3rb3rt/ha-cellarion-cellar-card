@@ -64,14 +64,22 @@ It complements the official [ha-cellarion](https://github.com/jagduvi1/ha-cellar
 
 ## Install
 
-1. HACS → ⋮ → **Custom repositories** → `https://github.com/d3rb3rt/ha-cellarion-cellar-card`, category **Integration**.
-2. Install **Cellar Card for Cellarion** and restart Home Assistant.
+The card is in the HACS default store.
+
+[![Open your Home Assistant instance and show the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=d3rb3rt&repository=ha-cellarion-cellar-card&category=integration)
+
+1. Open HACS in Home Assistant and search for **Cellar Card for Cellarion** (or use the button above).
+   If it does not show up yet, add `https://github.com/d3rb3rt/ha-cellarion-cellar-card` under ⋮ → **Custom repositories**, category **Integration**.
+2. Click **Download** and restart Home Assistant.
 3. In Cellarion create an API token (Settings → API tokens) with scope **read**, plus **consume** if you want to take
    bottles out from the card.
-4. Home Assistant → Settings → Devices & services → **Add integration** → **Cellar Card for Cellarion**. Enter the server address
-   (`https://cellarion.app` for the hosted service) and the token. If your account has several cellars you choose which to show
-   (leave it empty for all of your own cellars; the first one chosen is the start cellar); you can change it later under **Configure**.
-   Cellars shared with you are only included when you pick them there.
+4. Add the integration with the button below, or go to Settings → Devices & services → **Add integration** → **Cellar Card for Cellarion**.
+   Enter the server address (`https://cellarion.app` for the hosted service) and the token. If your account has several cellars
+   you choose which to show (leave it empty for all of your own cellars; the first one chosen is the start cellar); you can
+   change it later under **Configure**. Cellars shared with you are only included when you pick them there.
+
+   [![Add the integration to your Home Assistant instance.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=cellarion_cellar_card)
+
 5. The card is registered automatically. Edit a dashboard, add the card **Cellar Card for Cellarion**, or use YAML:
 
 ```yaml

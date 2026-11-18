@@ -3,9 +3,6 @@
 A Home Assistant dashboard card, and the data integration behind it, for [Cellarion](https://cellarion.app):
 browse your whole cellar at a glance, filter it, see where each bottle lies and take a bottle out, right from a dashboard.
 
-> **Heads-up:** this project was built entirely by vibe coding with Claude (Anthropic) and is developed and used on a single
-> setup. It does what it says there, but if that is not your thing, please don't install it. Issues and ideas are welcome.
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/list.png?v=2.5.0" alt="Inventory grouped by wine" width="820"><br>
   <em>The inventory, grouped by wine, with search, filters and an A–Z index.</em>

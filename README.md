@@ -22,6 +22,24 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
   <em>Bottle details with label image, drunk bottles, drink window, profile and storage places · the same card on a phone.</em>
 </p>
 
+## Contents
+
+- [What you get](#what-you-get)
+- [Requirements](#requirements)
+- [Install](#install)
+- [Using the card](#using-the-card)
+- [Rack view](#rack-view)
+- [Archive](#archive)
+- [Data fields and info texts](#data-fields-and-info-texts)
+- [Statistics](#statistics)
+- [Settings](#settings)
+- [Card options](#card-options-all-optional)
+- [Extensions](#extensions)
+- [Services](#services)
+- [Troubleshooting](#troubleshooting)
+- [Privacy](#privacy)
+- [Development](#development)
+
 ## What you get
 
 - **Inventory grouped by wine** with vintages, bottle counts, price and the places each vintage is stored. Search, A–Z index,
@@ -87,26 +105,6 @@ type: custom:cellarion-cellar-card
 ```
 
 The card works best in a view with a single full-width card (panel view), where it fills the whole page.
-
-## Upgrading from 1.x
-
-Version 2.0 gives everything one consistent name, which is a breaking change:
-
-| 1.x | 2.0 |
-|---|---|
-| integration `my_cellarion` | `cellarion_cellar_card` |
-| services `my_cellarion.*` | `cellarion_cellar_card.*` |
-| sensor `sensor.my_cellarion_total_bottles` | `sensor.cellarion_cellar_card_total_bottles` |
-| card `custom:my-cellarion-card` | `custom:cellarion-cellar-card` (the old tag still works) |
-
-Home Assistant treats the new domain as a new integration, so after updating the repository in HACS (the address is now
-`https://github.com/d3rb3rt/ha-cellarion-cellar-card`) and restarting, add **Cellar Card for Cellarion** under *Devices &
-services*. If the old *My Cellarion* entry is still there, the setup offers to **take over the old setup**: it carries over
-the Cellarion address, token, cellar, refresh interval and the card settings kept in the integration (filters, producer sort
-words, …), and removes the old entry. You do not need to enter the token again. If you decline, or the old entry is already
-gone, set it up as described under Install.
-
-Update automations and scripts that call the old services or the old sensor by hand; they are not changed for you.
 
 ## Using the card
 

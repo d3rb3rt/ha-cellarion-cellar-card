@@ -24,38 +24,37 @@ browse your whole cellar at a glance, filter it, see where each bottle lies and 
 - [What you get](#what-you-get)
 - [Requirements](#requirements)
 - [Install](#install)
+- [Data fields and info texts](#data-fields-and-info-texts)
 - [Using the card](#using-the-card)
 - [Rack view](#rack-view)
 - [Archive](#archive)
-- [Data fields and info texts](#data-fields-and-info-texts)
 - [Statistics](#statistics)
 - [Settings](#settings)
 - [Card options](#card-options-all-optional)
-- [Extensions](#extensions)
 - [Services](#services)
 - [Troubleshooting](#troubleshooting)
 - [Privacy](#privacy)
+- [Extensions](#extensions)
 - [Development](#development)
 
 ## What you get
 
 - **Inventory grouped by wine** with vintages, bottle counts, price and the places each vintage is stored. Search, A–Z index,
   sorting (wine, producer or bottles) and a flat view.
-- **Several cellars**: with more than one cellar the cellar name in the header becomes a pulldown (one cellar, or *All
-  cellars* together with a cellar tag on each place). The choice is remembered per device. Settings and filters are shared by all cellars.
+- **Several cellars** in one card, with a cellar pulldown in the header.
 - **Filters** with live counts: type, grape, region, appellation, producer, maturity, vintage, price, storage rack and
-  **every personal data field you keep in Cellarion** (they appear as filters automatically). Choose which filters are
-  shown, in which order, and which stay behind a "..." button. A **filter mode** (Default, OR, NOT) lets you pick several
-  values in every filter and combine them the way you need.
+  **every personal data field you keep in Cellarion** (they appear as filters automatically). You choose which filters are
+  shown and in which order, and a **filter mode** (Default, OR, NOT) lets you combine several values per filter.
 - **Bottle details**: your data (price, purchase, merchant, note, personal fields), the register profile (body, acidity,
   flavours, food pairings, description), a drink-window bar with today's position, the label image and the storage places
   with a count per place. Which data fields appear in the list and in the details is set separately, field by field;
   with *info texts* a field can open a text of your own.
-- **Archive**: the wines you have drunk, gifted or sold, with the same facts as the stock, in violet (see *Archive* below).
+- **Archive**: the wines you have drunk, gifted or sold, with the same facts as the stock, in violet.
 - **Rack view**: a small picture of the rack shows where the bottles lie; tap it for the full rack with every shelf and
-  slot, and take a bottle out right from there (see below).
+  slot, and take a bottle out right from there.
 - **Take out** from a fixed bar in the details: say why (drunk, gifted, sold, other), confirm, and Cellarion marks the
   bottle as consumed. The card then offers to take out another one of the same vintage.
+- **Statistics** of stock and archive, linked to the filters.
 - **Storage display per rack**: count shelves from the top or the bottom, show the position as left/middle/right, as a slot
   number, or not at all.
 - **Languages**: English and German (add one by dropping a JSON file into `www/cellarion-i18n/`). Language and filter
@@ -103,6 +102,26 @@ type: custom:cellarion-cellar-card
 
 The card works best in a view with a single full-width card (panel view), where it fills the whole page.
 
+## Data fields and info texts
+
+Every fact the card shows is a **data field**: the Cellarion fields (country, region, appellation, grapes, classification
+kinds, price, purchase, merchant, …) and every personal field you keep in Cellarion.
+
+- **List and details are set separately.** Under *List* and *Details* in the settings each field can be shown, put
+  behind the "..." button (details) or switched off, with its own order for each view.
+- **Every row of the details can be switched off**: the details show one block of rows that you can sort and hide, and
+  the header and the info tabs follow the same order.
+- **Info texts**: a personal field named `info:<attribute>` (for example `info:producer`, `info:region`, or the display
+  name of a field of your own) makes the value of that data field tappable. It opens its text in an overlay; the order of
+  the tabs follows the order of the data fields in the settings.
+- New installations start with sensible defaults for filters, list and details.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/info.png?v=2.5.0" alt="Info text of a producer" width="380">
+  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-details.png?v=2.5.0" alt="Data fields of the details in the settings" width="380"><br>
+  <em>The info text behind the producer · the data fields of the details, each with On, "..." or Off and its own order.</em>
+</p>
+
 ## Using the card
 
 - **Search** looks in name, producer, vintage, region, country, appellation, label sweetness, classification, grapes, storage place, type
@@ -116,13 +135,6 @@ The card works best in a view with a single full-width card (panel view), where 
   wine must then have all chosen grapes. The **label sweetness** (for example *Brut Nature* or *feinherb*) is a filter of
   its own once Cellarion has a value for a wine. **Long press a value** in a pick list to exclude it instead (shown as a
   red pill with ≠); that works in every filter mode.
-- **Sorting**: the sort menu has one entry per criterion (wine, producer, drink by, vintage, price, bottles, added). The
-  first tap sorts in the natural direction, a second tap reverses it, and the arrow shows the direction of the values; a
-  **long press** on an entry picks the opposite direction right away. *Added* lists the newest bottle first.
-- **Several cellars**: with more than one cellar the cellar name in the header is a tinted pulldown. *All cellars* is
-  listed first and is the start view until you pick a cellar; the cellars below it are sorted alphabetically. In the
-  combined view every storage place carries a small cellar tag, and the statistics, filters and search cover all cellars.
-  Pick one cellar to see only its bottles and racks. The choice is remembered per device.
 - **Filter mode**: the dashed pulldown at the end of the filter row switches how filters combine.
   *Default* picks one value per filter and all filters must match.
   *OR* allows several values everywhere and shows every wine matching **any** chosen value, for example red **or**
@@ -130,8 +142,16 @@ The card works best in a view with a single full-width card (panel view), where 
   *NOT* allows several values everywhere and hides every wine matching **any** chosen value, for example neither
   white nor rosé (chosen filters turn red, with "not" before them); the other filters then only offer what is left.
   Going back to *Default* keeps one value per filter.
+- **Sorting**: the sort menu has one entry per criterion (wine, producer, drink by, vintage, price, bottles, added). The
+  first tap sorts in the natural direction, a second tap reverses it, and the arrow shows the direction of the values; a
+  **long press** on an entry picks the opposite direction right away. *Added* lists the newest bottle first.
 - **A–Z bar** jumps to a letter and follows the current sorting. Sorted by producer, the letter is the producer's sort word
-  (see below).
+  (see *Edit producers* in the settings).
+- **Several cellars**: with more than one cellar the cellar name in the header is a tinted pulldown. *All cellars* is
+  listed first and is the start view until you pick a cellar; the cellars below it are sorted alphabetically. In the
+  combined view every storage place carries a small cellar tag, and the statistics, filters and search cover all cellars.
+  Pick one cellar to see only its bottles and racks. The choice is remembered per device; settings and filters are shared
+  by all cellars.
 - A wine with several vintages shows them when you tap the row; tap a vintage for the details.
 - **Vintage colours show maturity**, based on your drink window (or Cellarion's curated one):
   blue = not ready yet, teal = in the window, before the peak, green = at its peak, orange = in the window, past the peak,
@@ -173,8 +193,7 @@ of drunk bottles. All filters, the search and the sorting work as usual.
 - **Details**: the bar above the facts lists the other vintages of the wine, violet when a vintage is completely drunk.
   The **drunk** mark opens a small overlay with the date and the notes of the finished bottles. Identical entries are
   merged into one line with a count; the newest three are shown, the rest sits behind a button.
-- **Search**: a text search also shows archive wines when the stock has fewer hits than the number set under
-  *Archive* in the settings (0 = only when nothing is found in stock).
+- **Search**: a text search can add archive wines to the hits (see *Archive* in the settings).
 - **One request**: stock and archive come from one call, `GET /api/inventory?include=consumed`. Drunk, gifted and sold
   bottles arrive in the same format as the stock, with wine facts and your personal fields, so reloading stays cheap.
   This needs Cellarion 1.294 or newer; older servers answer with an error and the card shows the stock only.
@@ -183,26 +202,6 @@ of drunk bottles. All filters, the search and the sorting work as usual.
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/archive.png?v=2.5.0" alt="The archive: wines without a bottle left" width="420">
   <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/archive-detail.png?v=2.5.0" alt="Details of a wine with the list of its drunk bottles" width="380"><br>
   <em>The archive in the list · the drunk bottles of a wine, with date and note.</em>
-</p>
-
-## Data fields and info texts
-
-Every fact the card shows is a **data field**: the Cellarion fields (country, region, appellation, grapes, classification
-kinds, price, purchase, merchant, …) and every personal field you keep in Cellarion.
-
-- **List and details are set separately.** Under *List* and *Details* in the settings each field can be shown, put
-  behind the "..." button (details) or switched off, with its own order for each view.
-- **Every row of the details can be switched off**: the details show one block of rows that you can sort and hide, and
-  the header and the info tabs follow the same order.
-- **Info texts**: a personal field named `info:<attribute>` (for example `info:producer`, `info:region`, or the display
-  name of a field of your own) makes the value of that data field tappable. It opens its text in an overlay; the order of
-  the tabs follows the order of the data fields in the settings.
-- New installations start with sensible defaults for filters, list and details.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/info.png?v=2.5.0" alt="Info text of a producer" width="380">
-  <img src="https://raw.githubusercontent.com/d3rb3rt/ha-cellarion-cellar-card/main/docs/settings-details.png?v=2.5.0" alt="Data fields of the details in the settings" width="380"><br>
-  <em>The info text behind the producer · the data fields of the details, each with On, "..." or Off and its own order.</em>
 </p>
 
 ## Statistics
@@ -300,34 +299,6 @@ The full list is at the top of `custom_components/cellarion_cellar_card/www/cell
 your theme with `cellarion-accent`, `cellarion-chip-bg`, `cellarion-wine-red`/`-white`/`-rose`, `cellarion-maturity-peak`
 and friends (also listed there).
 
-## Extensions
-
-For changes that only you need, the card can load your own JavaScript modules. This keeps the card itself free of special cases:
-the extension lives in your `www` folder and is switched on per card in YAML.
-
-```yaml
-type: custom:cellarion-cellar-card
-extensions:
-  - /local/my-extension.js?v=1     # change the number to make browsers load a changed file
-```
-
-An extension is an ES module whose default export receives the card class and returns an extended class. It may override any
-method of the card and call the original with `super`:
-
-```js
-export default (Base) => class extends Base {
-  // example: add a line below the details of a bottle
-  _viewV2(sel, bottles, info) {
-    return super._viewV2(sel, bottles, info) + '<div class="dpur">Hello from my extension</div>';
-  }
-};
-```
-
-- Several modules can be listed; they are applied in order, each one extending the result of the previous.
-- If a module cannot be loaded or throws while loading, the card keeps working without it (see the browser console).
-- Extensions rely on the card's internal method names, which are not a stable interface and can change between releases.
-  Check your extension after updating the card.
-
 ## Services
 
 The card uses these services; they work in automations and scripts too.
@@ -370,6 +341,34 @@ Only your own Cellarion server (or cellarion.app) is contacted, from your Home A
 in `<config>/cellarion_cellar_card_img` and served only to logged-in Home Assistant users: the card receives short-lived signed
 URLs (valid for 24 hours), and the images cannot be fetched without them. Personal data fields and notes are shown only in the
 card, to whoever can open the dashboard.
+
+## Extensions
+
+For changes that only you need, the card can load your own JavaScript modules. This keeps the card itself free of special cases:
+the extension lives in your `www` folder and is switched on per card in YAML.
+
+```yaml
+type: custom:cellarion-cellar-card
+extensions:
+  - /local/my-extension.js?v=1     # change the number to make browsers load a changed file
+```
+
+An extension is an ES module whose default export receives the card class and returns an extended class. It may override any
+method of the card and call the original with `super`:
+
+```js
+export default (Base) => class extends Base {
+  // example: add a line below the details of a bottle
+  _viewV2(sel, bottles, info) {
+    return super._viewV2(sel, bottles, info) + '<div class="dpur">Hello from my extension</div>';
+  }
+};
+```
+
+- Several modules can be listed; they are applied in order, each one extending the result of the previous.
+- If a module cannot be loaded or throws while loading, the card keeps working without it (see the browser console).
+- Extensions rely on the card's internal method names, which are not a stable interface and can change between releases.
+  Check your extension after updating the card.
 
 ## Development
 

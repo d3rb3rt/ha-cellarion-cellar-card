@@ -1708,10 +1708,10 @@
           `<circle cx="2.8" cy="8" r="1.7" fill="${col}"/><circle cx="8" cy="8" r="1.7" fill="${col}"/><circle cx="13.2" cy="8" r="1.7" fill="${col}"/></svg>`;
       }
       const g = G[type] || G.white;
-      // Sparkling: flute squeezed down a little so two sparks fit above the rim
+      // Sparkling: flute squeezed down a little so a few rising bubbles fit above the rim
       const sp = type === 'sparkling';
       return `<svg class="tsp" viewBox="0 0 16 16" width="16" height="16"${title ? ` role="img" aria-label="${esc(title)}"` : ' aria-hidden="true"'}>` +
-        (sp ? `<circle cx="6.9" cy="1.5" r=".7" fill="${col}"/><circle cx="9.3" cy="0.9" r=".6" fill="${col}"/><g transform="translate(0 14.8) scale(1 .8) translate(0 -14.8)">` : '') +
+        (sp ? `<circle cx="8.2" cy="2.1" r=".55" fill="none" stroke="${col}" stroke-width=".6"/><circle cx="7.3" cy="1" r=".5" fill="none" stroke="${col}" stroke-width=".6"/><circle cx="9" cy=".9" r=".45" fill="none" stroke="${col}" stroke-width=".6"/><g transform="translate(0 14.8) scale(1 .8) translate(0 -14.8)">` : '') +
         `<path d="${g[0]}" fill="${col}" stroke="${col}" stroke-width="1" stroke-linejoin="round"/>${g[3]}` +
         `<path d="M8 ${g[2]}V14.2M5.2 14.8h5.6" stroke="${col}" stroke-width="1.2" stroke-linecap="round" fill="none"/>` + (sp ? '</g>' : '') + `</svg>`;
     }

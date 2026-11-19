@@ -154,7 +154,7 @@
     :host([data-mode="dark"]) ha-card { background: #1c1c1c; color: #e6e6e6; }
     :host([data-mode="light"]) ha-card { background: #ffffff; color: #1f1f1f; }
     :host([data-mode="dark"]) .wrap { --cb-text: #e6e6e6; --cb-sub: #a0a0a0; --cb-line: rgba(255,255,255,.14); --cb-chip: rgba(255,255,255,.14); --cb-seg: rgba(255,255,255,.14); --cb-ring: rgba(255,255,255,.45); --cb-card: #1c1c1c; --cb-on: #03a9f4; --cb-on-text: #fff; }
-    :host([data-mode="light"]) .wrap { --cb-text: #1f1f1f; --cb-sub: #666666; --cb-line: rgba(0,0,0,.14); --cb-chip: rgba(0,0,0,.08); --cb-seg: rgba(0,0,0,.08); --cb-ring: rgba(0,0,0,.4); --cb-card: #ffffff; --cb-on: #0288d1; --cb-on-text: #fff; --w-white: #cdb93d; --w-sparkling: #b5a032; }
+    :host([data-mode="light"]) .wrap { --cb-text: #1f1f1f; --cb-sub: #666666; --cb-line: rgba(0,0,0,.14); --cb-chip: rgba(0,0,0,.08); --cb-seg: rgba(0,0,0,.08); --cb-ring: rgba(0,0,0,.4); --cb-card: #ffffff; --cb-on: #0288d1; --cb-on-text: #fff; --w-white: #cdb93d; --w-sparkling: #c9742e; }
     ha-card.flush { background: none; box-shadow: none; border: 0; border-radius: 0; }
     .wrap {
       /* Colours: all overridable via --cellarion-* (e.g. in the HA theme), otherwise derived from the standard variables of the active theme */
@@ -170,7 +170,7 @@
       --w-red: var(--cellarion-wine-red, #a4243b);
       --w-white: var(--cellarion-wine-white, #e7da8b);
       --w-rosé: var(--cellarion-wine-rose, #f08aa4);
-      --w-sparkling: var(--cellarion-wine-sparkling, #c9b24d);
+      --w-sparkling: var(--cellarion-wine-sparkling, #e39a5b);
       --w-dessert: var(--cellarion-wine-dessert, #e39b2d);
       --w-fortified: var(--cellarion-wine-fortified, #8a5a3c);
       --w-other: var(--cellarion-wine-other, #8d9199);
@@ -1699,7 +1699,7 @@
         red: ['M4.2 1.2h7.6c.3 3.6-.5 7-3.8 7.4-3.3-.4-4.1-3.8-3.8-7.4z', 'M4.3 4.4h7.4c-.1 2.4-1 4-3.7 4.2-2.7-.2-3.6-1.8-3.7-4.2z', 8.6, ''],
         white: ['M4.8 1.2h6.4c.2 3.4-.4 6.4-3.2 6.8-2.8-.4-3.4-3.4-3.2-6.8z', 'M4.9 3.8h6.2c-.1 2.4-.9 3.9-3.1 4.2-2.2-.3-3-1.8-3.1-4.2z', 8, ''],
         sparkling: ['M5.6.8h4.8l-.4 8c-.1 1.2-.8 1.9-2 1.9s-1.9-.7-2-1.9z', 'M5.7 2.2h4.6l-.3 6.6c-.1 1-.7 1.6-2 1.6s-1.9-.6-2-1.6z', 10.7,
-          '<circle cx="7" cy="8.2" r=".6" fill="#fff" opacity=".9"/><circle cx="9" cy="6.4" r=".5" fill="#fff" opacity=".9"/><circle cx="7.6" cy="4.6" r=".5" fill="#fff" opacity=".9"/><circle cx="8.8" cy="3.2" r=".4" fill="#fff" opacity=".9"/>'],
+          `<circle cx="7" cy="8.4" r=".8" fill="#fff" opacity=".95"/><circle cx="9.1" cy="6.6" r=".7" fill="#fff" opacity=".95"/><circle cx="7.4" cy="4.8" r=".7" fill="#fff" opacity=".95"/><circle cx="8.8" cy="3.2" r=".6" fill="#fff" opacity=".95"/><circle cx="11.9" cy="1.1" r=".8" fill="${col}"/><circle cx="4.2" cy="2.2" r=".6" fill="${col}"/>`],
         dessert: ['M5 4h6c.1 2.8-.7 4.8-3 5.1-2.3-.3-3.1-2.3-3-5.1z', 'M5.1 5.4h5.8c0 2-.8 3.5-2.9 3.7-2.1-.2-2.9-1.7-2.9-3.7z', 9.1, ''],
       };
       G['rosé'] = G.white; G.fortified = G.dessert;

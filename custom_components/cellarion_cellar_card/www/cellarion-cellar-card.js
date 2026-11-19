@@ -168,7 +168,7 @@
       --cb-ring: color-mix(in srgb, var(--primary-text-color, #888) 45%, transparent);
       --cb-card: var(--card-background-color, #1c1c1c);
       --w-red: var(--cellarion-wine-red, #a4243b);
-      --w-white: var(--cellarion-wine-white, #e7da8b);
+      --w-white: var(--cellarion-wine-white, #f3eab5);
       --w-rosé: var(--cellarion-wine-rose, #f08aa4);
       --w-sparkling: var(--cellarion-wine-sparkling, #e39a5b);
       --w-dessert: var(--cellarion-wine-dessert, #e39b2d);

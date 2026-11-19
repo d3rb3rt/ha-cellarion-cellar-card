@@ -1699,7 +1699,7 @@
         red: ['M4.2 1.2h7.6c.3 3.6-.5 7-3.8 7.4-3.3-.4-4.1-3.8-3.8-7.4z', 'M4.3 4.4h7.4c-.1 2.4-1 4-3.7 4.2-2.7-.2-3.6-1.8-3.7-4.2z', 8.6, ''],
         white: ['M4.8 1.2h6.4c.2 3.4-.4 6.4-3.2 6.8-2.8-.4-3.4-3.4-3.2-6.8z', 'M4.9 3.8h6.2c-.1 2.4-.9 3.9-3.1 4.2-2.2-.3-3-1.8-3.1-4.2z', 8, ''],
         sparkling: ['M5.6.8h4.8l-.4 8c-.1 1.2-.8 1.9-2 1.9s-1.9-.7-2-1.9z', 'M5.7 2.2h4.6l-.3 6.6c-.1 1-.7 1.6-2 1.6s-1.9-.6-2-1.6z', 10.7,
-          `<circle cx="7" cy="8.4" r=".8" fill="#fff" opacity=".95"/><circle cx="9.1" cy="6.6" r=".7" fill="#fff" opacity=".95"/><circle cx="7.4" cy="4.8" r=".7" fill="#fff" opacity=".95"/><circle cx="8.8" cy="3.2" r=".6" fill="#fff" opacity=".95"/><circle cx="11.9" cy="1.1" r=".8" fill="${col}"/><circle cx="4.2" cy="2.2" r=".6" fill="${col}"/>`],
+          `<circle cx="7" cy="8.4" r=".8" fill="#fff" opacity=".95"/><circle cx="9.1" cy="6.6" r=".7" fill="#fff" opacity=".95"/><circle cx="7.4" cy="4.8" r=".7" fill="#fff" opacity=".95"/><circle cx="8.8" cy="3.2" r=".6" fill="#fff" opacity=".95"/>`],
         dessert: ['M5 4h6c.1 2.8-.7 4.8-3 5.1-2.3-.3-3.1-2.3-3-5.1z', 'M5.1 5.4h5.8c0 2-.8 3.5-2.9 3.7-2.1-.2-2.9-1.7-2.9-3.7z', 9.1, ''],
       };
       G['rosé'] = G.white; G.fortified = G.dessert;
@@ -1708,9 +1708,12 @@
           `<circle cx="2.8" cy="8" r="1.7" fill="${col}"/><circle cx="8" cy="8" r="1.7" fill="${col}"/><circle cx="13.2" cy="8" r="1.7" fill="${col}"/></svg>`;
       }
       const g = G[type] || G.white;
+      // Sparkling: flute squeezed down a little so two sparks fit above the rim
+      const sp = type === 'sparkling';
       return `<svg class="tsp" viewBox="0 0 16 16" width="16" height="16"${title ? ` role="img" aria-label="${esc(title)}"` : ' aria-hidden="true"'}>` +
+        (sp ? `<circle cx="6.9" cy="1.5" r=".7" fill="${col}"/><circle cx="9.3" cy="0.9" r=".6" fill="${col}"/><g transform="translate(0 14.8) scale(1 .8) translate(0 -14.8)">` : '') +
         `<path d="${g[0]}" fill="${col}" stroke="${col}" stroke-width="1" stroke-linejoin="round"/>${g[3]}` +
-        `<path d="M8 ${g[2]}V14.2M5.2 14.8h5.6" stroke="${col}" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>`;
+        `<path d="M8 ${g[2]}V14.2M5.2 14.8h5.6" stroke="${col}" stroke-width="1.2" stroke-linecap="round" fill="none"/>` + (sp ? '</g>' : '') + `</svg>`;
     }
     _dotIc(dot, title) {
       return dot.startsWith('--w-') ? this._glass(dot.slice(4), title) : `<span class="tdot" style="background:var(${dot})"></span>`;
